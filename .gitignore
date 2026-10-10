@@ -3,8 +3,12 @@
 .DS_Store
 ._*
 
-#----------------------------------
-# Test Project DIR
-**hardware/
+# Local KiCad test projects
+/hardware/
 
-**__pycache__/
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local Python environment
+.venv/
