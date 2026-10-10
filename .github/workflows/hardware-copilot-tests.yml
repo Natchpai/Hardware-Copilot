@@ -1,4 +1,3 @@
-
 name: Hardware-Copilot Tests
 
 on:
@@ -7,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       kicad_golden_project:
-        description: "Optional root .kicad_sch path for golden tests"
+        description: "Optional root .kicad_sch path for project-specific golden tests"
         required: false
         type: string
 
@@ -18,21 +17,25 @@ jobs:
   sch-synthetic:
     name: SCH synthetic regression
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - name: Run SCH tests
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run self-contained SCH synthetic tests
         run: >-
           python .claude/skills/sch-inspect/tests/run_tests.py
           --pattern test_query_sch.py --label synthetic
 
   sch-golden:
-    name: SCH golden tests (optional)
+    name: SCH golden tests (opt-in)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     env:
       KICAD_GOLDEN_PROJECT: ${{ inputs.kicad_golden_project || vars.KICAD_GOLDEN_PROJECT }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Run SCH golden tests
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run opt-in SCH golden tests
         run: >-
           python .claude/skills/sch-inspect/tests/run_tests.py
           --pattern test_query_sch_golden.py --label golden
@@ -40,10 +43,12 @@ jobs:
   pcb-synthetic:
     name: PCB synthetic regression
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      - name: Run PCB tests
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run self-contained PCB synthetic tests
         run: >-
           python -m unittest discover
           -s .claude/skills/pcb-inspect/tests
-          -p "test_query_pcb.py" -v
+          -p test_query_pcb.py -v
