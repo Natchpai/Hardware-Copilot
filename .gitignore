@@ -1,0 +1,9 @@
+#----------------------------------
+# macOS System Files to Ignore
+.DS_Store
+._*
+
+#----------------------------------
+# Test Project DIR
+**/2Phase_SynchBuck/**
+
