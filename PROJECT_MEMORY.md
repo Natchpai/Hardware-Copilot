@@ -29,13 +29,13 @@ Human engineers retain final design and approval authority. The copilot provides
 5. **Manual deployment only:** Copy the relevant `.claude/` files into an existing KiCad project manually when desired. **No auto-installer, auto-migration or automatic project setup.**
 6. **No SHA/Checksum artifacts:** Do not generate SHA files, checksum manifests, freeze archives or extra state files. Test code may use in-memory hashes to verify read-only behavior.
 7. **No mandatory Git tag:** Git tags are not needed for current release management. Do not create tags without an explicit new request.
-8. **Git actions need approval:** Do not commit, push, open PRs or modify release state without explicit authorization. Existing code convention: Conventional Commits (`feat:`, `fix:`, etc.), branches `feature/`, `fix/`, `docs/`, `chore/`.
+8. **Git actions need approval:** Do not commit, push, open PRs or modify release state without explicit authorization. Existing code convention: Conventional Commits (`feat:`, `fix:`, etc.), branches `feat/`, `fix/`, `docs/`, `chore/`.
 9. **Work incrementally:** Keep each Skill concise, reuse tools and other Skills rather than duplicating parsers, and avoid speculative feature expansion.
 10. **Cross-platform:** Target Windows and macOS via `pathlib` and portable Python; **macOS native execution was not independently confirmed** in reported SCH acceptance tests.
 
 ## 3. Repository and deployment layout
 
-Repository: **`Hardware-Copilot`**, private GitHub repository. The user reported initial push on `origin/main`, initial commit `9d6b02f` (`feature: initialize hardware copilot with schematic inspection`), and later committed all project documentation. **Current exact HEAD SHA and final CI run after the latest commits are not supplied here.** Do not treat the initial SHA as current HEAD.
+Repository: **`Hardware-Copilot`**, private GitHub repository. The user reported initial push on `origin/main`, initial commit `9d6b02f` (`feat: initialize hardware copilot with schematic inspection`), and later committed all project documentation. **Current exact HEAD SHA and final CI run after the latest commits are not supplied here.** Do not treat the initial SHA as current HEAD.
 
 Illustrative active layout (verify against repository before editing):
 

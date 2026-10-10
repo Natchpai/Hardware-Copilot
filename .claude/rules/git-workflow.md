@@ -9,7 +9,7 @@
 
 ## Commits
 - Format: <type>(<scope>): <description>
-- Types: feature, fix, refactor, docs, chore, test.
+- Types: feat, fix, refactor, docs, chore, test.
 - Use lowercase types and imperative descriptions.
 - Use a meaningful scope when applicable.
 - Keep the subject within 72 characters.
@@ -28,7 +28,7 @@
 ## Branches
 - Keep main as the integration branch.
 - Use short-lived branches for logical changes.
-- Prefer feature/, fix/, docs/, and chore/ prefixes.
+- Prefer feat/, fix/, docs/, and chore/ prefixes.
 - Reuse the current branch for related changes.
 - Do not create branches for individual commits.
 - Use Git tags to identify released versions.

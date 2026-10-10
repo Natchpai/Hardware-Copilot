@@ -43,7 +43,7 @@ Interpret `$ARGUMENTS` as one of:
 ## commit
 1. Inspect staged and unstaged diffs, including any pre-existing staged content.
 2. Group changes by purpose; use Conventional Commits 1.0.0 and repository scopes.
-3. If a new branch is needed, suggest `feature/`, `fix/`, `docs/`, or `chore/` plus a short descriptive name. Do not create/switch branches silently.
+3. If a new branch is needed, suggest `feat/`, `fix/`, `docs/`, or `chore/` plus a short descriptive name. Do not create/switch branches silently.
 4. Present proposed branch action (if any), exact file paths to stage, commit subject, optional body, and any unverified checks.
 5. Obtain explicit user approval before branch changes, staging, or committing; comply with tool permission prompts as well.
 6. Stage only approved paths. Recheck the staged diff before committing, and stop if it differs materially from the approved scope.
