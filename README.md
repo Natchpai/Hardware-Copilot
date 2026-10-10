@@ -34,6 +34,7 @@ Hardware-Copilot/
 ├── .claude/
 │   ├── settings.json
 │   ├── rules/
+│   ├── hooks/
 │   └── skills/
 │       ├── sch-inspect/
 │       │   ├── SKILL.md
