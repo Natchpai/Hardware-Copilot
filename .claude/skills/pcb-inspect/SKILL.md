@@ -6,7 +6,7 @@ description: >-
   component placement, footprints, pads, nets, traces, vias, copper
   zones, layers, clearances, or a specific board area. Prefer targeted
   native .kicad_pcb inspection rather than loading the whole board.
-argument-hint: "[component <ref> | net <name> | area <ref|x1,y1,x2,y2> | check [target]]"
+argument-hint: "[summary | footprint <ref> | net <name> | area <target> | check [target]]"
 ---
 
 # PCB Inspection
@@ -18,8 +18,22 @@ argument-hint: "[component <ref> | net <name> | area <ref|x1,y1,x2,y2> | check [
 - Never claim that a check passed unless supporting data and the check method are available.
 - Do not assume a PCB inspection tool, parser, IPC connection, or local DRC capability exists; verify tools before using them.
 
-## Modes
-- `component <ref>`: inspect footprint, pads, assigned nets, placement, and relevant neighboring routing.
+## Available read-only CLI (v0.1)
+
+Use `scripts/query_pcb.py` with Python 3.10+ standard library:
+
+- `python scripts/query_pcb.py summary --board <file.kicad_pcb> [--limit 20]`
+- `python scripts/query_pcb.py footprint <ref> --board <file.kicad_pcb> [--limit 20]`
+
+`summary` reports board metadata, declared layers, footprint counts, and bounded footprint samples.
+`footprint` reports saved footprint reference/value, library ID, side/layer, placement,
+rotation, and UUID. If a reference has multiple matches, report `AMBIGUOUS_REFERENCE`.
+These outputs are structural evidence only: no pad nets, electrical connectivity,
+track/via geometry, copper fill, manufacturing or DRC verification is implemented.
+Never claim a planned mode is an implemented CLI command.
+
+## Planned inspection modes (not yet implemented as CLI)
+- `component <ref>`: future extended footprint, pads, assigned nets, placement, and relevant neighboring routing.
 - `net <name>`: inspect relevant pads, tracks, vias, and layers; expand along the net only as needed.
 - `area <target>`: inspect a reference-centered region or explicit board coordinates (millimeters); state the bounds used.
 - `check [target]`: inspect requested structural constraints or available DRC results. Full-board DRC is not a local check; filtering findings by target does not make it local DRC.
