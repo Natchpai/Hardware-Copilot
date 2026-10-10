@@ -1,125 +1,116 @@
 # Hardware-Copilot
 
-Hardware-Copilot is an independent, read-only engineering assistant for KiCad 10 projects used through Claude Code. It helps engineers inspect native schematic and PCB data, check component evidence, reason about Git changes, and record approved engineering session notes. It does not replace KiCad, a formal ERC/DRC review, a datasheet review, or human engineering authority.
+A modular, evidence-driven hardware engineering assistant built for **Claude Code** and **KiCad 10**. It supports design exploration, calculations, component selection, schematic and PCB inspection, engineering reviews, and troubleshooting.
 
-Human engineers retain final authority over design decisions, review states, corrections, and releases. The repository's CAD source files remain the source of truth. The assistant proposes or reports findings; it does not silently edit design files.
+**Hardware-Copilot assists engineering decisions; it does not approve designs or replace the engineer, KiCad ERC/DRC, datasheets, simulation, or physical validation.**
 
-## Current status
+## What it does
 
-`sch-inspect v1.0` is **Stable (Scoped)**. This means the tested read-only schematic inspection path is usable for its documented evidence scope. It does not mean complete KiCad electrical-netlist parity or full-project design verification.
+Skills are organized by **engineering task**, not by a fixed chip, vendor, or circuit topology. Claude chooses relevant skills as needed rather than loading all of them for every request.
 
-The repository is intended to remain small and file-based. There are no installers, automatic setup scripts, migration tools, or generated release manifests.
+| Skill | Purpose | Status |
+| --- | --- | --- |
+| `design-assist` | Requirements, circuit architecture, alternatives, and trade-offs | Initial use tested |
+| `eng-calc` | Calculations, assumptions, margins, and worst-case analysis | Initial use tested |
+| `component-select` | Find and compare parts by engineering fit | Initial use tested |
+| `stock-select` | Check sourcing via DigiKey, Mouser, LCSC, and JLCPCB Parts Library | Initial use tested |
+| `component-check` | Verify MPN, datasheet, symbol, package, footprint, and pin mapping | Initial use tested; exact suffix/compliance may remain unverified |
+| `sch-inspect` | Targeted read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)** |
+| `pcb-inspect` | Targeted read-only queries of saved KiCad boards | **v1.0 Stable (Scoped)** |
+| `sch-review` | Evidence-based schematic risk assessment | Initial real-project use tested |
+| `pcb-review` | Evidence-based PCB layout risk assessment | Initial real-project use tested |
+| `debug-assist` | Troubleshooting hypotheses and targeted measurement plans | Initial use tested |
+| `git-workflow` | Git status, commit, and PR workflow under explicit approval | Available |
+| `session-log` | Optional engineering decision notes, invoked explicitly | Available |
+
+An inspection skill **extracts evidence**; a review skill **interprets evidence**. Inspection outputs alone are not a declaration that a design is correct.
 
 ## Repository layout
 
 ```text
 Hardware-Copilot/
+├── CLAUDE.md
+├── README.md
 ├── .claude/
-│   ├── rules/                 Shared engineering and Git rules
-│   └── skills/                Claude Code skills
+│   ├── settings.json
+│   ├── rules/
+│   └── skills/
+│       ├── sch-inspect/
+│       │   ├── SKILL.md
+│       │   ├── scripts/query_sch.py
+│       │   └── tests/
+│       ├── pcb-inspect/
+│       │   ├── SKILL.md
+│       │   ├── scripts/query_pcb.py
+│       │   └── tests/
+│       └── ...other task-oriented skills...
 ├── .github/
-│   ├── pull_request_template.md
-│   └── workflows/             Existing test workflow
-├── hardware/                  Local KiCad test projects; gitignored
-├── CLAUDE.md                  Concise repository operating guidance
-└── README.md                  This document
+│   └── workflows/
+└── hardware/               # Local KiCad test projects; gitignored
 ```
 
-The `hardware/` directory is reserved for local KiCad test projects and is ignored by Git. Do not use it as a required runtime dependency for synthetic regression tests.
+## Use in a KiCad project — manual copy only
 
-## Skills
+1. Copy the desired `.claude/skills/` folders into the target project's `.claude/skills/` directory. Copy applicable `.claude/rules/` and review the permissions before use.
+2. Open that project in Claude Code and ask an engineering question in natural language. You can also invoke a specific skill when you want a particular workflow.
+3. Keep schematic/PCB project files under human control. Review every proposed design change yourself.
 
-The five existing skills are Claude Code instruction packages. Their status below describes the implementation present in this repository; a skill must not claim a parser or external integration that is not actually available.
+There is **no installer, auto-installation, migration tool, or automatic write-back**. No tool should modify KiCad design or library files as part of inspection or review. Git writes require explicit approval.
 
-| Skill | Current implementation status |
-|---|---|
-| `component-check` | Available as a read-only, evidence-based component and datasheet checking workflow. It covers identity, ratings, pinout, footprint, BOM, and substitutions, but has no dedicated component parser or automatic datasheet database. |
-| `git-workflow` | Available as a guarded Git/GitHub workflow for status, diff review, Conventional Commits, branch/PR preparation, and approval-aware writes. It does not authorize automatic commits, pushes, merges, or destructive history operations. |
-| `pcb-inspect` | Available as a read-only KiCad PCB inspection workflow for targeted components, nets, areas, and supported checks. No dedicated PCB parser, IPC connection, or local DRC runner is bundled; unsupported evidence is reported as `NOT_VERIFIED`. |
-| `sch-inspect` | Available as `v1.0 Stable (Scoped)` with the tested `query_sch.py` reader, synthetic regressions, and opt-in project-specific golden tests. Its commands and evidence boundaries are documented below. |
-| `session-log` | Available only through explicit `/session-log` invocation. It prepares a concise entry and requires explicit approval before creating or appending `ENGINEERING_LOG.md`; it never runs automatically. |
+Example requests:
 
-Read the relevant skill document before using a skill. Shared policy is in `.claude/rules/`; the skill documents are the detailed source for scope, evidence, safety, and output rules.
+- “Compare architecture options for a 3.3 V battery-powered design before selecting an IC.”
+- “Find two alternative ADCs with suitable ratings, then check stock at Mouser and DigiKey.”
+- “Inspect U103 pin 8 in the saved schematic, then review possible gate-driver risks.”
+- “Review decoupling placement and gate-routing risks on the saved PCB; state what still needs DRC or visual inspection.”
+- “Help isolate the cause of startup oscillation and recommend the next safe measurement.”
 
-## `sch-inspect v1.0` CLI
+## Inspection commands
 
-The local reader is:
+The inspection parsers use Python's standard library and produce bounded JSON output. See each skill's `SKILL.md` and script `--help` for its **current CLI syntax and options**.
 
-```text
-.claude/skills/sch-inspect/scripts/query_sch.py
-```
+- **Schematic:** `summary`, `component`, `sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `instances`, `project-net`.
+- **PCB:** `summary`, `footprint`, `pads`, `net`, `tracks`, `vias`, `nearby`, `pad-distance`.
 
-Run it with an available Python 3 interpreter and an explicit root schematic:
-
-```text
-python .claude/skills/sch-inspect/scripts/query_sch.py <command> [target] --project <root.kicad_sch>
-```
-
-It provides nine commands:
-
-| Command | Purpose |
-|---|---|
-| `summary` | Summarize discovered schematic sheets and component counts. |
-| `component <ref>` | Locate a component and report its properties. |
-| `sheet <name>` | Locate a hierarchical sheet by name or file. |
-| `pins <ref>` | Inspect pins and local wire/label geometry. |
-| `local-net <ref>` | Trace sheet-local wires, labels, junctions, and power symbols. |
-| `hier-net <ref>` | Trace supported parent/child hierarchical interfaces. |
-| `connected-pins <ref>` | Discover supported connected component and sheet pins. |
-| `instances` | Inspect hierarchical sheet instances and reused sheet files. |
-| `project-net <ref> --pin <number>` | Produce conservative project-level connectivity evidence. |
-
-Successful commands return bounded JSON. Results can be truncated, and the response exposes missing sheets, warnings, limitations, and verification state. Invalid input, unreadable files, traversal failures, ambiguous targets, unsupported geometry, or incomplete evidence must not be converted into a positive engineering claim.
-
-### Explicit `NOT_VERIFIED` limitations
-
-- `project-net` is connectivity evidence, not verified KiCad netlist parity; its `project_net_verified` field remains false.
-- Local geometry and matching labels do not establish complete electrical correctness.
-- Complex symbol inheritance, buses, hidden connectivity, ambiguous multi-unit instances, and unsupported transforms may remain unresolved.
-- Global labels and power symbols are followed only where the reader supports their semantics; repeated local labels are not automatically global.
-- A truncated, empty, ambiguous, or unresolved result is not proof that a connection is absent.
-- ERC is a separate optional verification activity. ERC success does not establish circuit intent or overall correctness.
-- Parser errors emit `verification: NOT_VERIFIED`; the assistant must report the limitation instead of guessing.
+Queries reflect **saved** `.kicad_sch` / `.kicad_pcb` files, not unsaved edits in the KiCad editor. Shared net assignments, pad-center distances, and track/via geometry do not prove copper continuity, electrical clearance, or physical correctness. Unsupported and ambiguous evidence must be reported as `NOT_VERIFIED` rather than inferred.
 
 ## Tests and CI
 
-Tests are split so synthetic coverage does not depend on a real KiCad project.
+Run synthetic regression tests from the repository root:
 
-### Synthetic regression tests
-
-The synthetic suite creates temporary `.kicad_sch` fixtures and tests the reader without `hardware/` or an external project. It includes structural, hierarchy, power-symbol, PWR_FLAG isolation, bus false-merge prevention, malformed-input, and truncation regressions.
-
-```text
-python .claude/skills/sch-inspect/tests/run_tests.py --pattern test_query_sch.py --label synthetic
+```sh
+python -m unittest discover -s .claude/skills/sch-inspect/tests -p 'test_query_sch.py' -v
+python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_pcb.py' -v
 ```
 
-### Project-specific golden tests
+Project-specific **golden tests** use real KiCad designs stored outside version control under `hardware/`. They are opt-in: without a configured project, tests should clearly **SKIP**, not silently claim validation; an explicitly invalid project path should **FAIL**. Follow the corresponding test module's documented environment variable and command. For schematic golden tests, use `KICAD_GOLDEN_PROJECT` with the root `.kicad_sch` file.
 
-Golden tests are opt-in and use the environment variable `KICAD_GOLDEN_PROJECT` to identify an explicit root `.kicad_sch` file. The tests are read-only and hash discovered schematic files before and after execution.
+GitHub Actions runs the repository's configured checks; verify the individual job results and whether any golden cases were actually executed or skipped before interpreting a green workflow as real-project validation.
 
-- Variable absent or empty: tests report `SKIP`, not `PASS`.
-- Variable configured but missing, invalid, or not a schematic file: tests report `FAIL`.
-- Variable configured with a valid project: project-specific assertions run, including U103 pin 8 to R506 pin 1 connectivity and power-net isolation.
+Reported validation at the current scoped baselines:
 
-```text
-python .claude/skills/sch-inspect/tests/run_tests.py --pattern test_query_sch_golden.py --label golden
-```
+| Suite | Last reported result |
+| --- | --- |
+| Schematic synthetic regression | 21/21 passed |
+| PCB synthetic regression | 31/31 passed |
+| PCB configured real-project golden | 2/2 passed |
+| Real-project schematic golden | 5/5 passed in earlier validation |
 
-The existing GitHub Actions workflow runs synthetic and golden suites as independent jobs and prints separate `PASS`, `FAIL`, `SKIP`, and `NOT_VERIFIED` counts.
+These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC parity. Native macOS execution and OS-enforced sandbox read-only protection have not been independently established.
 
-## Manual-copy deployment
+## Engineering boundaries
 
-Deployment is intentionally manual. Copy the required repository files into the target project and run Claude Code from that project root. Preserve the relative `.claude/` layout and include `CLAUDE.md` when using the repository guidance. Copy `.github/` only when the target repository also wants the supplied pull-request template and workflow.
+- Verify part specifications, lifecycle, pricing, and availability using current, attributable sources; distinguish observed facts from assumptions.
+- Choose the smallest relevant query or skill; avoid sending whole CAD designs or large netlists to the model by default.
+- Keep conclusions traceable: **confirmed finding**, **potential risk**, or **`NOT_VERIFIED`**.
+- For PCB analysis, filled-zone state, complete copper connectivity, clearance, return-path quality, SI/PI, and thermal behavior are outside the inspection parser's verified scope.
+- For schematic analysis, complex bus expansion, hidden connections, inherited symbols, and ambiguous repeated instances may remain unresolved.
+- Existing KiCad ERC/DRC results, visual inspection, simulations, measurements, and manufacturer data are separate evidence sources—not implied passes.
 
-There is no installer, automatic setup, migration utility, or legacy-project conversion path. A target project must provide its own KiCad files and any required external evidence. Keep local test projects under the ignored `hardware/` directory when they are needed for manual validation.
+See `CLAUDE.md`, `.claude/rules/`, and each skill's `SKILL.md` for operating guidance. Hardware-Copilot is independent of any formal hardware review gate or approval framework.
 
-## Portability
+## Development principles
 
-The repository uses relative paths, native KiCad files, Python standard-library tooling, and shell-free test fixtures so the documented workflow can be used on Windows and macOS. Windows execution has been validated in this checkout. A macOS runtime has not been validated here; macOS users should verify their available Python 3 command and local Claude Code environment before relying on a run.
+**Read-only inspection · Explicit human approval · Minimal context · Portable standard-library queries · Manual deployment · Tests before confirmed bug fixes**
 
-## Boundaries
-
-- Do not modify `.kicad_sch`, `.kicad_pcb`, `.kicad_pro`, library, or other design files through this assistant.
-- Do not infer PASS from counts, absent findings, or a successful parser invocation alone.
-- Keep evidence scope, assumptions, unresolved items, and human follow-up explicit.
-- Consult `CLAUDE.md`, `.claude/rules/`, and the relevant skill documentation for operating details.
+No Git tag, checksum/SHA manifest, installer, or generated release artifact is required to use this repository.
