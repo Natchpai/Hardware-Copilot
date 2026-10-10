@@ -1,0 +1,39 @@
+name: sch-inspect tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      kicad_golden_project:
+        description: "Optional root .kicad_sch path for project-specific golden tests"
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic:
+    name: Synthetic regression tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run self-contained synthetic tests
+        run: >-
+          python .claude/skills/sch-inspect/tests/run_tests.py
+          --pattern test_query_sch.py --label synthetic
+
+  golden:
+    name: Project-specific golden tests
+    runs-on: ubuntu-latest
+    env:
+      KICAD_GOLDEN_PROJECT: ${{ inputs.kicad_golden_project || vars.KICAD_GOLDEN_PROJECT }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run opt-in golden tests
+        run: >-
+          python .claude/skills/sch-inspect/tests/run_tests.py
+          --pattern test_query_sch_golden.py --label golden
