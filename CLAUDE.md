@@ -1,18 +1,39 @@
-# CLAUDE.md
+# Hardware Design Project — Engineering Instructions
 
-Hardware-Copilot is a modular, evidence-driven engineering assistant for hardware design work. Its capabilities include design exploration, engineering calculations, component selection and stock sourcing, schematic and PCB inspection and review, and debugging. It assists engineering decisions; it does not approve designs or replace human judgment, datasheets, simulation, ERC/DRC, or physical validation.
+This repository contains a hardware design project. Work may include circuit architecture, electrical calculations, component selection and sourcing, schematic and PCB development, design verification, documentation, and troubleshooting.
 
-## Operating guidance
+Support the engineering task requested by the user without assuming a fixed design topology, component family, or development workflow. The human engineer retains final design and approval authority.
 
-- Treat native design files, manufacturer documentation, sourcing data, and repository records as authoritative for their respective facts.
-- Use targeted, deterministic evidence and distinguish confirmed findings, assumptions, and estimates. Report insufficient or ambiguous evidence as `NOT_VERIFIED`.
-- Human engineers retain final design and approval authority. Findings and recommendations are advisory; formal review-state changes require human decision.
-- Select only the relevant capabilities and read their documented skill instructions on demand. Do not infer behavior or coverage beyond those instructions.
-- Preserve project and workflow boundaries, and propose design changes for human review. Follow the repository rules before making any file or Git change.
+## Engineering Principles
 
-## Repository instructions
+- Establish requirements, operating conditions, constraints, and relevant interfaces before proposing a solution.
+- Use quantitative reasoning, appropriate models, worst-case conditions, and design margins where relevant.
+- Prefer manufacturer datasheets, official technical references, and actual project evidence over unsupported assumptions.
+- Explain meaningful design tradeoffs, risks, and uncertainties; avoid unnecessary complexity.
+- Do not assume project-specific tools, scripts, or skills exist unless they are available.
 
-- Read `.claude/rules/engineering.md` for engineering boundaries and evidence policy.
-- Read `.claude/rules/git-workflow.md` for Git/GitHub approval and change-control rules.
-- Read only the relevant `.claude/skills/*/SKILL.md` files and follow their documented interfaces and limitations.
-- Do not create auto-installers, migration tools, new workflows, tags, commits, pushes, or unnecessary generated artifacts unless explicitly requested and authorized.
+## Evidence and Verification
+
+- Treat native KiCad files as authoritative for saved schematic and PCB data; distinguish saved files from unsaved editor changes.
+- Inspect only the files and sections needed for the current task.
+- Separate verified observations, calculations, assumptions, potential risks, and recommendations.
+- State units, assumptions, operating limits, and margins when material to the result.
+- Use `NOT_VERIFIED` when evidence is missing or a claim cannot be established.
+- Do not equate net assignments or geometric proximity with verified copper continuity, and do not present analysis as a substitute for ERC, DRC, measurements, or human review.
+
+## Design and Repository Safety
+
+- Treat schematic, PCB, library, and design approval files as read-only unless the user explicitly authorizes changes.
+- Never silently alter connectivity, component values, footprints, net names, layout geometry, or approval status.
+- Obtain approval before Git commits, pushes, branch changes, releases, or other consequential repository changes.
+- Respect existing project structure and conventions; avoid unnecessary generated files, installers, migrations, or restructuring.
+
+## Working Approach
+
+1. Clarify the current engineering objective and constraints from available context.
+2. Gather focused evidence using tools actually available in the environment.
+3. Analyze and verify critical assumptions; calculate or compare options as needed.
+4. Present findings, limitations, and actionable recommendations.
+5. Make persistent changes only with authorization and verify their effects.
+
+Keep routine answers concise and expand technical detail for critical decisions. Follow applicable project rules and consult existing project documentation when relevant.
