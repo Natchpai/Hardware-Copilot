@@ -4,6 +4,24 @@ A modular, evidence-driven hardware engineering assistant built for **Claude Cod
 
 **Hardware-Copilot assists engineering decisions; it does not approve designs or replace the engineer, KiCad ERC/DRC, datasheets, simulation, or physical validation.**
 
+## v1.1.0 candidate
+
+This candidate adds lightweight, human-controlled project documentation and
+workflow support:
+
+- `project-readme` creates or updates project-level Markdown from confirmed
+  information while preserving existing custom content.
+- `phase-record` records only an explicitly human-declared phase; it neither
+  validates readiness nor initiates Git actions.
+- `project-changelog` maintains a human-readable changelog from confirmed
+  changes and explicitly established releases.
+- Git workflow guidance is portable and requires explicit approval for every
+  repository or remote mutation.
+
+`DRAFT`, `PRELIMINARY`, `CHECK`, and `RELEASE` are human-declared project
+context. They are not automatic gates, evidence of design approval, or
+authorization to create commits, tags, or GitHub releases.
+
 ## What it does
 
 Skills are organized by **engineering task**, not by a fixed chip, vendor, or circuit topology. Claude chooses relevant skills as needed rather than loading all of them for every request.
@@ -21,6 +39,9 @@ Skills are organized by **engineering task**, not by a fixed chip, vendor, or ci
 | `pcb-review` | Evidence-based PCB layout risk assessment | Initial real-project use tested |
 | `debug-assist` | Troubleshooting hypotheses and targeted measurement plans | Initial use tested |
 | `git-workflow` | Git status, commit, and PR workflow under explicit approval | Available |
+| `project-readme` | Create or maintain project-level Markdown using confirmed information | Available |
+| `phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
+| `project-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
 | `session-log` | Optional engineering decision notes, invoked explicitly | Available |
 
 An inspection skill **extracts evidence**; a review skill **interprets evidence**. Inspection outputs alone are not a declaration that a design is correct.
