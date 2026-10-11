@@ -14,12 +14,10 @@ argument-hint: "status | commit [scope] | pr [base]"
 
 # Git Workflow
 
-Manage Git changes without modifying engineering design content. The policy
-and approval boundary are defined in `.claude/rules/git-workflow.md`; follow
-that file rather than restating it here.
+Manage Git changes without modifying engineering design content.
 
-## Source of policy
-- Read `.claude/rules/git-workflow.md` and `.claude/settings.json` first.
+## Local safeguards
+- Read `.claude/settings.json` first.
 - Treat `.claude/hooks/protect_kicad.py` as defense-in-depth for native KiCad
   and `Library/` writes. A Git operation does not grant design-write access;
   inspecting or staging an existing design change is separate from editing it.
@@ -27,11 +25,21 @@ that file rather than restating it here.
   and checkboxes.
 - Tool permissions and branch protection still apply; this skill grants none.
 
+## Approval boundary
+- Read-only inspection may proceed without approval.
+- Obtain explicit, action-specific user approval before staging, committing,
+  changing branches, merging, rebasing, resetting, restoring, cleaning,
+  creating or deleting tags/releases, pushing, or changing a pull request.
+- Do not infer approval from an earlier request, a proposed message, or a tool
+  permission prompt. Never merge a pull request automatically.
+- Do not force-push, rewrite history, delete branches, or use destructive
+  reset/clean operations unless explicitly authorized and permitted by tooling.
+
 ## Dispatch
 Interpret `$ARGUMENTS` as one of:
 - `status` — inspect only; never change repository state.
 - `commit [scope]` — propose and, after explicit approval, create focused commit(s).
-- `pr [base]` — propose and, after separate approval, push/open a Draft PR.
+- `pr [base]` — propose and, after separate approval, push/open a PR.
 - If omitted or unsupported, show these choices without making changes.
 - Tag or release requests use the same proposal-then-explicit-approval gate;
   do not create or publish them as part of a commit or PR workflow.
@@ -75,8 +83,9 @@ Interpret `$ARGUMENTS` as one of:
 3. Prepare the PR title/body from the repository template and mark only
    supported checks; explain skipped or inconclusive checks as `NOT_VERIFIED`.
 4. Present base/head, required push, title/body, impact, risks, and validation.
-5. After separate approval, push only as approved and create a Draft PR only
-   when the GitHub capability is available and authenticated.
+5. After separate approval, push only as approved and create a PR only when
+   the GitHub capability is available and authenticated. Follow any applicable
+   project rule for its draft or ready-for-review state.
 6. Report a PR URL only when the tool returns one. Never merge automatically.
 
 ## Output
