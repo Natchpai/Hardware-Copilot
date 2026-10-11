@@ -1,8 +1,9 @@
 # Hardware Workflow
 
 This rule defines a lightweight phase language for KiCad hardware projects.
-It does not authorize design changes, documentation generation, verification,
-or release actions. Human engineers decide and declare every phase transition.
+It does not authorize design changes, engineering release-document generation,
+verification, or release actions. Human engineers decide and declare every
+phase transition.
 
 ## Phases
 
@@ -36,7 +37,11 @@ tag or GitHub release remains a separate, explicitly approved Git action.
   assets, or manufacturing deliverables.
 
 ## Documentation boundary
-- Documentation generation and visual/content review are human-only actions.
+- Engineering release-document generation and visual/content review are
+  human-only actions.
+- Claude may create or update project-level Markdown documentation only when
+  explicitly requested. Markdown documentation does not declare or advance a
+  project phase unless a human explicitly states that phase.
 - Claude must not generate, open, read, parse, or assess PDF documents.
 - When explicitly asked, Claude may check only the expected document file
   names and paths, and must report that result as `EXISTS`, `MISSING`, or
