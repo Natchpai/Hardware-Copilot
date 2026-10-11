@@ -18,7 +18,7 @@ Maintain the repository-root `CHANGELOG.md` as a concise record of **notable, co
 
 1. Write entries for meaningful changes visible to project users or future maintainers: circuit/PCB/interface changes, component substitutions, corrected design defects, manufacturing-impacting changes, released capabilities, and confirmed verification milestones.
 2. Distinguish **design intent**, **implemented changes**, and **confirmed test/verification results**. Never infer measurements, ERC/DRC pass, functional correctness, production readiness, or approval from file presence or commits.
-3. Group changes under `## [Unreleased]` by default. Use versioned sections (`## [x.y.z] - YYYY-MM-DD`) only when a version and release date are explicitly established by the human or verifiably exist in repository history.
+3. Group changes under `## [Unreleased]` by default. Use versioned sections (`## [x.y.z] - YYYY-MM-DD`) only when the human explicitly establishes the version and release date. Git history may support source provenance, but does not establish a hardware release.
 4. Use relevant Keep a Changelog categories: `Added`, `Changed`, `Deprecated`, `Removed`, `Fixed`, `Security`. An optional `Verification` category may record **explicitly confirmed** checks with their scope/baseline; it is not an approval signal.
 5. Prefer short, precise entries with identifiers where useful (reference designators, interfaces, subsystem names), without dumping complete netlists or calculations.
 6. If evidence is insufficient, ask for the missing fact or omit the unverified entry; do not fabricate. Label significant uncertainty `NOT_VERIFIED` if an explicit draft is needed.
