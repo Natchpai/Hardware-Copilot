@@ -37,6 +37,32 @@
 
 *The current phase is declared by the project owner. It does not independently establish design correctness or approval.*
 
+### Project Workflow Diagram
+
+```mermaid
+flowchart LR
+    A["DRAFT<br/>Schematic Design"]
+    B["PRELIMINARY<br/>Schematic Finalization<br/>PCB Design"]
+    C["CHECK<br/>Design Documentation<br/>ERC / DRC<br/>Human Review"]
+    D["RELEASE<br/>Approved Design<br/>Baseline Publication"]
+
+    A --> B
+    B --> C
+    C --> D
+
+    classDef active fill:#334155,color:#ffffff,stroke:#64748b
+    classDef review fill:#b45309,color:#ffffff,stroke:#92400e
+    classDef released fill:#15803d,color:#ffffff,stroke:#166534
+
+    class A,B active
+    class C review
+    class D released
+```
+
+Phase transitions require an explicit human declaration. The diagram describes
+typical phase activities only; it does not highlight the current phase,
+automate transitions, enforce gates, or authorize Git tags or GitHub releases.
+
 ## Hardware Design
 
 ### Architecture

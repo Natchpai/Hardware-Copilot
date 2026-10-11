@@ -30,6 +30,9 @@ user. This skill is independent and does not determine engineering readiness.
    Specifications, Hardware Architecture, Project Status, Repository Structure,
    Design Notes, and Documentation.
 4. Omit unknown sections rather than filling them with assumptions.
+5. Include `Current Phase` only when a human engineer explicitly declares one.
+   Otherwise, remove the `Current Phase` placeholder line entirely; do not
+   substitute a default value.
 
 ## Update
 1. Read the existing README before proposing an update.
@@ -38,6 +41,8 @@ user. This skill is independent and does not determine engineering readiness.
 3. Make the smallest requested edit. Do not remove substantial content without
    explicit review and authorization.
 4. Include a project phase only when the human explicitly declares one.
+5. Preserve an existing static Mermaid workflow diagram unless the user
+   explicitly requests a diagram change.
 
 ## Output
 - State which README sections were created or changed and which facts remain
@@ -50,7 +55,12 @@ user. This skill is independent and does not determine engineering readiness.
 - Adapt the template to the actual hardware project and available evidence.
 - Include only relevant sections supported by known project information.
 - Remove unused placeholders and optional sections.
+- If no human phase declaration is available, remove the `Current Phase`
+  placeholder line entirely. Do not substitute `DRAFT`, `Not declared`,
+  `Unknown`, or an inferred value.
 - Preserve existing information and custom sections when updating a README.
+- Preserve the template's static Mermaid workflow diagram; it is not a
+  current-phase indicator.
 - Do not infer or change the project phase. Record only a human-declared phase.
 - Do not open, parse, or assess PDF content.
 - Do not modify the template file during normal README generation.
