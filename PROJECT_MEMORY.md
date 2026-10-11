@@ -52,6 +52,7 @@ Hardware-Copilot/
 │   ├── rules/
 │   │   ├── engineering.md
 │   │   └── git-workflow.md
+│   ├── hooks/
 │   └── skills/
 │       ├── design-assist/SKILL.md
 │       ├── eng-calc/SKILL.md
