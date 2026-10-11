@@ -14,53 +14,72 @@ argument-hint: "status | commit [scope] | pr [base]"
 
 # Git Workflow
 
-Manage Git changes without modifying engineering design content.
+Manage Git changes without modifying engineering design content. The policy
+and approval boundary are defined in `.claude/rules/git-workflow.md`; follow
+that file rather than restating it here.
 
 ## Source of policy
-- Follow `.claude/rules/git-workflow.md` and `.claude/settings.json`.
-- For PRs, read `.github/pull_request_template.md` and preserve its sections and checkboxes.
-- Respect repository branch protection and tool permissions. This skill does not grant additional permissions.
+- Read `.claude/rules/git-workflow.md` and `.claude/settings.json` first.
+- Treat `.claude/hooks/protect_kicad.py` as defense-in-depth for native KiCad
+  and `Library/` writes. A Git operation does not grant design-write access;
+  inspecting or staging an existing design change is separate from editing it.
+- For PRs, read `.github/pull_request_template.md` and preserve its sections
+  and checkboxes.
+- Tool permissions and branch protection still apply; this skill grants none.
 
 ## Dispatch
 Interpret `$ARGUMENTS` as one of:
 - `status` — inspect only; never change repository state.
-- `commit [scope]` — propose and, after approval, create focused commit(s).
-- `pr [base]` — propose and, after approval, push/open a draft PR.
+- `commit [scope]` — propose and, after explicit approval, create focused commit(s).
+- `pr [base]` — propose and, after separate approval, push/open a Draft PR.
 - If omitted or unsupported, show these choices without making changes.
+- Tag or release requests use the same proposal-then-explicit-approval gate;
+  do not create or publish them as part of a commit or PR workflow.
 
 ## Shared inspection
-1. Check repository root, current branch, working-tree status, and staged/unstaged/untracked changes.
-2. Inspect only diffs and files relevant to the requested operation; check for binary KiCad changes with file lists and metadata rather than claiming textual diff coverage.
-3. Detect unrelated or potentially sensitive files. Do not stage secrets, caches, generated exports, or unrelated changes.
-4. Never modify KiCad design/library files, discard user changes, or alter review/approval state.
-5. Report missing evidence as `NOT_VERIFIED`; do not invent ERC/DRC/test results.
+1. Establish repository root, current branch, upstream, and working-tree state.
+2. Separate staged, unstaged, and untracked changes; inspect only relevant
+   diffs and files.
+3. For binary KiCad files, report paths and metadata rather than claiming a
+   textual diff. Detect secrets, caches, generated exports, and unrelated files.
+4. Preserve user changes and review state. Never edit, discard, or rewrite
+   KiCad design/library files during Git work.
+5. Report unavailable evidence as `NOT_VERIFIED`; do not invent ERC, DRC, or
+   test results. If inspection itself fails, report the failure and do not
+   mutate repository state.
 
 ## status
-- Report branch, upstream if available, clean/dirty state, and concise logical change groups.
-- Distinguish staged, unstaged, and untracked files.
-- Suggest a next commit or branch name only when useful. Perform no writes.
+- Report branch, upstream when available, clean/dirty state, and concise
+  logical change groups.
+- Distinguish staged, unstaged, and untracked paths.
+- Suggest a commit or branch name only when useful. Perform no writes.
 
 ## commit
-1. Inspect staged and unstaged diffs, including any pre-existing staged content.
-2. Group changes by purpose; use Conventional Commits 1.0.0 and repository scopes.
-3. If a new branch is needed, suggest `feat/`, `fix/`, `docs/`, or `chore/` plus a short descriptive name. Do not create/switch branches silently.
-4. Present proposed branch action (if any), exact file paths to stage, commit subject, optional body, and any unverified checks.
-5. Obtain explicit user approval before branch changes, staging, or committing; comply with tool permission prompts as well.
-6. Stage only approved paths. Recheck the staged diff before committing, and stop if it differs materially from the approved scope.
-7. Commit only approved changes. Report the resulting commit hash and any remaining changes. Do not push unless separately requested and approved.
+1. Inspect staged and unstaged diffs, including pre-existing staged content.
+2. Group changes by purpose and prepare a Conventional Commit message.
+3. If a branch change is useful, propose its exact action and a short
+   `feat/`, `fix/`, `docs/`, or `chore/` name; do not create or switch it.
+4. Present the exact paths, proposed branch action, commit subject/body, and
+   unverified checks. Stop for explicit approval before branch changes,
+   staging, or committing.
+5. After approval, stage only approved paths, recheck the staged diff, and
+   stop if it differs materially from the approved scope.
+6. Commit only the approved change. Report the resulting hash and remaining
+   changes; do not push without separate approval.
 
 ## pr
-1. Determine the intended base branch (use the repository default branch unless the user specifies another); inspect the current branch, upstream, and ahead/behind state.
-2. Compare the complete proposed PR range against the base, including all commits and changed files; distinguish committed work from uncommitted changes.
-3. Propose a Conventional Commit-style PR title and a concise body using the repository PR template.
-4. Check only boxes supported by the actual diff or confirmed validation. Explain not-run or inconclusive checks; never infer PASS from an unchecked item.
-5. Display base/head, any push needed, PR title/body, impact, risks, and validation status for approval.
-6. Obtain explicit approval before push and before PR creation. Do not push directly to a protected branch.
-7. Create a **Draft PR** using GitHub tooling only if available and authenticated; otherwise provide the ready-to-paste title and body. Never merge.
-8. Report the PR URL only if returned by GitHub tooling. Do not claim PR creation or push succeeded without confirmation.
+1. Determine the base branch and inspect current branch, upstream, and
+   ahead/behind state.
+2. Compare the complete proposed range with the base, including all commits
+   and changed files; distinguish committed work from local changes.
+3. Prepare the PR title/body from the repository template and mark only
+   supported checks; explain skipped or inconclusive checks as `NOT_VERIFIED`.
+4. Present base/head, required push, title/body, impact, risks, and validation.
+5. After separate approval, push only as approved and create a Draft PR only
+   when the GitHub capability is available and authenticated.
+6. Report a PR URL only when the tool returns one. Never merge automatically.
 
-## Safety
-- No force-push, destructive reset/clean, automatic merge, branch deletion, or history rewriting.
-- Do not bypass permission prompts or claim approvals from earlier unrelated requests.
-- Do not create additional logs, reports, or temporary repository files unless necessary and approved.
-- Keep user-facing summaries concise, with enough evidence for review.
+## Output
+- Keep summaries concise, factual, and actionable.
+- Do not create extra logs, reports, or temporary repository files unless the
+  user explicitly requests them.
