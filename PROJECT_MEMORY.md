@@ -1,6 +1,6 @@
 # Hardware-Copilot — Project Memory & Roadmap
 
-> **Local continuity document** | Updated: 2026-10-10 | Status: **v1.0 — Stable (Scoped)**, based on user-reported validation and repository-level integration audit.
+> **Local continuity document** | Updated: 2026-10-11 | Status: **v1.1.0 candidate — pre-PR validation complete; PR/CI pending**.
 >
 > Purpose: carry architecture decisions, implemented scope, acceptance evidence, constraints, and future work into subsequent Claude Code/Codex sessions. This is a **human-readable memory file**, not an authoritative live repository inventory or a new review-state system.
 
@@ -52,6 +52,7 @@ Hardware-Copilot/
 │   ├── rules/
 │   │   ├── engineering.md
 │   │   └── git-workflow.md
+│   ├── hooks/
 │   └── skills/
 │       ├── design-assist/SKILL.md
 │       ├── eng-calc/SKILL.md
@@ -95,6 +96,9 @@ Hardware-Copilot/
 | `pcb-review` | PCB layout engineering review of placement, routing, returns, thermal/manufacturing risk using bounded evidence | Informal real-project test passed |
 | `debug-assist` | Lightweight symptoms → hypotheses → targeted safe measurements → revision of diagnosis; **SKILL.md only, no Python** | Informal test passed |
 | `git-workflow` | Git status/commit/PR guidance with human approval | Skill exists |
+| `project-readme` | Explicit project README creation or narrow update from confirmed information | v1.1.0 candidate |
+| `phase-record` | Explicit human-declared phase acknowledgement or in-place README phase update | v1.1.0 candidate |
+| `project-changelog` | Explicit, human-curated CHANGELOG maintenance | v1.1.0 candidate |
 | `session-log` | Optional, manual decision capture to `ENGINEERING_LOG.md`, only with approval | Skill exists |
 
 **Inspection is distinct from review.** Inspection retrieves structural facts; review combines evidence with engineering judgment and assigns confirmed defects, possible risks and `NOT_VERIFIED`. No automatic change of design/review state.
@@ -171,6 +175,28 @@ Real-project examples: `R313.1`–`R313.2` pad-center distance **1.65 mm**; net 
 - `debug-assist`: symptom-driven and safety-conscious; separate observed facts from hypotheses, propose discriminating measurements with proper references and safe probe methodology; do not create debug logs or scripts unless requested.
 
 ## 8. Tests, CI and release record
+
+### v1.1.0 pre-PR validation (2026-10-11)
+
+This candidate adds portable Git workflow guidance, a lightweight human-declared
+hardware phase vocabulary, and project README, phase-record, and changelog
+Skills. These additions do not create phase gates, automatic transitions,
+release-state records, PDF processing, or KiCad design writes.
+
+Fresh local validation on the candidate branch:
+
+| Check | Result |
+|---|---|
+| SCH synthetic regression | **21/21 PASS** |
+| PCB synthetic regression | **31/31 PASS** |
+| SCH golden without configured project | **SKIP 5** as designed |
+| PCB golden without configured board | **SKIP 2** as designed |
+| Rules/Skills integration audit | **PASS**: no rule-to-rule includes/links; Skills do not reference `.claude/rules/`; Git and phase approval boundaries align |
+| Documentation-skill contract checks | **PASS**: human-declared phase only, no inferred default, static Mermaid workflow, no release Git action |
+
+`v1.1.0` remains a candidate until the pull request is reviewed, merged, and
+its CI results are checked. A Git tag and GitHub Release remain separate,
+explicitly approved actions.
 
 Reported results by user and Codex (do not claim these were re-run in this document's creation):
 
