@@ -26,7 +26,7 @@
 
 ## Project Status
 
-**Current Phase:** `DRAFT`
+**Current Phase:** `[Human-declared phase, if available]`
 
 | Phase | Description |
 |---|---|

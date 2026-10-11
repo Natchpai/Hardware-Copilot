@@ -23,8 +23,10 @@ is project context, not evidence of verification, approval, or release.
 1. Accept a phase only when the human states one of the accepted values.
 2. If persistence is not explicitly requested, acknowledge the declaration in
    conversation only and make no file changes.
-3. If the human explicitly asks to update `README.md`, use an existing
-   `Project Status` section when present. Otherwise add one concise section:
+3. If the human explicitly asks to update `README.md`, update the declared
+   phase in an existing `Project Status` section. Recognize either
+   `**Current Phase:**` or `- Current Phase:` and replace that one record in
+   place. Otherwise add one concise section:
 
    ```markdown
    ## Project Status
@@ -33,9 +35,10 @@ is project context, not evidence of verification, approval, or release.
    - Declared By: Human Engineer
    ```
 
-4. Replace an existing phase record without duplicating status sections;
-   preserve unrelated README content.
-5. Add a date or note only when the user requests it and supplies it, or when
+4. When an existing `Project Status` section has no phase record, add one
+   `Current Phase` line in that section. Do not create a second status section.
+5. Preserve unrelated README content, including any established status format.
+6. Add a date or note only when the user requests it and supplies it, or when
    a reliable current date is available in the active session.
 
 ## Boundaries
