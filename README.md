@@ -9,11 +9,11 @@ A modular, evidence-driven hardware engineering assistant built for **Claude Cod
 This candidate adds lightweight, human-controlled project documentation and
 workflow support:
 
-- `project-readme` creates or updates project-level Markdown from confirmed
+- `hw-project-readme` creates or updates project-level Markdown from confirmed
   information while preserving existing custom content.
-- `phase-record` records only an explicitly human-declared phase; it neither
+- `hw-phase-record` records only an explicitly human-declared phase; it neither
   validates readiness nor initiates Git actions.
-- `project-changelog` maintains a human-readable changelog from confirmed
+- `hw-project-changelog` maintains a human-readable changelog from confirmed
   changes and explicitly established releases.
 - Git workflow guidance is portable and requires explicit approval for every
   repository or remote mutation.
@@ -39,10 +39,13 @@ Skills are organized by **engineering task**, not by a fixed chip, vendor, or ci
 | `pcb-review` | Evidence-based PCB layout risk assessment | Initial real-project use tested |
 | `debug-assist` | Troubleshooting hypotheses and targeted measurement plans | Initial use tested |
 | `git-workflow` | Git status, commit, and PR workflow under explicit approval | Available |
-| `project-readme` | Create or maintain project-level Markdown using confirmed information | Available |
-| `phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
-| `project-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
-| `session-log` | Optional engineering decision notes, invoked explicitly | Available |
+| `hw-project-readme` | Create or maintain project-level Markdown using confirmed information | Available |
+| `hw-phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
+| `hw-project-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
+| `hw-session-log` | Optional engineering decision notes, invoked explicitly | Available |
+| `hw-link-audit` | Read-only check of symbol, footprint, 3D model, and library-table links | Available; used on one real project |
+| `hw-footprint-sync` | Align footprint libraries, local 3D paths, and `fp-lib-table`; **edits protected files only with approval** | Available; used on one real project |
+| `hw-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and filters; **edits protected files only with approval** | Available; used on one real project |
 
 An inspection skill **extracts evidence**; a review skill **interprets evidence**. Inspection outputs alone are not a declaration that a design is correct.
 
@@ -56,6 +59,8 @@ Hardware-Copilot/
 │   ├── settings.json
 │   ├── rules/
 │   ├── hooks/
+│   │   ├── protect_kicad_v2.py   # PreToolUse guard for native KiCad files
+│   │   └── protect.json          # deny / ask / allow rules for the guard
 │   └── skills/
 │       ├── sch-inspect/
 │       │   ├── SKILL.md
@@ -73,11 +78,20 @@ Hardware-Copilot/
 
 ## Use in a KiCad project — manual copy only
 
-1. Copy the desired `.claude/skills/` folders into the target project's `.claude/skills/` directory. Copy applicable `.claude/rules/` and review the permissions before use.
-2. Open that project in Claude Code and ask an engineering question in natural language. You can also invoke a specific skill when you want a particular workflow.
-3. Keep schematic/PCB project files under human control. Review every proposed design change yourself.
+1. Copy what you need into the target project. Skills are independent, so take only the ones you want:
 
-There is **no installer, auto-installation, migration tool, or automatic write-back**. No tool should modify KiCad design or library files as part of inspection or review. Git writes require explicit approval.
+   | Copy | Purpose |
+   | --- | --- |
+   | `.claude/skills/<name>/` | The skills you want |
+   | `.claude/rules/` | Engineering and Git rules |
+   | `.claude/hooks/` (both files) + the `hooks` block of `.claude/settings.json` | File protection guard |
+   | `CLAUDE.md` | General project instructions; merge with any existing one |
+
+2. Review `.claude/settings.json` (permissions) and `.claude/hooks/protect.json` (protection rules). Adjust `protect.json` to change which files are denied, asked about, or allowed; no code change is needed. Keep the `permissions` lists in `settings.json` consistent with it.
+3. Open that project in Claude Code and ask an engineering question in natural language. You can also invoke a specific skill when you want a particular workflow.
+4. Keep schematic/PCB project files under human control. Review every proposed design change yourself.
+
+There is **no installer, auto-installation, migration tool, or automatic write-back**. Inspection and review skills never modify KiCad design or library files. Protected files can change only through an explicitly approved edit, such as the library sync skills; the guard asks for approval each time. Git writes require explicit approval.
 
 Example requests:
 

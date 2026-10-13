@@ -1,6 +1,6 @@
 # Hardware-Copilot — Project Memory & Roadmap
 
-> **Local continuity document** | Updated: 2026-10-11 | Status: **v1.1.0 candidate — pre-PR validation complete; PR/CI pending**.
+> **Local continuity document** | Updated: 2026-10-13 | Status: **v1.1.0 candidate — pre-PR validation complete; PR/CI pending**.
 >
 > Purpose: carry architecture decisions, implemented scope, acceptance evidence, constraints, and future work into subsequent Claude Code/Codex sessions. This is a **human-readable memory file**, not an authoritative live repository inventory or a new review-state system.
 
@@ -22,7 +22,7 @@ Human engineers retain final design and approval authority. The copilot provides
 
 ## 2. Non-negotiable implementation decisions
 
-1. **Read-only CAD:** Do not modify KiCad `.kicad_sch`, `.kicad_pcb`, libraries, project configuration, review/approval records, or hardware settings. Native saved CAD files are the data authority within their supported inspection scope.
+1. **Read-only CAD by default:** Claude does not modify KiCad `.kicad_sch`, `.kicad_pcb`, libraries, project configuration, review/approval records, or hardware settings. Inspection and review skills never modify them. Protected files may change only through an explicit, engineer-approved edit (for example via `hw-footprint-sync` / `hw-symbol-sync`): the `.claude/hooks/protect_kicad_v2.py` guard asks for approval each time, and `.kicad_pro`, `.kicad_wks`, `templates/` and `.wrl` are denied. Native saved CAD files are the data authority within their supported inspection scope.
 2. **Minimal context:** Use on-demand Skills, targeted native-file queries and bounded JSON outputs; avoid loading entire CAD files, PDFs/images or huge netlists into the model context by default.
 3. **Prefer native file queries:** Parser tools use portable Python standard library; no obligatory KiCad GUI, automatic export or external Python packages for routine queries.
 4. **Honest evidence boundaries:** Distinguish confirmed evidence, potential risks, assumptions, and `NOT_VERIFIED`. Neither net names nor geometry alone establish electrical connectivity or design correctness.
@@ -53,6 +53,8 @@ Hardware-Copilot/
 │   │   ├── engineering.md
 │   │   └── git-workflow.md
 │   ├── hooks/
+│   │   ├── protect_kicad_v2.py
+│   │   └── protect.json
 │   └── skills/
 │       ├── design-assist/SKILL.md
 │       ├── eng-calc/SKILL.md
@@ -72,7 +74,15 @@ Hardware-Copilot/
 │       ├── pcb-review/SKILL.md
 │       ├── debug-assist/SKILL.md
 │       ├── git-workflow/SKILL.md
-│       └── session-log/SKILL.md
+│       ├── hw-phase-record/SKILL.md
+│       ├── hw-project-readme/SKILL.md
+│       ├── hw-project-changelog/SKILL.md
+│       ├── hw-session-log/SKILL.md
+│       ├── hw-link-audit/
+│       │   ├── SKILL.md
+│       │   └── scripts/audit_links.py
+│       ├── hw-footprint-sync/SKILL.md
+│       └── hw-symbol-sync/SKILL.md
 └── hardware/                  # Local real KiCad projects; gitignored
     └── 2Phase_SynchBuck/      # Real-project validation example
 ```
@@ -96,10 +106,13 @@ Hardware-Copilot/
 | `pcb-review` | PCB layout engineering review of placement, routing, returns, thermal/manufacturing risk using bounded evidence | Informal real-project test passed |
 | `debug-assist` | Lightweight symptoms → hypotheses → targeted safe measurements → revision of diagnosis; **SKILL.md only, no Python** | Informal test passed |
 | `git-workflow` | Git status/commit/PR guidance with human approval | Skill exists |
-| `project-readme` | Explicit project README creation or narrow update from confirmed information | v1.1.0 candidate |
-| `phase-record` | Explicit human-declared phase acknowledgement or in-place README phase update | v1.1.0 candidate |
-| `project-changelog` | Explicit, human-curated CHANGELOG maintenance | v1.1.0 candidate |
-| `session-log` | Optional, manual decision capture to `ENGINEERING_LOG.md`, only with approval | Skill exists |
+| `hw-project-readme` | Explicit project README creation or narrow update from confirmed information | v1.1.0 candidate |
+| `hw-phase-record` | Explicit human-declared phase acknowledgement or in-place README phase update | v1.1.0 candidate |
+| `hw-project-changelog` | Explicit, human-curated CHANGELOG maintenance | v1.1.0 candidate |
+| `hw-session-log` | Optional, manual decision capture to `ENGINEERING_LOG.md`, only with approval | Skill exists |
+| `hw-link-audit` | Read-only audit of symbol → footprint → 3D model links and `fp-lib-table` / `sym-lib-table` vs folders, via stdlib `audit_links.py` | Skill exists; used on one real project |
+| `hw-footprint-sync` | Align footprint libraries, local 3D model paths and `fp-lib-table`; edits protected library files only with explicit approval | Skill exists; used on one real project |
+| `hw-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and `ki_fp_filters`; edits protected files only with explicit approval | Skill exists; used on one real project |
 
 **Inspection is distinct from review.** Inspection retrieves structural facts; review combines evidence with engineering judgment and assigns confirmed defects, possible risks and `NOT_VERIFIED`. No automatic change of design/review state.
 
@@ -303,6 +316,8 @@ The schematic golden suite uses an explicit `KICAD_GOLDEN_PROJECT` pointing to t
 | PCB actual filled copper/clearance/DRC/complete return paths | Intentional `NOT_VERIFIED` scope; use native tools and targeted human inspection |
 | Stock, lifecycle and lead time | Dynamic data; must be checked against current supplier/manufacturer sources when used |
 | Unsaved KiCad GUI state | Query scripts reflect saved on-disk files only |
+| `hw-link-audit`, `hw-footprint-sync`, `hw-symbol-sync` | No automated tests or CI; used on one real project only |
+| File-protection guard `protect_kicad_v2.py` | Checked only with offline test cases, not in a live Claude Code session; Bash/PowerShell analysis is best-effort token-based and cannot see runtime-built paths |
 | Exact most recent branch HEAD / post-documentation CI | Not available in this record; inspect GitHub/local repo |
 
 ## 12. Minimal handoff context for a new assistant session
