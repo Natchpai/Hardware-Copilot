@@ -28,10 +28,15 @@
       "Bash(gh pr create *)"
     ],
     "deny": [
+      "Read(**/*.pdf)",
       "Edit(**/*.kicad_pro)",
       "Edit(**/*.kicad_wks)",
       "Edit(**/templates/**)",
       "Edit(**/*.wrl)",
+      "Bash(git push origin main*)",
+      "Bash(git push origin master*)",
+      "Bash(git push * HEAD:main*)",
+      "Bash(git push * HEAD:master*)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
       "Bash(git reset --hard *)",
