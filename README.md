@@ -4,23 +4,14 @@ A modular, evidence-driven hardware engineering assistant built for **Claude Cod
 
 **Hardware-Copilot assists engineering decisions; it does not approve designs or replace the engineer, KiCad ERC/DRC, datasheets, simulation, or physical validation.**
 
-## v1.1.0 candidate
+## v1.3.0
 
-This candidate adds lightweight, human-controlled project documentation and
-workflow support:
+- Claude never reads PDF files. Datasheet content comes from values you give, official web pages, or the `notebooklm` skill (see `.claude/rules/engineering.md`).
+- Git and documentation skills are included: `git-workflow`, `hw-git-readme`, `hw-git-changelog`, `hw-git-session-log`, `hw-phase-record`.
+- `sch-inspect` and `pcb-inspect` are shorter; command details moved to `references/`.
+- Pushes to `main`/`master` and PDF reads are denied in `.claude/settings.json`.
 
-- `hw-git-readme` creates or updates project-level Markdown from confirmed
-  information while preserving existing custom content.
-- `hw-phase-record` records only an explicitly human-declared phase; it neither
-  validates readiness nor initiates Git actions.
-- `hw-git-changelog` maintains a human-readable changelog from confirmed
-  changes and explicitly established releases.
-- Git workflow guidance is portable and requires explicit approval for every
-  repository or remote mutation.
-
-`DRAFT`, `PRELIMINARY`, `CHECK`, and `RELEASE` are human-declared project
-context. They are not automatic gates, evidence of design approval, or
-authorization to create commits, tags, or GitHub releases.
+`DRAFT`, `PRELIMINARY`, `CHECK`, and `RELEASE` are human-declared project context. They are not gates, evidence of approval, or permission to commit, tag, or release.
 
 ## What it does
 
@@ -123,13 +114,13 @@ Project-specific **golden tests** use real KiCad designs stored outside version 
 
 GitHub Actions runs the repository's configured checks; verify the individual job results and whether any golden cases were actually executed or skipped before interpreting a green workflow as real-project validation.
 
-Reported validation at the current scoped baselines:
+Synthetic suites were re-run for v1.3.0; golden suites were not re-run.
 
 | Suite | Last reported result |
 | --- | --- |
 | Schematic synthetic regression | 21/21 passed |
 | PCB synthetic regression | 31/31 passed |
-| PCB configured real-project golden | 2/2 passed |
+| PCB configured real-project golden | 2/2 passed (earlier run) |
 | Real-project schematic golden | 5/5 passed in earlier validation |
 
 These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC parity. Native macOS execution and OS-enforced sandbox read-only protection have not been independently established.
