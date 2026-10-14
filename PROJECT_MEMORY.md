@@ -75,9 +75,9 @@ Hardware-Copilot/
 │       ├── debug-assist/SKILL.md
 │       ├── git-workflow/SKILL.md
 │       ├── hw-phase-record/SKILL.md
-│       ├── hw-project-readme/SKILL.md
-│       ├── hw-project-changelog/SKILL.md
-│       ├── hw-session-log/SKILL.md
+│       ├── hw-git-readme/SKILL.md
+│       ├── hw-git-changelog/SKILL.md
+│       ├── hw-git-session-log/SKILL.md
 │       ├── hw-link-audit/
 │       │   ├── SKILL.md
 │       │   └── scripts/audit_links.py
@@ -106,10 +106,10 @@ Hardware-Copilot/
 | `pcb-review` | PCB layout engineering review of placement, routing, returns, thermal/manufacturing risk using bounded evidence | Informal real-project test passed |
 | `debug-assist` | Lightweight symptoms → hypotheses → targeted safe measurements → revision of diagnosis; **SKILL.md only, no Python** | Informal test passed |
 | `git-workflow` | Git status/commit/PR guidance with human approval | Skill exists |
-| `hw-project-readme` | Explicit project README creation or narrow update from confirmed information | v1.1.0 candidate |
+| `hw-git-readme` | Explicit project README creation or narrow update from confirmed information | v1.1.0 candidate |
 | `hw-phase-record` | Explicit human-declared phase acknowledgement or in-place README phase update | v1.1.0 candidate |
-| `hw-project-changelog` | Explicit, human-curated CHANGELOG maintenance | v1.1.0 candidate |
-| `hw-session-log` | Optional, manual decision capture to `ENGINEERING_LOG.md`, only with approval | Skill exists |
+| `hw-git-changelog` | Explicit, human-curated CHANGELOG maintenance | v1.1.0 candidate |
+| `hw-git-session-log` | Optional, manual decision capture to `ENGINEERING_LOG.md`, only with approval | Skill exists |
 | `hw-link-audit` | Read-only audit of symbol → footprint → 3D model links and `fp-lib-table` / `sym-lib-table` vs folders, via stdlib `audit_links.py` | Skill exists; used on one real project |
 | `hw-footprint-sync` | Align footprint libraries, local 3D model paths and `fp-lib-table`; edits protected library files only with explicit approval | Skill exists; used on one real project |
 | `hw-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and `ki_fp_filters`; edits protected files only with explicit approval | Skill exists; used on one real project |

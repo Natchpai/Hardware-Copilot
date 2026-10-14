@@ -9,11 +9,11 @@ A modular, evidence-driven hardware engineering assistant built for **Claude Cod
 This candidate adds lightweight, human-controlled project documentation and
 workflow support:
 
-- `hw-project-readme` creates or updates project-level Markdown from confirmed
+- `hw-git-readme` creates or updates project-level Markdown from confirmed
   information while preserving existing custom content.
 - `hw-phase-record` records only an explicitly human-declared phase; it neither
   validates readiness nor initiates Git actions.
-- `hw-project-changelog` maintains a human-readable changelog from confirmed
+- `hw-git-changelog` maintains a human-readable changelog from confirmed
   changes and explicitly established releases.
 - Git workflow guidance is portable and requires explicit approval for every
   repository or remote mutation.
@@ -39,10 +39,10 @@ Skills are organized by **engineering task**, not by a fixed chip, vendor, or ci
 | `pcb-review` | Evidence-based PCB layout risk assessment | Initial real-project use tested |
 | `debug-assist` | Troubleshooting hypotheses and targeted measurement plans | Initial use tested |
 | `git-workflow` | Git status, commit, and PR workflow under explicit approval | Available |
-| `hw-project-readme` | Create or maintain project-level Markdown using confirmed information | Available |
+| `hw-git-readme` | Create or maintain project-level Markdown using confirmed information | Available |
 | `hw-phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
-| `hw-project-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
-| `hw-session-log` | Optional engineering decision notes, invoked explicitly | Available |
+| `hw-git-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
+| `hw-git-session-log` | Optional engineering decision notes, invoked explicitly | Available |
 | `hw-link-audit` | Read-only check of symbol, footprint, 3D model, and library-table links | Available; used on one real project |
 | `hw-footprint-sync` | Align footprint libraries, local 3D paths, and `fp-lib-table`; **edits protected files only with approval** | Available; used on one real project |
 | `hw-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and filters; **edits protected files only with approval** | Available; used on one real project |
@@ -137,6 +137,7 @@ These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC par
 ## Engineering boundaries
 
 - Verify part specifications, lifecycle, pricing, and availability using current, attributable sources; distinguish observed facts from assumptions.
+- **Claude never reads PDF documents.** Datasheet content comes from values you supply, official web pages, or the optional `notebooklm` skill (you add the datasheet to a NotebookLM notebook; Claude queries it and cites the source). Without one of these, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/engineering.md`.
 - Choose the smallest relevant query or skill; avoid sending whole CAD designs or large netlists to the model by default.
 - Keep conclusions traceable: **confirmed finding**, **potential risk**, or **`NOT_VERIFIED`**.
 - For PCB analysis, filled-zone state, complete copper connectivity, clearance, return-path quality, SI/PI, and thermal behavior are outside the inspection parser's verified scope.
