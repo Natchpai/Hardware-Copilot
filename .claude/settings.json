@@ -10,7 +10,11 @@
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
-      "Bash(git branch *)"
+      "Bash(git branch *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(gh pr create *)",
+      "Bash(git push *)"
     ],
     "ask": [
       "Edit",
@@ -21,11 +25,7 @@
       "Edit(**/*.kicad_mod)",
       "Edit(**/*.step)",
       "Edit(**/*.stp)",
-      "Edit(**/library/**)",
-      "Bash(git add *)",
-      "Bash(git commit *)",
-      "Bash(git push *)",
-      "Bash(gh pr create *)"
+      "Edit(**/library/**)"
     ],
     "deny": [
       "Read(**/*.pdf)",
