@@ -127,6 +127,7 @@ use `WARNING`, `FAIL`, or `NOT_VERIFIED`. Distinguish observed from suspected.
   bounded parent/interface geometry evidence.
 - `project-net`: conservative, instance-aware evidence through supported wires,
   labels, hierarchy, global labels, and power symbols; not netlist parity.
+- Global labels and power symbols may connect nets across sheet instances.
 - Buses, complex symbol inheritance, and hidden connectivity may stay unresolved.
 - If a trustworthy parser is unavailable, limit work to transparent observations
   from the target sheet and mark pin-to-net and cross-sheet claims `NOT_VERIFIED`.
