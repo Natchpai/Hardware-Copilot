@@ -9,6 +9,7 @@ description: >-
   sym-lib-table, or check/fix symbol footprint links and footprint filters.
   Edits only with explicit engineer authorization; does not alter pins, graphics,
   or other symbol content.
+argument-hint: "[split <lib> | sym-lib-table | footprint-links]"
 ---
 
 # Symbol Sync
@@ -36,7 +37,8 @@ Do not assume paths. Find them, then use them for the rest of the task:
 - Never edit hooks or permission settings to gain access. If a hook or deny rule
   blocks an authorized action, report it and let the human adjust it. Do not
   bypass it.
-- Do not stage, commit, or push without separate approval.
+- Do not stage, commit, or push without separate approval; Git actions follow
+  `rules/git-workflow.md`.
 
 ## Conventions
 - A `.kicad_symdir` folder holds one `<Symbol>.kicad_sym` per symbol.
@@ -75,11 +77,13 @@ folder (no extra, no missing), with `name` and `uri` matching the folder name
 exactly. Keep empty libraries unless the human says to remove them.
 
 ## Audit symbol footprint links and ki_fp_filters
-Read-only first. For every `*.kicad_symdir/*.kicad_sym`, read the `Footprint`
-and `ki_fp_filters` properties (Grep with `-n false`; list files lacking either
-with `grep -L`) and compare against `*.pretty/*.kicad_mod` (list with `ls`).
+Read-only first. Run `hw-link-audit` to classify every symbol's `Footprint` link
+and `ki_fp_filters` (its tables define the categories). If it cannot run, read
+the `Footprint` and `ki_fp_filters` properties of every
+`*.kicad_symdir/*.kicad_sym` (Grep with `-n false`; `grep -L` for files lacking
+either) and compare with `*.pretty/*.kicad_mod` (`ls`).
 
-Classify each symbol:
+Decide the action for each class:
 - **Linked to a project-local footprint, file exists:** correct, except for a
   nickname whose letter case differs from the `.pretty` folder (fix the case).
 - **Linked to a global library:** report it. If an equivalent project-local

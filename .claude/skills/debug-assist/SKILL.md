@@ -28,7 +28,9 @@ retains final judgment; do not modify design files or hardware settings.
 
 Use `sch-inspect` or `pcb-inspect` only when saved KiCad structural evidence is
 needed. Use `eng-calc`, `component-check`, datasheets, or application notes only
-when calculations or device-specific constraints affect the diagnosis. Avoid
+when calculations or device-specific constraints affect the diagnosis;
+datasheet content comes from user values, official web pages, or `notebooklm`
+(never a PDF opened directly). Avoid
 loading unrelated files or invoking other skills by default.
 
 ## Evidence and safety

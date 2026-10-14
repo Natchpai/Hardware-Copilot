@@ -28,6 +28,8 @@ and real project constraints. This skill defines **how to approach a design**, n
 - Use current manufacturer datasheets, errata, application notes, and relevant
   standards when claims depend on a particular device or revision. Cite the
   source and distinguish recommended operation from absolute maximum ratings.
+  Never open or read a PDF directly; use user-supplied values, official web
+  pages, or the `notebooklm` skill with its citations (`rules/engineering.md`).
 - Do not claim a design is electrically safe, compliant, production-ready, or
   validated solely from reasoning, calculation, or structural inspection.
 - Prefer focused evidence over loading full project files, catalogs, or large
@@ -73,8 +75,8 @@ and real project constraints. This skill defines **how to approach a design**, n
   integration requirements.
 - Use `sch-inspect` to obtain targeted native KiCad schematic evidence; its
   connectivity outputs remain scoped and may be `NOT_VERIFIED`.
-- Use mathematical or programmable calculations as necessary; do not assume
-  a separate `eng-calc` script or skill is installed until it exists.
+- Use `eng-calc` for auditable calculations, worst cases and tolerances; if it
+  is not installed, calculate transparently with units and assumptions.
 - Respect user-directed scope: early design help does not automatically trigger
   a full schematic review, PCB review, purchase, or documentation workflow.
 

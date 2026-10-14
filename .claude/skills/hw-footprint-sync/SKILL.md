@@ -10,6 +10,7 @@ description: >-
   library folders.
   Edits only with explicit engineer authorization; does not touch connectivity,
   values, net names, or geometry.
+argument-hint: "[3d | fp-lib-table | schematic-nicknames | all]"
 ---
 
 # Footprint Sync
@@ -18,7 +19,8 @@ Footprint scope only. Symbol libraries and `sym-lib-table` belong to
 `hw-symbol-sync`.
 
 Keep the footprint libraries, the local 3D model folders, `fp-lib-table`, and
-schematic Footprint references consistent.
+schematic Footprint references consistent. Run `hw-link-audit` first to get the
+list of mismatches, and again after the edits to confirm them.
 
 ## Locate the project layout first
 Do not assume paths. Find them, then use them for the rest of the task:
@@ -39,7 +41,8 @@ Do not assume paths. Find them, then use them for the rest of the task:
 - Never edit hooks or permission settings to gain access. If a hook or deny rule
   blocks an authorized edit, report the blocker and let the human adjust it. Do
   not bypass it with shell commands.
-- Do not stage, commit, or push without separate approval.
+- Do not stage, commit, or push without separate approval; Git actions follow
+  `rules/git-workflow.md`.
 
 ## Conventions
 - Local 3D folder: `<3D root>/<Name>/`, where `<Name>` is the `.pretty` name

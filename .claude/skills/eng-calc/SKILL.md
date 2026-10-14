@@ -74,7 +74,9 @@ component value, or part recommendation. The engineer retains final authority.
 - `sch-inspect`: obtain targeted schematic facts, without treating inferred
   connectivity as independently verified.
 - For device-dependent models, consult the applicable current datasheet or
-  reference; do not pretend to have checked a source not actually accessed.
+  reference through an allowed source (user values, official web pages, or
+  `notebooklm` with citations; never open a PDF directly); do not pretend to
+  have checked a source not actually accessed.
 
 ## Output
 

@@ -39,7 +39,9 @@ in KiCad PCB Editor. Report editor-state consistency as
 `NOT_VERIFIED` unless independently checked.
 
 Use `component-check` and authoritative datasheets only when exact part,
-package, rating, pinout, thermal, or layout guidance affects a finding. Use
+package, rating, pinout, thermal, or layout guidance affects a finding.
+Datasheet content comes from user values, official web pages, or `notebooklm`
+with citations; never open a PDF directly (`rules/engineering.md`). Use
 `eng-calc` for a stated, applicable model with identified inputs and assumptions.
 Use `design-assist` only when alternatives or design-level trade-offs need to
 be explored. Do not load datasheets or invoke companion skills merely by habit.
@@ -82,7 +84,15 @@ Classify every conclusion clearly:
 - **NOT_VERIFIED:** required evidence is missing, ambiguous, unsupported, or
   outside the tool's scope.
 
-For each material finding, include the target/location, evidence, engineering
-impact, and one practical next check or corrective action. Recommend changes;
+For each material finding, include a severity (`CRITICAL`, `MAJOR`, `MINOR`,
+`INFO`, as in `sch-review`), the status above, the target/location, evidence,
+engineering impact, and one practical next check or corrective action. Severity
+describes the individual finding, not the board. Recommend changes;
 never apply them. Keep the result concise: **Scope**, **Findings**, **Evidence**,
 **Limitations / NOT_VERIFIED**, and **Targeted next checks**.
+
+Example finding row:
+
+```text
+MAJOR | C14 / U2 VIN | Potential risk | C14 pad centre is 11.8 mm from U2 pin 3 (pad-distance); decoupling effectiveness unproven | pcb-inspect pad-distance, saved board | Higher supply loop inductance | Move C14 closer or confirm with a visual check
+```
