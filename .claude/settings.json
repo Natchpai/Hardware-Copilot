@@ -29,6 +29,8 @@
     ],
     "deny": [
       "Read(**/*.pdf)",
+      "Read(~/.notebooklm/**)",
+      "Bash(pdftotext *)",
       "Edit(**/*.kicad_pro)",
       "Edit(**/*.kicad_wks)",
       "Edit(**/templates/**)",

@@ -42,4 +42,5 @@ Skills in `.claude/skills/` are optional and load on demand. Use the smallest re
 - Respect existing project conventions, documentation, and workflows.
 - Use available tools and capabilities appropriate to the task.
 - Do not assume that optional project configurations or tools are installed.
+- Never read PDF files. For datasheet content use values the engineer gives, official web pages, or the `notebooklm` skill; if none is available, report `NOT_VERIFIED` and say so (see `.claude/rules/engineering.md`).
 - Language: follow the project's convention. If none is stated, write files and commit messages in English and reply in the user's language.

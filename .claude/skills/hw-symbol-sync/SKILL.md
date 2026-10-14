@@ -9,6 +9,7 @@ description: >-
   sym-lib-table, or check/fix symbol footprint links and footprint filters.
   Edits only with explicit engineer authorization; does not alter pins, graphics,
   or other symbol content.
+disable-model-invocation: true
 argument-hint: "[split <lib> | sym-lib-table | footprint-links]"
 ---
 

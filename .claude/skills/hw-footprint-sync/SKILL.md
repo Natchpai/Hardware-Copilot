@@ -10,6 +10,7 @@ description: >-
   library folders.
   Edits only with explicit engineer authorization; does not touch connectivity,
   values, net names, or geometry.
+disable-model-invocation: true
 argument-hint: "[3d | fp-lib-table | schematic-nicknames | all]"
 ---
 
