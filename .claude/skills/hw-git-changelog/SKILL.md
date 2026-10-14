@@ -1,6 +1,11 @@
 ---
-name: project-changelog
-description: Create or maintain a human-readable CHANGELOG.md for a hardware engineering repository when explicitly asked. Curate confirmed changes from user instructions and targeted Git history; do not commit, push, tag, or release.
+name: hw-git-changelog
+description: >-
+  Creates or maintains a human-readable CHANGELOG.md for a hardware
+  engineering repository from confirmed changes. Use only when the user
+  explicitly asks to create, update or release-note the changelog. Does not
+  commit, push, tag or release.
+argument-hint: "init | update [range] | release <version>"
 ---
 
 # Project Changelog
@@ -26,11 +31,26 @@ Maintain the repository-root `CHANGELOG.md` as a concise record of **notable, co
 
 ## Procedure
 
-1. Determine whether the user wants an initial changelog, a new Unreleased entry, an update from a specified commit range, or an explicitly approved version section.
+1. Determine the mode from `$ARGUMENTS` or the request: `init` (new changelog), `update [range]` (new Unreleased entries, optionally from a commit range) or `release <version>` (move Unreleased entries into a version section the human has established). Omitted or unclear: ask.
 2. Inspect the existing `CHANGELOG.md` and the smallest relevant source range. Do not scan unrelated design files or bulk export project evidence.
 3. Draft categorized, deduplicated entries; identify any assumptions or verification gaps.
 4. Apply only the explicitly requested changelog edit; preserve other sections and report the change succinctly.
-5. If the user did not authorize writing a file, present a proposed entry instead. Never stage, commit, push, tag, publish a GitHub Release, or alter Git branches without separate explicit approval.
+5. If the user did not authorize writing a file, present a proposed entry instead. Never stage, commit, push, tag, publish a GitHub Release, or alter Git branches without separate explicit approval; Git actions follow `rules/git-workflow.md`.
+
+## Example
+
+```markdown
+## [Unreleased]
+
+### Changed
+- Replaced U3 (LDO) with a 1 A part for 3V3 rail margin; footprint unchanged.
+
+### Fixed
+- Corrected swapped SDA/SCL labels on the sensor connector J4.
+
+### Verification
+- Human-run ERC on the schematic at the CHECK baseline: no open violations (reported by the engineer).
+```
 
 ## Output
 

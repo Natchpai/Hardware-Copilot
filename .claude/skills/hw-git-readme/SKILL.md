@@ -1,5 +1,5 @@
 ---
-name: project-readme
+name: hw-git-readme
 description: >-
   Creates or updates a concise, general-purpose README for a hardware project
   using confirmed information and explicit user direction.
@@ -26,9 +26,10 @@ user. This skill is independent and does not determine engineering readiness.
 1. Create `README.md` only when the user explicitly requests it.
 2. If a README already exists, treat the request as an update unless the user
    explicitly authorizes replacement after reviewing the existing content.
-3. Use only applicable, confirmed sections: Project Title, Overview,
-   Specifications, Hardware Architecture, Project Status, Repository Structure,
-   Design Notes, and Documentation.
+3. Use `assets/readme_template.md` as the starting structure and only its
+   applicable, confirmed sections: Overview, Key Features, Specifications,
+   Project Status, Hardware Design, Repository Structure, Documentation,
+   Results, References and License.
 4. Omit unknown sections rather than filling them with assumptions.
 5. Include `Current Phase` only when a human engineer explicitly declares one.
    Otherwise, remove the `Current Phase` placeholder line entirely; do not
@@ -40,27 +41,32 @@ user. This skill is independent and does not determine engineering readiness.
    practical.
 3. Make the smallest requested edit. Do not remove substantial content without
    explicit review and authorization.
-4. Include a project phase only when the human explicitly declares one.
-5. Preserve an existing static Mermaid workflow diagram unless the user
-   explicitly requests a diagram change.
+4. Keep an existing Mermaid workflow diagram's structure. Its `class` lines
+   follow the declared phase; see "Template rules". Change the diagram's
+   structure only on explicit request.
 
 ## Output
 - State which README sections were created or changed and which facts remain
   unavailable.
 - Do not claim that documentation proves design verification or approval.
 
-## README Template
-
-- Use `assets/readme_template.md` as the starting structure for new project READMEs.
-- Adapt the template to the actual hardware project and available evidence.
-- Include only relevant sections supported by known project information.
-- Remove unused placeholders and optional sections.
+## Template rules
+- Remove unused placeholders and optional sections; adapt the repository tree
+  and links to files that actually exist. Use the real directory name as the
+  tree root. Omit Overview when it would only repeat the tagline.
+- Remove maintainer comments (`<!-- ... -->`) from the generated README.
+- Specifications are design targets unless the user identifies them as
+  measured or verified; keep the template's note saying so.
 - If no human phase declaration is available, remove the `Current Phase`
   placeholder line entirely. Do not substitute `DRAFT`, `Not declared`,
-  `Unknown`, or an inferred value.
-- Preserve existing information and custom sections when updating a README.
-- Preserve the template's static Mermaid workflow diagram; it is not a
-  current-phase indicator.
-- Do not infer or change the project phase. Record only a human-declared phase.
-- Do not open, parse, or assess PDF content.
+  `Unknown` or an inferred value. Recording a declared phase is handled by
+  `hw-phase-record` and `rules/hardware-workflow.md`.
+- Keep the template's Mermaid workflow diagram. Its `class` lines mirror the
+  `Current Phase` value, using the mapping in `hw-phase-record` ("Diagram
+  sync"): earlier phases `done`, the declared phase `review`, later phases
+  `inactive`, all four `done` for RELEASE. With no declared phase, all four
+  stay `inactive`. When updating a README, make the diagram agree with the
+  `Current Phase` it contains; never derive a phase from the diagram.
 - Do not modify the template file during normal README generation.
+- Writing the README is a content edit. Staging or committing it follows
+  `rules/git-workflow.md` and needs separate approval.

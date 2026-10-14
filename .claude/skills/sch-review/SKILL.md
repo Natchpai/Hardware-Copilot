@@ -32,7 +32,9 @@ engineer makes final design and release decisions.
 - Never infer electrical correctness merely from matching net labels, a parser's
   proposed connection, ERC success, or absence of visible errors.
 - Do not invent ratings, component values, design requirements, or sources.
-  Check part-specific claims against the actual MPN and current documentation.
+  Check part-specific claims against the actual MPN and current documentation
+  (never open a PDF directly; use user values, official web pages, or
+  `notebooklm` with citations, per `rules/engineering.md`).
 - No automatic changes, purchasing, commit, reports, or persistent logs unless
   explicitly requested and allowed by repository rules.
 
@@ -106,6 +108,12 @@ Keep output proportional to the requested review. For a substantive review:
    datasheet data, or untested behavior.
 4. **Next checks** — a small prioritized set of human visual checks,
    calculations, simulations, ERC, or measurements necessary to close uncertainty.
+
+Example finding row:
+
+```text
+MAJOR | U3 pin 4 / EN | Potential risk | EN is tied to VIN through R12 only; no divider for UVLO | sch-inspect local-net, datasheet table 6 (via NotebookLM) | Startup below the intended input voltage | Add a divider or confirm the intended threshold
+```
 
 If no supported issue is found, say **"No issue found within the inspected
 scope"**, not "schematic verified" or "ready for fabrication".

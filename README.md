@@ -4,23 +4,14 @@ A modular, evidence-driven hardware engineering assistant built for **Claude Cod
 
 **Hardware-Copilot assists engineering decisions; it does not approve designs or replace the engineer, KiCad ERC/DRC, datasheets, simulation, or physical validation.**
 
-## v1.1.0 candidate
+## v1.3.0
 
-This candidate adds lightweight, human-controlled project documentation and
-workflow support:
+- Claude never reads PDF files. Datasheet content comes from values you give, official web pages, or the `notebooklm` skill (see `.claude/rules/engineering.md`).
+- Git and documentation skills are included: `git-workflow`, `hw-git-readme`, `hw-git-changelog`, `hw-git-session-log`, `hw-phase-record`.
+- `sch-inspect` and `pcb-inspect` are shorter; command details moved to `references/`.
+- Pushes to `main`/`master` and PDF reads are denied in `.claude/settings.json`.
 
-- `project-readme` creates or updates project-level Markdown from confirmed
-  information while preserving existing custom content.
-- `phase-record` records only an explicitly human-declared phase; it neither
-  validates readiness nor initiates Git actions.
-- `project-changelog` maintains a human-readable changelog from confirmed
-  changes and explicitly established releases.
-- Git workflow guidance is portable and requires explicit approval for every
-  repository or remote mutation.
-
-`DRAFT`, `PRELIMINARY`, `CHECK`, and `RELEASE` are human-declared project
-context. They are not automatic gates, evidence of design approval, or
-authorization to create commits, tags, or GitHub releases.
+`DRAFT`, `PRELIMINARY`, `CHECK`, and `RELEASE` are human-declared project context. They are not gates, evidence of approval, or permission to commit, tag, or release.
 
 ## What it does
 
@@ -39,10 +30,13 @@ Skills are organized by **engineering task**, not by a fixed chip, vendor, or ci
 | `pcb-review` | Evidence-based PCB layout risk assessment | Initial real-project use tested |
 | `debug-assist` | Troubleshooting hypotheses and targeted measurement plans | Initial use tested |
 | `git-workflow` | Git status, commit, and PR workflow under explicit approval | Available |
-| `project-readme` | Create or maintain project-level Markdown using confirmed information | Available |
-| `phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
-| `project-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
-| `session-log` | Optional engineering decision notes, invoked explicitly | Available |
+| `hw-git-readme` | Create or maintain project-level Markdown using confirmed information | Available |
+| `hw-phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
+| `hw-git-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
+| `hw-git-session-log` | Optional engineering decision notes, invoked explicitly | Available |
+| `hw-link-audit` | Read-only check of symbol, footprint, 3D model, and library-table links | Available; used on one real project |
+| `hw-footprint-sync` | Align footprint libraries, local 3D paths, and `fp-lib-table`; **edits protected files only with approval** | Available; used on one real project |
+| `hw-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and filters; **edits protected files only with approval** | Available; used on one real project |
 
 An inspection skill **extracts evidence**; a review skill **interprets evidence**. Inspection outputs alone are not a declaration that a design is correct.
 
@@ -56,6 +50,8 @@ Hardware-Copilot/
 │   ├── settings.json
 │   ├── rules/
 │   ├── hooks/
+│   │   ├── protect_kicad_v2.py   # PreToolUse guard for native KiCad files
+│   │   └── protect.json          # deny / ask / allow rules for the guard
 │   └── skills/
 │       ├── sch-inspect/
 │       │   ├── SKILL.md
@@ -73,11 +69,20 @@ Hardware-Copilot/
 
 ## Use in a KiCad project — manual copy only
 
-1. Copy the desired `.claude/skills/` folders into the target project's `.claude/skills/` directory. Copy applicable `.claude/rules/` and review the permissions before use.
-2. Open that project in Claude Code and ask an engineering question in natural language. You can also invoke a specific skill when you want a particular workflow.
-3. Keep schematic/PCB project files under human control. Review every proposed design change yourself.
+1. Copy what you need into the target project. Skills are independent, so take only the ones you want:
 
-There is **no installer, auto-installation, migration tool, or automatic write-back**. No tool should modify KiCad design or library files as part of inspection or review. Git writes require explicit approval.
+   | Copy | Purpose |
+   | --- | --- |
+   | `.claude/skills/<name>/` | The skills you want |
+   | `.claude/rules/` | Engineering and Git rules |
+   | `.claude/hooks/` (both files) + the `hooks` block of `.claude/settings.json` | File protection guard |
+   | `CLAUDE.md` | General project instructions; merge with any existing one |
+
+2. Review `.claude/settings.json` (permissions) and `.claude/hooks/protect.json` (protection rules). Adjust `protect.json` to change which files are denied, asked about, or allowed; no code change is needed. Keep the `permissions` lists in `settings.json` consistent with it.
+3. Open that project in Claude Code and ask an engineering question in natural language. You can also invoke a specific skill when you want a particular workflow.
+4. Keep schematic/PCB project files under human control. Review every proposed design change yourself.
+
+There is **no installer, auto-installation, migration tool, or automatic write-back**. Inspection and review skills never modify KiCad design or library files. Protected files can change only through an explicitly approved edit, such as the library sync skills; the guard asks for approval each time. Git writes require explicit approval.
 
 Example requests:
 
@@ -109,13 +114,13 @@ Project-specific **golden tests** use real KiCad designs stored outside version 
 
 GitHub Actions runs the repository's configured checks; verify the individual job results and whether any golden cases were actually executed or skipped before interpreting a green workflow as real-project validation.
 
-Reported validation at the current scoped baselines:
+Synthetic suites were re-run for v1.3.0; golden suites were not re-run.
 
 | Suite | Last reported result |
 | --- | --- |
 | Schematic synthetic regression | 21/21 passed |
 | PCB synthetic regression | 31/31 passed |
-| PCB configured real-project golden | 2/2 passed |
+| PCB configured real-project golden | 2/2 passed (earlier run) |
 | Real-project schematic golden | 5/5 passed in earlier validation |
 
 These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC parity. Native macOS execution and OS-enforced sandbox read-only protection have not been independently established.
@@ -123,6 +128,7 @@ These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC par
 ## Engineering boundaries
 
 - Verify part specifications, lifecycle, pricing, and availability using current, attributable sources; distinguish observed facts from assumptions.
+- **Claude never reads PDF documents.** Datasheet content comes from values you supply, official web pages, or the optional `notebooklm` skill (you add the datasheet to a NotebookLM notebook; Claude queries it and cites the source). Without one of these, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/engineering.md`.
 - Choose the smallest relevant query or skill; avoid sending whole CAD designs or large netlists to the model by default.
 - Keep conclusions traceable: **confirmed finding**, **potential risk**, or **`NOT_VERIFIED`**.
 - For PCB analysis, filled-zone state, complete copper connectivity, clearance, return-path quality, SI/PI, and thermal behavior are outside the inspection parser's verified scope.

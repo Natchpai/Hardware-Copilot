@@ -60,9 +60,11 @@ flowchart LR
     class D inactive
 ```
 
+<!-- Maintainer note: set the class lines from the declared phase (see hw-phase-record, "Diagram sync"); with no declared phase every node stays slate. Remove this comment in the generated README. -->
+
 Phase changes are declared by a human engineer.
 
-- Slate: not started
+- Slate: not started, or no phase declared
 - Amber: current phase, under review
 - Green: completed
 
