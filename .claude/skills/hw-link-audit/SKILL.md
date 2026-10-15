@@ -9,6 +9,7 @@ description: >-
   tables are linked correctly, or wants a link/consistency check before or after
   reorganizing libraries. Reports only; fixes belong to hw-footprint-sync and
   hw-symbol-sync.
+argument-hint: "[project dir]"
 ---
 
 # Link Audit
@@ -20,6 +21,10 @@ schematic symbol (lib_id) -> symbol (Footprint, ki_fp_filters)
   -> footprint file (.kicad_mod) -> 3D model file (.step/.stp/.wrl)
 fp-lib-table / sym-lib-table <-> library folders on disk
 ```
+
+For a datasheet-level check of one part's symbol or footprint (pinout, land
+pattern), use `component-check`; this skill checks links and files, not
+electrical correctness.
 
 This skill never edits files. To fix findings use `hw-footprint-sync` (3D paths,
 `fp-lib-table`, schematic footprint nicknames) or `hw-symbol-sync` (symbol links,

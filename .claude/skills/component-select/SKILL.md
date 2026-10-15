@@ -23,7 +23,9 @@ of preferred components. The engineer retains final design authority.
 - Never assume a specific vendor, part family, topology, or package unless the
   design imposes it. Consider already stocked parts when the user prioritizes them.
 - Use current manufacturer datasheets, product pages, errata and lifecycle
-  notices as primary evidence. Use authorized distributors for stock, lead time,
+  notices as primary evidence. Never open or read a PDF directly; reach
+  datasheet content through user-supplied values, official web pages, or the
+  `notebooklm` skill with its citations (`rules/engineering.md`). Use authorized distributors for stock, lead time,
   and price; clearly identify the region, quantity, date, and uncertainty.
 - Distinguish **recommended operating conditions** from absolute maximum
   ratings. Do not use absolute maximum values as normal design targets.
@@ -68,12 +70,13 @@ of preferred components. The engineer retains final design authority.
 
 ## Coordination
 
+- Use `stock-select` when supplier stock, price or JLCPCB assembly decides
+  between survivors; stock never overrides an engineering constraint.
 - Use `component-check` for deep verification of selected MPNs, symbol/pinout,
   footprint/package, BOM consistency, or substitution compatibility.
 - Use `sch-inspect` for targeted as-designed schematic evidence when needed.
-- Use supported calculations or trusted engineering references to check sizing,
-  stress, thermal, and tolerance claims. Do not claim that a separate calculator
-  skill or PCB parser exists until available.
+- Use `eng-calc` (when installed) or trusted engineering references to check
+  sizing, stress, thermal, and tolerance claims; say so if it is not installed.
 - Retrieve only the documentation sections needed for the current decision;
   do not ingest full catalogs or entire KiCad projects by default.
 

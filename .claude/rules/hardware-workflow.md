@@ -44,6 +44,8 @@ tag or GitHub release remains a separate, explicitly approved Git action.
   explicitly requested. Markdown documentation does not declare or advance a
   project phase unless a human explicitly states that phase.
 - Claude must not generate, open, read, parse, or assess PDF documents.
+  Datasheet content is reached only through user-supplied text, official web
+  pages, or the `notebooklm` skill, as defined in `engineering.md`.
 - When explicitly asked, Claude may check only the expected document file
   names and paths, and must report that result as `EXISTS`, `MISSING`, or
   `NOT_VERIFIED`; file presence does not verify document content.
