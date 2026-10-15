@@ -2,15 +2,15 @@
 
 > **Template guidance:** This is a reusable engineering specification, not a completed design or approval record. Replace bracketed prompts with confirmed information. Remove sections that do not apply; do not invent values. Keep requirements distinct from design decisions, assumptions, and verification results.
 
-| Property | Value |
-|---|---|
-| Project | [Project name] |
-| Document owner | [Human engineer / team] |
+| Property          | Value |
+| ----------------- |---|
+| Project           | [Project name] |
+| Document owner    | [Human engineer / team] |
 | Document revision | [e.g., 0.1] |
-| Last updated | [YYYY-MM-DD, when confirmed] |
-| Design tool | [e.g., KiCad 10] |
-| Hardware phase | [Only if explicitly declared by the human: DRAFT / PRELIMINARY / CHECK / RELEASE] |
-| Related baseline | [Commit/revision or Not established] |
+| Last updated      | [YYYY-MM-DD, when confirmed] |
+| Design tool       | [e.g., KiCad 10] |
+| Hardware phase    | [Only if explicitly declared by the human: DRAFT / PRELIMINARY / CHECK / RELEASE] |
+| Related baseline  | [Commit/revision or Not established] |
 
 ## 1. Project Definition
 
@@ -27,8 +27,8 @@
 
 ### 1.4 Terminology and references
 | Reference | Document / URL | Revision / date | Purpose |
-|---|---|---|---|
-| REF-01 | [Source] | [Revision] | [Relevant requirement or design basis] |
+| --------- |---|---|---|
+| REF-01    | [Source] | [Revision] | [Relevant requirement or design basis] |
 
 ## 2. Requirements Management
 
@@ -43,8 +43,8 @@
 ### 2.2 Requirement register
 Maintain entries in relevant sections below; use this table as a compact cross-reference if helpful.
 
-| ID | Requirement (shall) | Conditions / limits | Verification method | Status / source |
-|---|---|---|---|---|
+| ID      | Requirement (shall) | Conditions / limits | Verification method | Status / source |
+| ------- |---|---|---|---|
 | SYS-001 | [System shall ...] | [Condition] | Analysis / Inspection / Test / Demonstration | TBD / [REF] |
 
 **ID prefixes (suggested):** `SYS` System, `PWR` Power, `FUN` Functional, `IF` Interface, `SAF` Safety/Protection, `ENV` Environment, `CMP` Components, `PCB` PCB, `MEC` Mechanical, `MFG` Manufacturing, `TST` Testability. Only create IDs that are used.
@@ -52,18 +52,18 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 ## 3. System Requirements
 
 ### 3.1 Functional requirements
-| ID | Function / required behavior | Operating condition | Verification |
-|---|---|---|---|
+| ID      | Function / required behavior | Operating condition | Verification |
+| ------- |---|---|---|
 | FUN-001 | [System shall perform ...] | [When / mode] | [Method] |
 
 ### 3.2 Operating modes and state behavior
-| Mode | Entry condition | Required behavior | Exit / fault behavior |
-|---|---|---|---|
+| Mode                             | Entry condition | Required behavior | Exit / fault behavior |
+| -------------------------------- |---|---|---|
 | [Normal / Sleep / Reset / Fault] | [Condition] | [Behavior] | [Condition] |
 
 ### 3.3 Electrical system requirements
-| ID | Parameter | Minimum | Nominal | Maximum | Unit | Conditions / note |
-|---|---|---:|---:|---:|---|---|
+| ID      | Parameter | Minimum | Nominal | Maximum | Unit | Conditions / note |
+| ------- |---|---:|---:|---:|---|---|
 | PWR-001 | [Input supply voltage] | [TBD] | [TBD] | [TBD] | V | [At connector / transient handling] |
 | PWR-002 | [Power / current demand] | [TBD] | [TBD] | [TBD] | [W/A] | [Continuous / peak, duty cycle] |
 | PWR-003 | [Output / rail tolerance] | [TBD] | [TBD] | [TBD] | [V/%] | [Load / temperature] |
@@ -71,20 +71,20 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 [Add ripple, noise, accuracy, efficiency, timing, load-step, clock stability, etc., only when applicable.]
 
 ### 3.4 External interfaces
-| ID | Interface / connector | Function | Direction | Electrical levels | Protocol / rate | Protection / constraints |
-|---|---|---|---|---|---|---|
+| ID     | Interface / connector | Function | Direction | Electrical levels | Protocol / rate | Protection / constraints |
+| ------ |---|---|---|---|---|---|
 | IF-001 | [Interface] | [Purpose] | [In/Out/Bidirectional] | [TBD] | [TBD] | [ESD, cable, termination, etc.] |
 
 ### 3.5 Environmental and reliability requirements
-| ID | Parameter / condition | Required range or limit | Verification |
-|---|---|---|---|
+| ID      | Parameter / condition | Required range or limit | Verification |
+| ------- |---|---|---|
 | ENV-001 | [Ambient temperature] | [TBD] | [Analysis / Test] |
 
 [Consider humidity, vibration, ingress, cooling, altitude, ESD/EMC expectations, lifetime and maintenance only if relevant. Applicable regulatory or safety standards must be explicitly identified and verified, not guessed.]
 
 ### 3.6 Protection and fault behavior
-| ID | Hazard / fault | Required response | Recovery method | Verification |
-|---|---|---|---|---|
+| ID      | Hazard / fault | Required response | Recovery method | Verification |
+| ------- |---|---|---|---|
 | SAF-001 | [Overvoltage / reverse polarity / short / ESD / thermal] | [TBD] | [TBD] | [Method] |
 
 ## 4. Hardware Architecture and Design Constraints
@@ -93,8 +93,8 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 [Link to an existing image or give a concise text description. Do not create a diagram unless requested.]
 
 ### 4.2 Functional blocks
-| Block | Role | Inputs / outputs | Dependencies | Key constraints |
-|---|---|---|---|---|
+| Block   | Role | Inputs / outputs | Dependencies | Key constraints |
+| ------- |---|---|---|---|
 | [Block] | [Purpose] | [Signals/rails] | [Other block] | [Limits] |
 
 ### 4.3 Power architecture
@@ -107,27 +107,27 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 [Accuracy, ADC/DAC resolution, sensors, filtering, synchronization, signal levels, isolation, timing and digital latency as applicable.]
 
 ### 4.6 Component selection constraints
-| ID | Category / function | Mandatory constraints | Preferred constraints | Sourcing / lifecycle |
-|---|---|---|---|---|
+| ID      | Category / function | Mandatory constraints | Preferred constraints | Sourcing / lifecycle |
+| ------- |---|---|---|---|
 | CMP-001 | [Component class] | [Electrical rating, package or tolerance] | [Optional preference] | [Approved distributors / stock / lifecycle] |
 
 [Record manufacturer part numbers only when selected or mandated. Confirm pinout, footprint, thermal ratings and orderable variant against source documents.]
 
 ### 4.7 Engineering calculations and margins
-| Analysis | Inputs / operating corner | Method / reference | Result | Margin / open questions |
-|---|---|---|---|---|
+| Analysis                                        | Inputs / operating corner | Method / reference | Result | Margin / open questions |
+| ----------------------------------------------- |---|---|---|---|
 | [Thermal / loss / ripple / current / impedance] | [TBD] | [Equation / reference] | [TBD] | [TBD] |
 
 ## 5. PCB Design Specification
 
 ### 5.1 Mechanical envelope
-| ID | Item | Requirement / limit | Verification |
-|---|---|---|---|
+| ID      | Item | Requirement / limit | Verification |
+| ------- |---|---|---|
 | MEC-001 | [Board outline / mounting / height / keepout] | [TBD] | [Inspection / measurement] |
 
 ### 5.2 Fabrication and stackup
-| ID | Parameter | Requirement / target | Fabricator confirmation |
-|---|---|---|---|
+| ID      | Parameter | Requirement / target | Fabricator confirmation |
+| ------- |---|---|---|
 | PCB-001 | Copper layer count | [TBD] | [TBD] |
 | PCB-002 | Stackup / dielectric / copper weight | [TBD] | [TBD] |
 | PCB-003 | Minimum trace / spacing | [TBD] | [TBD] |
@@ -137,8 +137,8 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 *Separate board-fabricator absolute capabilities from project-specific design margins.*
 
 ### 5.3 Layout and routing constraints
-| ID | Circuit / net class / region | Constraint | Reason | Verification |
-|---|---|---|---|---|
+| ID      | Circuit / net class / region | Constraint | Reason | Verification |
+| ------- |---|---|---|---|
 | PCB-010 | [Critical nets] | [Clearance, width, loop area, length, placement, return path] | [Electrical reason] | [Review / DRC / analysis] |
 
 [Consider switch-node loop, current return, decoupling placement, sensitive analog nets, isolation barriers, clocks, high-speed buses, differential pairs, matched lengths, impedance and reference-plane transitions as applicable.]
@@ -150,8 +150,8 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 [Hot components, copper spreading, vias, heatsinks, allowable temperature rise, load profile, thermal model assumptions.]
 
 ### 5.6 Design-rule implementation in KiCad
-| Specification requirement | KiCad mechanism, if supported | Manual / external check |
-|---|---|---|
+| Specification requirement               | KiCad mechanism, if supported | Manual / external check |
+| --------------------------------------- |---|---|
 | [Clearance / width / differential pair] | [Board Setup / Net Classes / Custom Rules] | [Inspection / simulation] |
 
 [Do not claim every constraint is enforceable in DRC. Configuration is a design implementation, not the requirement itself.]
@@ -159,15 +159,15 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 ## 6. Manufacturing, Assembly and Service
 
 ### 6.1 Manufacturability and assembly
-| ID | Requirement | Rationale | Verification |
-|---|---|---|---|
+| ID      | Requirement | Rationale | Verification |
+| ------- |---|---|---|
 | MFG-001 | [Assembly/fabrication constraint] | [Reason] | [Fabricator / assembler review] |
 
 [Optional: tooling, fiducials, polarity, placement access, hand assembly, stencil, panelization, connector orientation and rework.]
 
 ### 6.2 Debug and testability
-| ID | Signal / function | Access / observation requirement | Method |
-|---|---|---|---|
+| ID      | Signal / function | Access / observation requirement | Method |
+| ------- |---|---|---|
 | TST-001 | [Rail, debug signal, interface] | [Test point / connector / measurement access] | [Inspection / Test] |
 
 ## 7. Verification Plan (Planning Only)
@@ -175,8 +175,8 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 **No automatic gates:** This table plans how each requirement could be checked; it does not declare phase completion, design approval, or release readiness.
 
 | Requirement ID | Verification method | Planned evidence / procedure | Result | Reviewer |
-|---|---|---|---|---|
-| [ID] | Analysis / Inspection / Test / Demonstration | [Planned evidence] | NOT_VERIFIED | [Human, when applicable] |
+| -------------- |---|---|---|---|
+| [ID]           | Analysis / Inspection / Test / Demonstration | [Planned evidence] | NOT_VERIFIED | [Human, when applicable] |
 
 [Record observed results only after verification has actually occurred. Requirements and checks may be updated independently of the human-declared project phase.]
 
@@ -184,19 +184,19 @@ Maintain entries in relevant sections below; use this table as a compact cross-r
 
 ### 8.1 Decisions
 | Decision ID | Topic | Selected option | Alternatives / reasoning | Date / owner |
-|---|---|---|---|---|
-| DEC-001 | [Topic] | [TBD] | [Tradeoffs] | [When confirmed] |
+| ----------- |---|---|---|---|
+| DEC-001     | [Topic] | [TBD] | [Tradeoffs] | [When confirmed] |
 
 ### 8.2 Open questions and assumptions
-| Item | Description | Impact | Owner / next action |
-|---|---|---|---|
+| Item     | Description | Impact | Owner / next action |
+| -------- |---|---|---|
 | OPEN-001 | [Unknown, assumption or dependency] | [Risk / scope] | [Decision needed] |
 
 ## 9. Specification Change Notes
 
 | Revision | Date | Description | Human-approved by (if applicable) |
-|---|---|---|---|
-| [0.1] | [YYYY-MM-DD] | Initial specification draft | [Optional] |
+| -------- |---|---|---|
+| [0.1]    | [YYYY-MM-DD] | Initial specification draft | [Optional] |
 
 ---
 

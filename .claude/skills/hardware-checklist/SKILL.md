@@ -69,6 +69,7 @@ Report ID coverage and topic coverage separately. ID coverage is a script or exa
 
 - Define status values once. Do not repeat them per row.
 - One task per row. Keep the task to one sentence.
+- Table format: pad the first column of every table to the width of its longest cell (header included), so the source lines up. Match the dashes in the separator row to that width. Leave the other columns unpadded.
 - Use tables. Remove a column only if it is empty in every row.
 - Do not repeat the same fact in the checkpoint, the gate rows, and the register. State it once.
 - Prefer a few specific tasks over many vague ones.

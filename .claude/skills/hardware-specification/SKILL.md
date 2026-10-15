@@ -63,8 +63,10 @@ Select the template according to the user's intent:
 
 - Define the status defaults once in a conventions block at the top (for example: every requirement is `NOT_VERIFIED` unless stated, and `TBD` means open). Do not repeat `NOT_VERIFIED` or `TBD` in every row when a default covers it.
 - State each fact once. A requirement lives in one place. Other sections refer to it by ID (for example "see PWR-001"). Do not repeat the same value in the register, the topic tables, the architecture text, and the decisions.
-- Keep tables. Remove a column only if it is empty or `TBD` in every row, and say so in a sentence above the table.
+- Put each numeric limit in one topic table (for example the electrical table). The register and the decisions table refer to it by ID. Decisions keep the topic, the date, and the owner, not a second copy of the value.
+- Keep tables and their template columns, even when cells are `TBD`. Do not replace a table with a sentence or a list.
 - Do not fill a template table with placeholder rows. Add rows only for real requirements.
+- Table format: pad the first column of every table to the width of its longest cell (header included), so the source lines up. Match the dashes in the separator row to that width. Leave the other columns unpadded.
 - Remove template sections that do not apply. Fold the verification plan into the Verification column when it would only repeat it.
 - Do not copy usage notes, template guidance, or maintainer comments into the specification.
 
