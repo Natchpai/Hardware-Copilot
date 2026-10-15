@@ -31,7 +31,7 @@ This skill is optional and must never run automatically.
 ## Entry Format
 
 ```markdown
-## YYYY-MM-DD — Topic
+## YYYY-MM-DD : Topic
 
 **Context:** One-sentence summary.
 
@@ -47,7 +47,7 @@ This skill is optional and must never run automatically.
 Example:
 
 ```markdown
-## 2026-03-02 — 3V3 rail regulator choice
+## 2026-03-02 : 3V3 rail regulator choice
 
 **Context:** Compared two LDOs for the 3V3 rail against the 500 mA load estimate.
 

@@ -82,11 +82,11 @@ component value, or part recommendation. The engineer retains final authority.
 
 Keep the answer proportional to the request. For substantive calculations use:
 
-1. **Inputs & assumptions** — values with units and relevant operating range.
-2. **Model & equations** — applicable formula(s), conditions, and limitations.
-3. **Results** — calculated quantities with appropriate precision and units;
+1. **Inputs & assumptions** : values with units and relevant operating range.
+2. **Model & equations** : applicable formula(s), conditions, and limitations.
+3. **Results** : calculated quantities with appropriate precision and units;
    use a compact table for multiple operating points.
-4. **Checks & implications** — sanity checks, margins, sensitivity, and the
+4. **Checks & implications** : sanity checks, margins, sensitivity, and the
    next evidence needed for design decisions. Mark critical unknowns
    `NOT_VERIFIED`.
 

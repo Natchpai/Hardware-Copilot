@@ -84,11 +84,11 @@ and real project constraints. This skill defines **how to approach a design**, n
 
 Provide only what the decision needs:
 
-1. **Requirements & assumptions** — hard constraints, preferences, unknowns.
-2. **Design recommendation** — proposed architecture/circuit approach and why.
-3. **Engineering basis** — relevant calculations, source-backed limits, and
+1. **Requirements & assumptions** : hard constraints, preferences, unknowns.
+2. **Design recommendation** : proposed architecture/circuit approach and why.
+3. **Engineering basis** : relevant calculations, source-backed limits, and
    meaningful trade-offs; distinguish facts from assumptions.
-4. **Risks & next checks** — highest-priority unresolved questions, tests, or
+4. **Risks & next checks** : highest-priority unresolved questions, tests, or
    verification actions. Use `NOT_VERIFIED` for unsupported critical claims.
 
 If multiple approaches remain viable, give a short comparison and a clear

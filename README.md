@@ -67,7 +67,7 @@ Hardware-Copilot/
 └── hardware/               # Local KiCad test projects; gitignored
 ```
 
-## Use in a KiCad project — manual copy only
+## Use in a KiCad project : manual copy only
 
 1. Copy what you need into the target project. Skills are independent, so take only the ones you want:
 
@@ -133,7 +133,7 @@ These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC par
 - Keep conclusions traceable: **confirmed finding**, **potential risk**, or **`NOT_VERIFIED`**.
 - For PCB analysis, filled-zone state, complete copper connectivity, clearance, return-path quality, SI/PI, and thermal behavior are outside the inspection parser's verified scope.
 - For schematic analysis, complex bus expansion, hidden connections, inherited symbols, and ambiguous repeated instances may remain unresolved.
-- Existing KiCad ERC/DRC results, visual inspection, simulations, measurements, and manufacturer data are separate evidence sources—not implied passes.
+- Existing KiCad ERC/DRC results, visual inspection, simulations, measurements, and manufacturer data are separate evidence sources, not implied passes.
 
 See `CLAUDE.md`, `.claude/rules/`, and each skill's `SKILL.md` for operating guidance. Hardware-Copilot is independent of any formal hardware review gate or approval framework.
 

@@ -100,13 +100,13 @@ inflating hypothetical worst cases into proven faults.
 
 Keep output proportional to the requested review. For a substantive review:
 
-1. **Target & scope** — block/sheet, operating assumptions, evidence reviewed.
-2. **Findings** — compact table with severity, reference/pin/net, issue,
+1. **Target & scope** : block/sheet, operating assumptions, evidence reviewed.
+2. **Findings** : compact table with severity, reference/pin/net, issue,
    supporting evidence, impact, and recommended action; distinguish confirmed
    defects from potential risks.
-3. **NOT_VERIFIED** — missing requirements, ambiguous connectivity, unverified
+3. **NOT_VERIFIED** : missing requirements, ambiguous connectivity, unverified
    datasheet data, or untested behavior.
-4. **Next checks** — a small prioritized set of human visual checks,
+4. **Next checks** : a small prioritized set of human visual checks,
    calculations, simulations, ERC, or measurements necessary to close uncertainty.
 
 Example finding row:
