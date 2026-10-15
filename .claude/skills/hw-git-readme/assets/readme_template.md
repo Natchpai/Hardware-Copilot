@@ -35,7 +35,7 @@
 | CHECK | Design mostly finalized; human-led verification |
 | RELEASE | Human-approved design baseline released |
 
-*The current phase is declared by the project owner. It does not independently establish design correctness or approval.*
+*The project owner declares the current phase. It does not independently establish design correctness or approval.*
 
 ### Project Workflow Diagram
 
@@ -62,7 +62,7 @@ flowchart LR
 
 <!-- Maintainer note: set the class lines from the declared phase (see hw-phase-record, "Diagram sync"); with no declared phase every node stays slate. Remove this comment in the generated README. -->
 
-Phase changes are declared by a human engineer.
+A human engineer declares phase changes.
 
 - Slate: not started, or no phase declared
 - Amber: current phase, under review
