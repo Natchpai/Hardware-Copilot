@@ -26,6 +26,32 @@ Human engineers keep authority over decisions, approvals, and gate closure.
   - `DONE` rows without evidence
   - open items without an owner or gate
   - rows that conflict with the specification
+  - status cells that do not use the defined task states
+  - open-item IDs that do not match the specification
+
+## Audit Output
+
+Report ID coverage and topic coverage separately. ID coverage is a script or exact-match count and is `VERIFIED`. Topic coverage (a requirement is covered by a task that has no ID link) is a judgment and is `ASSUMED`. Do not mix the two.
+
+1. A counts table. Use a script for the counts when the files are large.
+
+   | Check | Result |
+   |---|---|
+   | Spec requirement IDs linked from the checklist | N of M |
+   | Spec decision IDs linked | N of M |
+   | Spec open-item IDs linked | N of M |
+   | Task rows with an owner | N of M |
+   | `DONE` rows with a named evidence record | N of M |
+
+2. One line per finding, in this format:
+
+   `SEVERITY | ref | label | statement | source`
+
+   - Severity: `HIGH` (requirement with no task, or `DONE` with no evidence), `MEDIUM` (missing detail or mismatch), `LOW` (wording or format).
+   - Label: `VERIFIED`, `ASSUMED`, or `NOT_VERIFIED`, as in `engineering.md`.
+   - Source: the script, or the spec and checklist sections read.
+
+3. A short list of proposed fixes. Do not apply them. The user chooses which to apply.
 
 ## Rules
 
