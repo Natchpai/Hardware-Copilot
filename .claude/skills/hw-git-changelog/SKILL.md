@@ -19,6 +19,14 @@ Maintain the repository-root `CHANGELOG.md` as a concise record of **notable, co
 - Gather evidence from user-provided notes, relevant text files, and targeted read-only Git queries such as `git log`, `git show`, or `git diff`. Git messages are clues, **not** proof that hardware verification occurred.
 - Never open, parse, generate, or assess PDFs. Do not alter KiCad design/library files or formal approval records.
 
+## Writing style
+
+- Write simple, direct English, like one engineer talking to another. Use everyday words, short sentences and active voice.
+- Avoid fancy words, marketing phrases and AI-style filler. Keep standard engineering terms and exact identifiers.
+- Do not use the em dash (`—`). Use a period, comma, colon or parentheses.
+- Do not reword existing entries that are already clear and correct.
+- Priority: technical accuracy, then clarity, then brevity, then style.
+
 ## Entry rules
 
 1. Write entries for meaningful changes visible to project users or future maintainers: circuit/PCB/interface changes, component substitutions, corrected design defects, manufacturing-impacting changes, released capabilities, and confirmed verification milestones.

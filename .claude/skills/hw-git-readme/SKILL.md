@@ -22,6 +22,18 @@ user. This skill is independent and does not determine engineering readiness.
 - Keep KiCad files and libraries read-only. Do not create supporting reports,
   images, or documents unless explicitly requested.
 
+## Writing style
+- Write simple, direct English, like one engineer talking to another.
+- Use everyday words. Avoid fancy words, marketing phrases, AI-style filler
+  ("robust", "seamless", "leverage", "comprehensive") and long intros.
+- Use short sentences and active voice. Start bullets with the fact, not a
+  lead-in.
+- Keep standard engineering terms and exact names (refs, nets, part numbers).
+  Do not simplify a technical term if it loses accuracy.
+- Do not use the em dash (`—`). Use a period, comma, colon or parentheses.
+- Do not reword existing text that is already clear and correct.
+- Priority: technical accuracy, then clarity, then brevity, then style.
+
 ## Create
 1. Create `README.md` only when the user explicitly requests it.
 2. If a README already exists, treat the request as an update unless the user

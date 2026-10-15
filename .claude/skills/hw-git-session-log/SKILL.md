@@ -18,6 +18,12 @@ This skill is optional and must never run automatically.
 - Use `/hw-git-session-log <topic>` to limit the summary to that topic.
 - Do not treat ordinary requests to summarize a conversation as permission to write a log.
 
+## Writing style
+- Write simple, direct English, like one engineer talking to another. Use everyday words, short sentences and active voice.
+- Avoid fancy words, marketing phrases and AI-style filler. Keep standard engineering terms and exact identifiers.
+- Do not use the em dash (`—`). Use a period, comma, colon or parentheses.
+- Priority: technical accuracy, then clarity, then brevity, then style.
+
 ## Procedure
 1. Identify the requested scope using available conversation context only.
 2. Extract decisions, supporting rationale, findings, and open items that matter for future design work.
