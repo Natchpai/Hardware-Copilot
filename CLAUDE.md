@@ -17,24 +17,8 @@ Assist with the engineering task at hand. Do not assume a fixed circuit topology
 Native design files and local libraries are protected by the `.claude/hooks/protect_kicad_v2.py` hook. The rules live in `.claude/hooks/protect.json`, and `.claude/settings.json` should stay consistent with them.
 
 - **Default:** inspect and propose changes with justification; do not edit.
-- **Ask** (edit only after the engineer's explicit approval, one action at a time): schematic, PCB, symbol and footprint files, 3D models in `.step`/`.stp`, and files under a `library/` folder.
-- **Deny** (do not edit; the engineer changes these): project files (`.kicad_pro`), worksheets (`.kicad_wks`), `templates/`, `.wrl`.
 - If the hook blocks or asks, report it. Never edit the hook, `protect.json`, or permission settings to gain access, and do not bypass a block with shell commands.
 - Never silently alter connectivity, component values, footprints, net names, or geometry.
-
-## Working Approach
-
-1. Establish the task objective, relevant constraints, and scope from the available context.
-2. Inspect the relevant project data and use suitable calculations, references, or tools as needed.
-3. Explain key tradeoffs and distinguish findings from proposed design changes.
-4. Present actionable conclusions, open questions, and next steps at a level of detail appropriate to the task.
-
-## Skills
-
-Skills in `.claude/skills/` are optional and load on demand. Use the smallest relevant one, and continue without it if it is not installed.
-
-- Inspection skills extract evidence; review skills interpret it.
-- `hw-link-audit` is read-only. `hw-footprint-sync` and `hw-symbol-sync` edit protected library files and need the engineer's explicit approval for each change.
 
 ## Project Instructions
 
@@ -44,3 +28,14 @@ Skills in `.claude/skills/` are optional and load on demand. Use the smallest re
 - Do not assume that optional project configurations or tools are installed.
 - Never read PDF files. For datasheet content use values the engineer gives, official web pages, or the `notebooklm` skill; if none is available, report `NOT_VERIFIED` and say so (see `.claude/rules/engineering.md`).
 - Language: follow the project's convention. If none is stated, write files and commit messages in English and reply in the user's language.
+
+## Working Approach
+
+1. Establish the task objective, relevant constraints, and scope from the available context.
+2. Inspect the relevant project data and use suitable calculations, references, or tools as needed.
+3. Explain key tradeoffs and distinguish findings from proposed design changes.
+4. Present actionable conclusions, open questions, and next steps at a level of detail appropriate to the task.
+
+## Language Rules
+- Use English for all files, code, error messages, and git's activity messages.
+- Use English for user-facing explanations, conversational text in CLI, unless otherwise specified by the user.
