@@ -11,50 +11,33 @@ argument-hint: "beginner | general | translate | update"
 
 # Hardware Specification
 
-Support power electronics, MCU, FPGA, analog, digital, mixed-signal, and PCB projects.
+Turn what the user knows into a specification, one step at a time, using only confirmed information.
 
-Human engineers retain authority over requirements, design decisions, and approvals. Keep specification development progressive, evidence-based, and context-efficient.
+## Templates
 
-## Specification Templates
+- **Beginner:** `assets/beginner_requirements_template.md`. For non-engineers, stakeholders or beginners. Plain language, no circuit knowledge needed, unknown answers allowed.
+- **General:** `assets/GENERAL_HARDWARE_SPEC_TEMPLATE.md`. Engineering requirements for hardware and PCB design. Match the depth to the project; not every section has to be filled.
 
-Select the template according to the user's intent:
+Load only the template the mode needs; load both only to translate or compare. A template is a structure to adapt, not a checklist to complete. Leave the template files unchanged during normal work.
 
-- **Beginner:** `assets/beginner_requirements_template.md`
-  - Gather project needs from non-engineers, stakeholders, or beginners.
-  - Use accessible language without requiring circuit-level knowledge.
-  - Allow incomplete or unknown answers.
+## Modes
 
-- **General Hardware Specification:** `assets/GENERAL_HARDWARE_SPEC_TEMPLATE.md`
-  - Develop engineering requirements for hardware and PCB design.
-  - Adapt the technical depth to the project's actual complexity.
-  - Do not require every section to be completed.
+Pick the mode from `$ARGUMENTS` or the request. If unclear, ask.
 
-### Template Loading
-
-- Load only the template relevant to the current task.
-- Do not load both templates unless translation or comparison requires them.
-- Treat templates as adaptable structures, not mandatory checklists.
-- Preserve confirmed requirements, identifiers, units, constraints, and verification criteria.
-- Do not invent requirements to populate incomplete sections.
-- Do not modify source templates during normal specification work.
-
-## Workflow Selection
-
-- **Beginner:** Gather intended use, functions, operating environment, available power, interfaces, size, quantity, budget, and constraints in accessible language. Accept unknown answers.
-- **General:** Define measurable functional, electrical, interface, PCB, mechanical, and manufacturing requirements based on confirmed information.
-- **Translate:** Preserve user intent and provenance when converting beginner requirements into an engineering specification. Transfer confirmed information, mark unresolved values as `TBD`, and identify proposals requiring human confirmation.
-- **Update:** Inspect the existing specification before editing. Modify only authorized sections, preserve requirement IDs and unrelated content, and report conflicts without silently resolving them.
+- **Beginner:** collect intended use, functions, operating environment, available power, interfaces, size, quantity, budget and constraints in plain language. Accept unknown answers.
+- **General:** write measurable functional, electrical, interface, PCB, mechanical and manufacturing requirements from confirmed information.
+- **Translate:** turn beginner requirements into an engineering specification. Keep the user's intent and where each fact came from. Carry over confirmed information, mark open values `TBD`, and flag proposals that need human confirmation.
+- **Update:** read the existing specification first. Change only the sections the user authorized, keep requirement IDs and unrelated content, and report conflicts for the human to resolve.
 
 ## Procedure
 
-1. Establish project purpose, scope, intended use, and constraints from user input or permitted project data.
-2. Select the relevant template and gather the most important missing information.
-3. Separate user needs, confirmed requirements, assumptions, proposed implementations, and verification results.
-4. Organize confirmed information into the appropriate sections.
-5. Identify conflicts, ambiguities, and unresolved requirements without inventing values or approvals.
-6. Draft or update files only when explicitly requested.
-7. Preserve existing requirement IDs, values, units, tolerances, constraints, and unrelated content.
-8. Keep the resulting specification proportional to the project's actual requirements.
+1. Get the project purpose, scope, intended use and constraints from the user or from project data you may read.
+2. Pick the template and ask for the most important missing facts.
+3. Keep user needs, confirmed requirements, assumptions, proposed implementations and verification results apart.
+4. Put confirmed information in the right sections. Never invent a requirement to fill a gap.
+5. List conflicts, ambiguities and open requirements. Values and approvals come from the human.
+6. Write or update the file only when the user asks. Keep existing requirement IDs, values, units, tolerances, constraints and unrelated content.
+7. Keep the specification as large as the project's real requirements, no larger.
 
 ## Requirements Quality
 
@@ -88,19 +71,15 @@ Select the template according to the user's intent:
 
 ## Boundaries
 
-- Do not open, parse, assess, generate, or review PDF content.
-- Keep KiCad design and library files read-only.
-- Do not infer, validate, or change hardware project phases.
-- Do not invent electrical specifications, component ratings, manufacturing capabilities, or test results.
-- Do not assume specific hardware architectures, components, suppliers, PCB stackups, or fabrication processes.
-- Do not create unnecessary logs, manifests, reports, Skills, scripts, or Git operations.
-- Do not modify source templates unless explicitly requested.
+- Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user values, official web pages, or `notebooklm` with citations.
+- KiCad design and library files are read-only.
+- The project phase is declared by the human (`rules/hardware-workflow.md`); a specification never sets or changes it.
+- Electrical specs, component ratings, manufacturing capabilities and test results come from the user or a cited source. Without one, write `TBD` or `NOT_VERIFIED`.
+- Architecture, components, suppliers, PCB stackup and fabrication process come from the requirements, not from a default.
+- Write only the specification file asked for: no extra logs, manifests, reports, skills, scripts or Git actions.
 
-## Suggested Output Names
+## Output
 
-- `HARDWARE_BRIEF.md` : Beginner stakeholder requirements.
-- `HARDWARE_SPEC.md` : General hardware engineering specification.
-
-For an execution checklist that tracks work and evidence against the specification, use the `hardware-checklist` skill.
-
-Preserve existing project naming conventions and documentation. Human engineers remain responsible for confirming requirements and approving design decisions.
+- Suggested names: `HARDWARE_BRIEF.md` (beginner stakeholder requirements) and `HARDWARE_SPEC.md` (general engineering specification). An existing project name wins.
+- Report the file written, the sections added or changed, and the open `TBD` items and conflicts.
+- To track work and evidence against the specification, use `hardware-checklist`.

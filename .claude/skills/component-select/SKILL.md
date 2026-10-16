@@ -11,85 +11,93 @@ argument-hint: "[requirements | function | existing MPN]"
 
 # Component Selection
 
-Help the engineer reach a defensible selection efficiently. **Search broadly;
-recommend narrowly.** This skill defines the selection process, not a catalog
-of preferred components. The engineer retains final design authority.
+Help the engineer reach a part choice they can defend. **Search broadly;
+recommend narrowly.** This skill sets the selection process, not a catalog of
+preferred parts.
 
 ## Boundaries
 
-- Read KiCad design files and libraries without modifying them. Do not change
-  BOMs, symbols, footprints, review state, or project configuration.
-- Never assume a specific vendor, part family, topology, or package unless the
-  design imposes it. Consider already stocked parts when the user prioritizes them.
-- Use current manufacturer datasheets, product pages, errata and lifecycle
-  notices as primary evidence. Never open or read a PDF directly; reach
-  datasheet content through user-supplied values, official web pages, or the
-  `notebooklm` skill with its citations (`rules/engineering.md`). Use authorized distributors for stock, lead time,
-  and price; clearly identify the region, quantity, date, and uncertainty.
-- Distinguish **recommended operating conditions** from absolute maximum
-  ratings. Do not use absolute maximum values as normal design targets.
-- Do not invent MPNs, orderable suffixes, datasheet figures, prices, stock, or
-  pin compatibility. State `NOT_VERIFIED` when critical evidence is unavailable.
-- Do not perform an unlimited search or produce an unranked component catalog.
+- KiCad design files and libraries are read-only. Propose changes to BOMs,
+  symbols, footprints or project settings; do not apply them.
+- Search across vendors, part families, topologies and packages unless the
+  design fixes one. Include parts the user already stocks when they ask for
+  that.
+- Primary evidence: current manufacturer datasheets, product pages, errata and
+  lifecycle notices. Stock, lead time and price come from authorized
+  distributors, with region, quantity, date and uncertainty stated.
+- Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user
+  values, official web pages, or `notebooklm` with citations.
+- Design to **recommended operating conditions**. Absolute maximum ratings are
+  limits, not design targets.
+- Every MPN, orderable suffix, datasheet figure, price, stock count and pin
+  compatibility claim needs a source. Mark it `NOT_VERIFIED` when the source is
+  missing.
+- Return a ranked shortlist, not an open-ended catalog.
 
 ## Workflow
 
-1. **Define the function and constraints.** Extract relevant operating ranges,
-   interfaces, electrical stress, temperature, accuracy, noise, speed, package,
-   assembly, supply chain, cost, and lifecycle requirements from the request
-   and any targeted circuit context. Distinguish hard requirements from
-   preferences. Ask only for missing constraints that would materially change
-   the decision; otherwise state reasonable assumptions.
-2. **Discover candidates.** Search across appropriate manufacturers and, where
-   useful, different implementation approaches. Start with parametric search,
-   manufacturer technical material, and application notes. Check exact
-   **orderable MPN** rather than only a generic family name.
-3. **Apply hard filters first.** Reject candidates that fail mandatory functional,
-   electrical, environmental, interface, package, or lifecycle constraints.
-   Flag missing critical specifications as `NOT_VERIFIED`, not PASS. Avoid
-   selecting on a weighted score before hard constraints are checked.
-4. **Compare survivors.** Evaluate relevant performance at the actual operating
-   conditions, tolerances and derating, external circuitry, board area, PCB
-   complexity, thermal limits, documentation, availability, sourcing risk,
-   cost at the user's quantities, and migration effort. Apply calculations
-   when useful and identify assumptions and worst cases.
-5. **Check integration risks.** Look for suffix/package differences, pin functions,
-   exposed-pad requirements, startup behavior, sequencing, protection, stability,
-   layout requirements, and errata relevant to the design. When the user already
-   has a part, distinguish a functional alternative from a pin-compatible or
-   drop-in replacement; never imply interchangeability without evidence.
-6. **Recommend a shortlist.** Aim for 2–3 meaningful choices: best overall fit,
-   a defensible alternative, and (when relevant) a cost/availability option.
-   Explain why the recommended device wins, what it sacrifices, and what could
-   change the decision. Give a clear conclusion rather than a long list.
-7. **Stop searching when justified.** Stop once hard constraints are met,
-   important trade-offs are distinguishable, major integration risks are checked,
-   and an adequate alternative exists. Continue only if evidence is weak or a
-   materially better candidate is plausible.
+1. **Define the function and constraints.** Pull operating ranges, interfaces,
+   electrical stress, temperature, accuracy, noise, speed, package, assembly,
+   supply chain, cost and lifecycle needs from the request and the circuit
+   context. Split hard requirements from preferences. Ask only for a missing
+   constraint that would change the decision; otherwise state an assumption.
+2. **Find candidates.** Search several manufacturers and, where useful,
+   different implementation approaches. Start with parametric search,
+   manufacturer technical material and application notes. Check the exact
+   **orderable MPN**, not only the family name.
+3. **Apply hard filters first.** Reject candidates that fail a mandatory
+   functional, electrical, environmental, interface, package or lifecycle
+   constraint. A missing critical spec is `NOT_VERIFIED`, not PASS. Score or
+   weigh candidates only after the hard filters.
+4. **Compare survivors.** Performance at the real operating conditions,
+   tolerances and derating, external parts, board area, PCB complexity,
+   thermal limits, documentation, availability, sourcing risk, cost at the
+   user's quantities, and migration effort. Calculate where it helps and state
+   assumptions and worst cases.
+5. **Check integration risks.** Suffix and package differences, pin functions,
+   exposed-pad needs, startup behavior, sequencing, protection, stability,
+   layout needs and errata. When the user already has a part, say whether a
+   candidate is a functional alternative, pin-compatible, or a drop-in
+   replacement, and claim interchangeability only with evidence.
+6. **Recommend a shortlist.** Two or three real choices: best overall fit, a
+   strong alternative, and a cost or availability option when it matters. Say
+   why the top part wins, what it gives up, and what would change the decision.
+7. **Stop when the choice holds.** Stop once the hard constraints are met, the
+   key trade-offs are clear, the main integration risks are checked, and an
+   adequate alternative exists. Search further only if the evidence is weak or
+   a clearly better candidate is likely.
 
 ## Coordination
 
-- Use `stock-select` when supplier stock, price or JLCPCB assembly decides
-  between survivors; stock never overrides an engineering constraint.
-- Use `component-check` for deep verification of selected MPNs, symbol/pinout,
-  footprint/package, BOM consistency, or substitution compatibility.
-- Use `sch-inspect` for targeted as-designed schematic evidence when needed.
-- Use `eng-calc` (when installed) or trusted engineering references to check
-  sizing, stress, thermal, and tolerance claims; say so if it is not installed.
-- Retrieve only the documentation sections needed for the current decision;
-  do not ingest full catalogs or entire KiCad projects by default.
+- `stock-select`: when supplier stock, price or JLCPCB assembly decides between
+  survivors. Stock never overrides an engineering constraint.
+- `component-check`: deep check of a chosen MPN, symbol and pinout, footprint
+  and package, BOM entry, or substitution.
+- `sch-inspect`: targeted as-designed schematic evidence.
+- `eng-calc`: sizing, stress, thermal and tolerance checks. If it is not
+  installed, say so and calculate inline.
+- Read only the documentation sections the current decision needs.
 
 ## Output
 
-Report concisely:
-
 1. **Decision context:** function, hard constraints, preferences, assumptions.
-2. **Shortlist:** exact manufacturer/MPN, differentiating parameters, material
-   trade-offs, and evidence links or datasheet sections.
-3. **Disposition:** `RECOMMENDED`, `ALTERNATIVE`, `REJECTED`, or `NOT_VERIFIED`
-   with the specific reason; make uncertainty visible per critical claim.
-4. **Next verification:** only the most important unresolved datasheet,
-   electrical, footprint, thermal, or sourcing checks before design commitment.
+2. **Shortlist:** exact manufacturer and MPN, the parameters that separate the
+   candidates, trade-offs, and evidence links or datasheet sections.
+3. **Disposition:** `RECOMMENDED`, `ALTERNATIVE`, `REJECTED` or `NOT_VERIFIED`,
+   with the reason. Show the evidence label on each critical claim.
+4. **Next verification:** only the most important open datasheet, electrical,
+   footprint, thermal or sourcing checks before design commitment.
 
-If no candidate passes hard constraints, say so and propose which constraint or
-architecture might need revision. Never label an unverified part as approved.
+If no candidate passes the hard constraints, say so and name the constraint or
+architecture choice that might need to change. An unverified part is never
+"approved".
+
+## Example
+
+```text
+Context:   3V3 LDO from 5 V, 300 mA load, -40 to 85 C, SOT-23-5 preferred (ASSUMED from request)
+Shortlist: <MPN A> | RECOMMENDED | dropout below 1.7 V headroom at 300 mA (VERIFIED, maker page) | lowest quiescent current
+           <MPN B> | ALTERNATIVE | pinout same as A (NOT_VERIFIED) | second source
+           <MPN C> | REJECTED    | 200 mA max output, below the 300 mA load (VERIFIED, maker page)
+Next:      check B's pinout against A with component-check before using it as a second source.
+```

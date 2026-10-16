@@ -11,85 +11,91 @@ argument-hint: "[calculation | specifications | equation to verify]"
 
 # Engineering Calculations
 
-Provide auditable calculations for hardware design and analysis. This skill
-specifies a **calculation method**, not a fixed circuit topology, formula bank,
-component value, or part recommendation. The engineer retains final authority.
+Give calculations another engineer can audit. This skill sets a **calculation
+method**, not a formula bank, a topology, a component value or a part choice.
 
 ## Boundaries
 
-- Establish what is being calculated and which physical model applies before
-  choosing equations. Do not reuse formulas outside their assumptions (for
-  example, ideal converters, steady-state operation, CCM, small-signal models).
-- Separate **given**, **derived**, **assumed**, and **datasheet-sourced** values.
-  Never invent missing ratings, parasitics, material parameters, or test data.
-- Use SI units consistently, convert prefixes explicitly where error-prone,
-  and distinguish peak, RMS, average, instantaneous, and rated quantities.
-- Treat absolute maximum ratings as limits, not recommended operating points.
-  Account for tolerances, derating, temperature, transient behavior, and margins
-  when they materially affect the answer.
-- Label unsupported parameters or model validity `NOT_VERIFIED`. If assumptions
-  materially affect the answer, provide a range or conditional result instead
-  of a falsely precise single value.
-- Calculated results are **estimates, not hardware verification**. Do not claim
-  compliance, electrical safety, thermal adequacy, or design closure without
-  the required source data and independent validation.
-- Read KiCad files only through approved read-only tools. Do not modify design,
-  library, BOM, or project configuration files; do not create persistent outputs
-  unless explicitly requested.
+- Name the quantity and the physical model before choosing equations. Use a
+  formula only inside its assumptions (for example ideal converter,
+  steady state, CCM, small-signal).
+- Keep **given**, **derived**, **assumed** and **datasheet** values apart. Every
+  rating, parasitic, material parameter or test value needs a source; ask for
+  it or mark it `NOT_VERIFIED`.
+- Use SI units throughout, convert prefixes explicitly where mistakes are
+  likely, and say whether a value is peak, RMS, average, instantaneous or
+  rated.
+- Absolute maximum ratings are limits, not operating points. Include
+  tolerances, derating, temperature, transients and margins when they change
+  the answer.
+- When an assumption changes the answer, give a range or a conditional result,
+  not one falsely precise number.
+- A calculated result is an **estimate, not hardware verification**. Claims of
+  compliance, safety, thermal adequacy or design closure need source data and
+  independent validation.
+- Read KiCad files only through the read-only inspect skills. Write files only
+  when the user asks.
 
 ## Workflow
 
-1. **Define the target.** Identify the required quantity, operating mode,
-   design constraints, available inputs, and appropriate accuracy. Ask only for
-   information necessary to avoid a materially misleading answer; otherwise
-   state bounded assumptions.
-2. **Select and justify the model.** State the relevant equations and the
-   assumptions under which they hold. Consider nonideal effects where material.
-3. **Normalize inputs.** Show units, prefixes, operating ranges, and which
-   values are nominal, worst-case, or manufacturer-specified.
-4. **Calculate reproducibly.** Substitute values, perform dimensional checks,
-   and use a calculator or local Python for error-prone numerical work, sweeps,
-   optimization, matrices, or multiple operating points. Do not present
-   unexecuted code as a computed result.
-5. **Check the result.** Test limiting cases, signs, dimensions, conservation
-   laws, and physical plausibility. Cross-check with an independent method
-   when the consequence of error is high.
-6. **Evaluate sensitivity.** Examine min/nominal/max conditions, tolerances,
-   temperature, losses, derating, and significant parameter uncertainty when
-   relevant; identify worst cases rather than assuming they occur at nominal.
-7. **Report evidence and limitations.** Distinguish mathematical correctness
-   from the validity of the underlying model and from measured performance.
-   Flag missing evidence as `NOT_VERIFIED`.
+1. **Define the target.** The quantity, operating mode, constraints, available
+   inputs and needed accuracy. Ask only for a fact without which the answer
+   would mislead; otherwise state a bounded assumption.
+2. **Choose and justify the model.** State the equations and the conditions
+   under which they hold. Add non-ideal effects where they matter.
+3. **Normalize inputs.** Show units, prefixes and operating ranges, and mark
+   each value as nominal, worst case or manufacturer-specified.
+4. **Calculate reproducibly.** Substitute values and check dimensions. Use a
+   calculator or local Python for error-prone numbers, sweeps, optimization,
+   matrices or several operating points. Report a number from code only after
+   the code has run.
+5. **Check the result.** Limiting cases, signs, dimensions, conservation laws
+   and physical sense. Cross-check with an independent method when an error
+   would be costly.
+6. **Check sensitivity.** Min, nominal and max conditions, tolerances,
+   temperature, losses, derating and parameter uncertainty, where they apply.
+   Find the worst case; do not assume it sits at nominal.
+7. **Report evidence and limits.** Keep math correctness, model validity and
+   measured performance apart. Mark missing evidence `NOT_VERIFIED`.
 
 ## Coordination
 
-- `design-assist`: use calculations to compare architectures and validate
-  design trade-offs; do not select the overall architecture by formula alone.
-- `component-select`: translate calculated limits into device requirements;
-  do not choose an MPN merely because one calculated parameter fits.
-- `stock-select`: check sourcing only after technical suitability is considered.
-- `component-check`: verify actual datasheet ratings, tolerance, operating
-  conditions, and package-related constraints.
-- `sch-inspect`: obtain targeted schematic facts, without treating inferred
-  connectivity as independently verified.
-- For device-dependent models, consult the applicable current datasheet or
-  reference through an allowed source (user values, official web pages, or
-  `notebooklm` with citations; never open a PDF directly); do not pretend to
-  have checked a source not actually accessed.
+- `design-assist`: calculations compare architectures; a formula alone does
+  not choose the architecture.
+- `component-select`: turn calculated limits into device requirements. One
+  matching parameter does not pick an MPN.
+- `stock-select`: sourcing comes after technical fit.
+- `component-check`: actual datasheet ratings, tolerances, operating
+  conditions and package limits.
+- `sch-inspect`: targeted schematic facts; inferred connectivity stays
+  unverified.
+- Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user
+  values, official web pages, or `notebooklm` with citations. Cite only sources
+  you actually read.
 
 ## Output
 
-Keep the answer proportional to the request. For substantive calculations use:
+Match the size of the answer to the request. For a real calculation:
 
-1. **Inputs & assumptions** : values with units and relevant operating range.
-2. **Model & equations** : applicable formula(s), conditions, and limitations.
-3. **Results** : calculated quantities with appropriate precision and units;
-   use a compact table for multiple operating points. Label each result
-   `ESTIMATED` and state the method and margin (`rules/engineering.md`).
-4. **Checks & implications** : sanity checks, margins, sensitivity, and the
-   next evidence needed for design decisions. Mark critical unknowns
+1. **Inputs and assumptions:** values with units and the operating range.
+2. **Model and equations:** formulas, conditions and limits.
+3. **Results:** values with sensible precision and units; a compact table for
+   several operating points. Label each result `ESTIMATED` and state the
+   method and margin (`rules/engineering.md`).
+4. **Checks and implications:** sanity checks, margins, sensitivity, and the
+   next evidence the design decision needs. Mark critical unknowns
    `NOT_VERIFIED`.
 
-For a simple arithmetic request, return the result and essential assumptions
-without forcing all four sections. If the user supplies an equation for review,
-check its derivation and conditions before substituting numbers.
+For simple arithmetic, give the result and the key assumptions only. When the
+user supplies an equation to review, check its derivation and conditions
+before substituting numbers.
+
+## Example
+
+```text
+Inputs:  R = 10 kOhm +/-1%, C = 100 nF +/-10% (given); first-order RC low-pass, no load (ASSUMED)
+Model:   fc = 1 / (2 pi R C)
+Results: fc nominal 159 Hz | ESTIMATED | exact formula, nominal values
+         fc range 143 to 179 Hz | ESTIMATED | R and C at tolerance extremes
+Checks:  C tolerance dominates; C temperature drift NOT_VERIFIED (dielectric unknown).
+```
