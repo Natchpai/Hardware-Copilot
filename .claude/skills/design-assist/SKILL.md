@@ -1,96 +1,103 @@
 ---
 name: design-assist
 description: >-
-  Help design or improve electronic hardware from functional requirements through
-  architecture and circuit-level trade-offs. Use when the user asks how to design
-  a circuit or subsystem, compare design approaches, choose a topology or interface,
-  plan power, analog, digital, mixed-signal, or embedded hardware, or review design
-  assumptions before selecting parts. Reason from the current problem and research
-  relevant technical references; do not prescribe fixed devices or vendors.
+  Designs or improves electronic hardware from functional requirements to
+  architecture and circuit-level trade-offs. Use when the user asks how to
+  design a circuit or subsystem, compare design approaches, choose a topology
+  or interface, or review design assumptions before parts are chosen. Not for
+  picking a specific part (use component-select).
 argument-hint: "[design objective | subsystem | requirements]"
 ---
 
 # Hardware Design Assistance
 
-Support practical engineering design decisions from first principles, evidence,
-and real project constraints. This skill defines **how to approach a design**, not
-**which device or topology to use**. The engineer retains final design authority.
+Help the engineer reach a design approach they can defend, starting from the
+real requirements. This skill sets **how to approach a design**, not **which
+device or topology to use**.
 
 ## Boundaries
 
-- Do not prescribe a fixed manufacturer, MPN, circuit family, or architecture.
-  Consider alternatives that satisfy the actual requirements.
-- Treat KiCad designs and libraries as read-only. Never silently change project
-  files, selected parts, BOM, review state, or approval records.
-- Distinguish known project facts, manufacturer specifications, calculations,
-  engineering assumptions, and unverified hypotheses. Mark critical unknowns
-  `NOT_VERIFIED`; do not turn assumptions into design requirements.
-- Use current manufacturer datasheets, errata, application notes, and relevant
-  standards when claims depend on a particular device or revision. Cite the
-  source and distinguish recommended operation from absolute maximum ratings.
-  Never open or read a PDF directly; use user-supplied values, official web
-  pages, or the `notebooklm` skill with its citations (`rules/engineering.md`).
-- Do not claim a design is electrically safe, compliant, production-ready, or
-  validated solely from reasoning, calculation, or structural inspection.
-- Prefer focused evidence over loading full project files, catalogs, or large
-  reference documents into context.
+- Pick the approach from the requirements. Compare more than one manufacturer,
+  circuit family or architecture unless the design already fixes one.
+- KiCad designs and libraries are read-only. Propose changes to files, parts,
+  BOM or review state; do not apply them.
+- Label each significant claim `VERIFIED`, `ASSUMED`, `ESTIMATED` or
+  `NOT_VERIFIED` (`rules/engineering.md`). An assumption stays an assumption;
+  do not turn it into a requirement.
+- Device-specific claims need the current datasheet, errata, application note
+  or standard for that device or revision. Cite it, and keep recommended
+  operating conditions apart from absolute maximum ratings.
+- Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user
+  values, official web pages, or `notebooklm` with citations.
+- Reasoning, calculation and structural inspection do not show that a design
+  is safe, compliant, production-ready or validated. Name the check that would.
+- Load only the evidence the decision needs: the target sheet, section or
+  page, not whole projects or catalogs.
 
 ## Workflow
 
-1. **Frame the problem.** Establish the intended function, interfaces, input/
-   output ranges, operating modes, environmental constraints, performance
-   targets, cost, assembly, and user priorities. Identify hard constraints
-   versus preferences. Ask only for missing information that changes the design
-   materially; otherwise proceed with explicit, bounded assumptions.
-2. **Inspect relevant existing context.** For a redesign or ongoing project,
-   use targeted schematic evidence and user-provided design information. Do not
-   assume an existing circuit is correct or fully understood from partial data.
-3. **Generate viable approaches.** Consider appropriate topologies, circuit
-   architectures, implementation methods, and trade-offs without locking in
-   a specific part. Compare complexity, efficiency, noise, thermal stress,
-   control, reliability, manufacturability, and maintenance as applicable.
-4. **Analyze operating conditions.** Check nominal and worst-case conditions,
-   tolerances, transients, startup/shutdown, abnormal states, protection,
-   margins, and relevant interdependencies. Use transparent equations and
-   repeatable calculations when needed; show units and assumptions.
-5. **Research critical evidence.** Look up device-specific limits, interface
-   requirements, reference designs, standards, and practical layout guidance
-   when they affect the decision. Prefer authoritative sources; do not invent
-   source data or claim online verification without actually obtaining it.
-6. **Converge on a proposed design.** Recommend a defensible approach with
-   reasons, alternatives rejected, key parameters, implementation risks, and
-   the few high-value checks needed next. Avoid endless ideation or arbitrary
-   precision.
-7. **Separate design from validation.** Propose schematic/PCB inspection,
-   simulations, measurements, or review steps as appropriate. Do not mark
-   untested behavior `PASS` or imply completed hardware verification.
+1. **Frame the problem.** Get the function, interfaces, input and output
+   ranges, operating modes, environment, performance targets, cost, assembly
+   and the user's priorities. Split hard constraints from preferences. Ask only
+   for a missing fact that would change the design; otherwise state a bounded
+   assumption and go on.
+2. **Read existing context.** For a redesign or an ongoing project, use
+   targeted schematic evidence and the user's design notes. Partial data does
+   not show that an existing circuit is correct.
+3. **List viable approaches.** Compare topologies, architectures and
+   implementation methods on complexity, efficiency, noise, thermal stress,
+   control, reliability, manufacturability and maintenance, as they apply.
+   Do not lock in a part yet.
+4. **Check operating conditions.** Nominal and worst case, tolerances,
+   transients, startup and shutdown, fault states, protection and margins.
+   Show equations, units and assumptions.
+5. **Look up critical evidence.** Device limits, interface requirements,
+   reference designs, standards and layout guidance, only where they change the
+   decision. Claim a source only after you have actually read it.
+6. **Converge.** Recommend one approach: why it wins, what was rejected and
+   why, key parameters, risks, and the few checks that matter next. Stop when
+   the recommendation and its main risks are stated.
+7. **Separate design from validation.** Name the inspection, simulation,
+   measurement or review that would confirm the design. Untested behavior is
+   not `PASS`.
 
 ## Coordination
 
-- Use `component-select` when a functional design needs candidate devices and
-  comparative engineering selection; avoid embedding a fixed parts catalog here.
-- Use `stock-select` when sourcing, price, quantity, supplier availability, or
-  JLCPCB assembly is a constraint. Stock availability is not design suitability.
-- Use `component-check` to verify a chosen MPN, package, pin mapping, and
-  integration requirements.
-- Use `sch-inspect` to obtain targeted native KiCad schematic evidence; its
-  connectivity outputs remain scoped and may be `NOT_VERIFIED`.
-- Use `eng-calc` for auditable calculations, worst cases and tolerances; if it
-  is not installed, calculate transparently with units and assumptions.
-- Respect user-directed scope: early design help does not automatically trigger
-  a full schematic review, PCB review, purchase, or documentation workflow.
+- `component-select`: candidate devices for the chosen approach. Keep part
+  catalogs out of this skill.
+- `stock-select`: when sourcing, price, quantity or JLCPCB assembly is a
+  constraint. Stock is not design fit.
+- `component-check`: verify a chosen MPN, package, pin mapping and integration
+  needs.
+- `sch-inspect`: targeted schematic evidence; its connectivity results are
+  scoped and may be `NOT_VERIFIED`.
+- `eng-calc`: auditable calculations, worst cases and tolerances. If it is not
+  installed, calculate inline with units and assumptions.
+- Stay in the scope the user asked for. Early design help does not start a
+  schematic review, PCB review, purchase or documentation task.
 
 ## Output
 
-Provide only what the decision needs:
+Give only what the decision needs:
 
-1. **Requirements & assumptions** — hard constraints, preferences, unknowns.
-2. **Design recommendation** — proposed architecture/circuit approach and why.
-3. **Engineering basis** — relevant calculations, source-backed limits, and
-   meaningful trade-offs; distinguish facts from assumptions.
-4. **Risks & next checks** — highest-priority unresolved questions, tests, or
-   verification actions. Use `NOT_VERIFIED` for unsupported critical claims.
+1. **Requirements and assumptions:** hard constraints, preferences, unknowns.
+2. **Recommendation:** the approach and why.
+3. **Engineering basis:** calculations, source-backed limits and trade-offs,
+   each with its evidence label.
+4. **Risks and next checks:** the highest-priority open questions, tests or
+   checks. Mark unsupported critical claims `NOT_VERIFIED`.
 
-If multiple approaches remain viable, give a short comparison and a clear
-conditional recommendation. If the requirements are mutually inconsistent,
-identify the conflict before selecting components.
+If more than one approach stays viable, give a short comparison and a
+conditional recommendation ("buck if X, LDO if Y"). If the requirements
+conflict, name the conflict before choosing parts.
+
+## Example
+
+```text
+Requirements: 12 V in (ASSUMED +/-10%), 3V3 at 600 mA peak.
+Recommendation: synchronous buck. LDO rejected on heat.
+Basis:  LDO loss = (13.2 V - 3.3 V) x 0.6 A = 5.9 W at max input | ESTIMATED | too much for a small SMD package without a heatsink
+        Buck at an ASSUMED 85% efficiency: about 0.35 W loss | ESTIMATED | efficiency NOT_VERIFIED until a part is chosen
+Risks:  MAJOR | 3V3 | NOT_VERIFIED | Ripple limit for the ADC reference is unknown | ask the engineer
+Next:   component-select for a buck converter; get the ADC ripple limit.
+```

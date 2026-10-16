@@ -19,10 +19,14 @@ Skills are organized by **engineering task**, not by a fixed chip, vendor, or ci
 
 | Skill | Purpose | Status |
 | --- | --- | --- |
+| `hardware-specification` | Gather and document hardware and PCB requirements from beginner or engineering templates | Available |
+| `hardware-checklist` | Turn specification requirements into gated tasks with owner, status, and evidence | Available |
 | `design-assist` | Requirements, circuit architecture, alternatives, and trade-offs | Initial use tested |
 | `eng-calc` | Calculations, assumptions, margins, and worst-case analysis | Initial use tested |
 | `component-select` | Find and compare parts by engineering fit | Initial use tested |
+| `part-spec-table` | Markdown table comparing candidate part specs, one column per part number | Available |
 | `stock-select` | Check sourcing via DigiKey, Mouser, LCSC, and JLCPCB Parts Library | Initial use tested |
+| `price-compare-table` | Markdown table comparing price, stock, and lead time across DigiKey, Mouser, LCSC, and JLCPCB | Available |
 | `component-check` | Verify MPN, datasheet, symbol, package, footprint, and pin mapping | Initial use tested; exact suffix/compliance may remain unverified |
 | `sch-inspect` | Targeted read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)** |
 | `pcb-inspect` | Targeted read-only queries of saved KiCad boards | **v1.0 Stable (Scoped)** |
@@ -67,7 +71,7 @@ Hardware-Copilot/
 └── hardware/               # Local KiCad test projects; gitignored
 ```
 
-## Use in a KiCad project — manual copy only
+## Use in a KiCad project : manual copy only
 
 1. Copy what you need into the target project. Skills are independent, so take only the ones you want:
 
@@ -133,7 +137,7 @@ These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC par
 - Keep conclusions traceable: **confirmed finding**, **potential risk**, or **`NOT_VERIFIED`**.
 - For PCB analysis, filled-zone state, complete copper connectivity, clearance, return-path quality, SI/PI, and thermal behavior are outside the inspection parser's verified scope.
 - For schematic analysis, complex bus expansion, hidden connections, inherited symbols, and ambiguous repeated instances may remain unresolved.
-- Existing KiCad ERC/DRC results, visual inspection, simulations, measurements, and manufacturer data are separate evidence sources—not implied passes.
+- Existing KiCad ERC/DRC results, visual inspection, simulations, measurements, and manufacturer data are separate evidence sources, not implied passes.
 
 See `CLAUDE.md`, `.claude/rules/`, and each skill's `SKILL.md` for operating guidance. Hardware-Copilot is independent of any formal hardware review gate or approval framework.
 

@@ -1,14 +1,8 @@
 ---
 name: hw-symbol-sync
 description: >-
-  Maintains project-local KiCad symbol libraries: splits a monolithic .kicad_sym
-  into a per-symbol .kicad_symdir with kicad-cli, keeps sym-lib-table consistent
-  with the symbol folders, and audits each symbol's Footprint link and
-  ki_fp_filters against the project's footprint libraries.
-  Use when the user asks to convert .kicad_sym to .kicad_symdir, align
-  sym-lib-table, or check/fix symbol footprint links and footprint filters.
-  Edits only with explicit engineer authorization; does not alter pins, graphics,
-  or other symbol content.
+  Split .kicad_sym into .kicad_symdir, align sym-lib-table, and fix symbol
+  footprint links and filters (edits only with approval).
 disable-model-invocation: true
 argument-hint: "[split <lib> | sym-lib-table | footprint-links]"
 ---
@@ -16,7 +10,9 @@ argument-hint: "[split <lib> | sym-lib-table | footprint-links]"
 # Symbol Sync
 
 Symbol scope only. Footprint libraries, 3D models, and `fp-lib-table` belong to
-`hw-footprint-sync`.
+`hw-footprint-sync`. Edit only library folders, `sym-lib-table`, and the
+`Footprint` and `ki_fp_filters` properties; leave pins, graphics and other
+symbol content unchanged.
 
 ## Locate the project layout first
 Do not assume paths. Find them, then use them for the rest of the task:
@@ -41,12 +37,34 @@ Do not assume paths. Find them, then use them for the rest of the task:
 - Do not stage, commit, or push without separate approval; Git actions follow
   `rules/git-workflow.md`.
 
-## Conventions
-- A `.kicad_symdir` folder holds one `<Symbol>.kicad_sym` per symbol.
-- `sym-lib-table` entry: `name` = folder name without `.kicad_symdir`,
-  `uri` = `${KIPRJMOD}/<path to symbol root>/<folder>`, with identical letter
-  case.
-- Library nicknames are case-sensitive.
+## Naming convention (follow the reference library)
+Reference: the shared KiCad library repo whose path the human gives at the start
+of the task. Ask for the path; never assume it, and never write a local path into
+this file or any committed file. It is **read-only**: never edit, move, or copy
+into it except when the human asks for a specific copy. Its `README.md` and
+`SYMBOLS_DIRECTORY.md` / `FOOTPRINTS_DIRECTORY.md`, if present, list the correct
+names. If no reference is given, say so and do not invent names. All names in it
+are treated as correct.
+- **Library folder:** `0_<Family>.kicad_symdir`, holding one `<Symbol>.kicad_sym`
+  per symbol. The `0_` prefix belongs to the `.kicad_symdir` (and `.pretty`)
+  folder name only. `<Family>` is `<Category>[_<Subcategory>]`, for example
+  `MCU_ST_STM32H7`, `Regulator_Linear`, `Protection_ESD`.
+- **Nickname** = folder name without `.kicad_symdir`, including `0_`
+  (for example `0_MCU_ST_STM32H7`). Nicknames are case-sensitive.
+- **`sym-lib-table` entry:** `name` = nickname, `uri` =
+  `${KIPRJMOD}/<path to symbol root>/<folder>`, identical letter case.
+- **Symbol `Footprint` property:** `0_<Family>:<footprint file name without
+  .kicad_mod>`, where `0_<Family>` is a `.pretty` library from `fp-lib-table`.
+- **Files inside** (`<Symbol>.kicad_sym` names and symbol names) are flexible:
+  keep them as they are and do not rename them to enforce a pattern. When adding
+  a symbol, find the comparable one in the reference and follow its family and
+  style. If the family exists in the reference, use exactly that family name.
+- **Family not in the reference:** propose a `<Category>_<Subcategory>` name in
+  the same style and wait for the human to choose.
+- If the project's folder name differs from the reference for the same family
+  (missing `0_`, case, spelling), report it and propose renaming the project's
+  folder to the reference name. A rename changes the nickname, so also list
+  every schematic `lib_id` and `sym-lib-table` reference to the old nickname.
 
 ## Split a .kicad_sym into a .kicad_symdir
 `kicad-cli sym upgrade` splits a library only when the output path is an
@@ -63,8 +81,8 @@ usually already in the current format.
 3. **Convert.**
    ```bash
    cd <symbol root>
-   mkdir <Lib>.kicad_symdir
-   kicad-cli sym upgrade --force -o <Lib>.kicad_symdir <Lib>.kicad_sym
+   mkdir 0_<Family>.kicad_symdir
+   kicad-cli sym upgrade --force -o 0_<Family>.kicad_symdir <Lib>.kicad_sym
    ```
 4. **Verify.** The file count in the new folder equals the source symbol count,
    and a sample file has the same header (`version`, `generator`) as another
@@ -87,6 +105,10 @@ either) and compare with `*.pretty/*.kicad_mod` (`ls`).
 Decide the action for each class:
 - **Linked to a project-local footprint, file exists:** correct, except for a
   nickname whose letter case differs from the `.pretty` folder (fix the case).
+- **Nickname not in `fp-lib-table`** (missing `0_`, or an old or unknown
+  nickname such as `Package_QFP` or `0_LQFP`): if a `0_<Family>.pretty` library
+  with the same footprint file exists, propose repointing to
+  `0_<Family>:<footprint>`. Otherwise report it and ask which library is meant.
 - **Linked to a global library:** report it. If an equivalent project-local
   footprint exists and the human wants local links, repoint to it.
 - **Linked to local, file missing** (or library missing): keep as is and report
