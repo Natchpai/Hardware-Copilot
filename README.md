@@ -4,12 +4,13 @@ A modular, evidence-driven hardware engineering assistant built for **Claude Cod
 
 **Hardware-Copilot assists engineering decisions; it does not approve designs or replace the engineer, KiCad ERC/DRC, datasheets, simulation, or physical validation.**
 
-## v1.3.0
+## v2.0.0
 
-- Claude never reads PDF files. Datasheet content comes from values you give, official web pages, or the `notebooklm` skill (see `.claude/rules/engineering.md`).
-- Git and documentation skills are included: `git-workflow`, `hw-git-readme`, `hw-git-changelog`, `hw-git-session-log`, `hw-phase-record`.
-- `sch-inspect` and `pcb-inspect` are shorter; command details moved to `references/`.
-- Pushes to `main`/`master` and PDF reads are denied in `.claude/settings.json`.
+- One severity scale for findings: `CRITICAL`, `MAJOR`, `MINOR`, `INFO`, defined in `.claude/rules/engineering.md`. Review findings also carry a status and an evidence label.
+- New skills: `hardware-specification`, `hardware-checklist`, `part-spec-table`, `price-compare-table`.
+- Skills are rewritten in plain English with short examples, and point to `.claude/rules/engineering.md` for datasheet evidence instead of repeating it.
+- Skill descriptions name the neighbor to use instead, so part selection, stock, spec tables and price tables route to each other.
+- The protect hook resolves `..` in paths and covers PowerShell aliases.
 
 `DRAFT`, `PRELIMINARY`, `CHECK`, and `RELEASE` are human-declared project context. They are not gates, evidence of approval, or permission to commit, tag, or release.
 
@@ -118,7 +119,7 @@ Project-specific **golden tests** use real KiCad designs stored outside version 
 
 GitHub Actions runs the repository's configured checks; verify the individual job results and whether any golden cases were actually executed or skipped before interpreting a green workflow as real-project validation.
 
-Synthetic suites were re-run for v1.3.0; golden suites were not re-run.
+Synthetic suites were re-run for v2.0.0; golden suites were not re-run.
 
 | Suite | Last reported result |
 | --- | --- |
