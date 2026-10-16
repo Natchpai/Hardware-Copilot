@@ -19,10 +19,14 @@ Skills are organized by **engineering task**, not by a fixed chip, vendor, or ci
 
 | Skill | Purpose | Status |
 | --- | --- | --- |
+| `hardware-specification` | Gather and document hardware and PCB requirements from beginner or engineering templates | Available |
+| `hardware-checklist` | Turn specification requirements into gated tasks with owner, status, and evidence | Available |
 | `design-assist` | Requirements, circuit architecture, alternatives, and trade-offs | Initial use tested |
 | `eng-calc` | Calculations, assumptions, margins, and worst-case analysis | Initial use tested |
 | `component-select` | Find and compare parts by engineering fit | Initial use tested |
+| `part-spec-table` | Markdown table comparing candidate part specs, one column per part number | Available |
 | `stock-select` | Check sourcing via DigiKey, Mouser, LCSC, and JLCPCB Parts Library | Initial use tested |
+| `price-compare-table` | Markdown table comparing price, stock, and lead time across DigiKey, Mouser, LCSC, and JLCPCB | Available |
 | `component-check` | Verify MPN, datasheet, symbol, package, footprint, and pin mapping | Initial use tested; exact suffix/compliance may remain unverified |
 | `sch-inspect` | Targeted read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)** |
 | `pcb-inspect` | Targeted read-only queries of saved KiCad boards | **v1.0 Stable (Scoped)** |
