@@ -1,12 +1,11 @@
 ---
 name: component-select
 description: >-
-  Find and shortlist electronic parts for a hardware design based on requirements,
-  operating conditions, availability, and engineering trade-offs. Use when the
-  user asks to choose an IC or component, find alternatives, compare functionally
-  similar parts, replace an obsolete part, or decide which candidate best fits a
-  circuit. Research current manufacturer documentation and sourcing evidence;
-  never restrict selection to preset parts, vendors, or circuit topologies.
+  Finds and shortlists electronic parts by engineering fit: requirements,
+  operating conditions, trade-offs and availability. Use when the user asks to
+  choose an IC or component, find alternatives or a replacement for an obsolete
+  part, or decide which candidate fits a circuit best. Not for supplier stock
+  and price (use stock-select) or a spec table (use part-spec-table).
 argument-hint: "[requirements | function | existing MPN]"
 ---
 

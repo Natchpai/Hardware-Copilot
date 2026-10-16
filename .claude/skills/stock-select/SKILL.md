@@ -1,11 +1,11 @@
 ---
 name: stock-select
 description: >-
-  Find, filter, and compare electronic components that can actually be sourced
-  from DigiKey, Mouser, LCSC, or JLCPCB Parts Library. Use when the user asks
-  for in-stock parts, supplier-specific alternatives, procurement availability,
-  price breaks, MOQ, or JLCPCB assembly-ready components. Complement, but do
-  not replace, engineering-focused component selection.
+  Finds and filters electronic parts that can be sourced from DigiKey, Mouser,
+  LCSC, or the JLCPCB Parts Library. Use when the user asks for in-stock parts,
+  supplier-specific alternatives, availability, price breaks, MOQ, or JLCPCB
+  assembly-ready parts. Not for engineering fit (use component-select) or a
+  price table for known part numbers (use price-compare-table).
 argument-hint: "[function | MPN | requirements] [supplier] [quantity]"
 ---
 

@@ -1,11 +1,12 @@
 ---
 name: price-compare-table
 description: >-
-  Build or update a Markdown table that compares price, stock and lead time of
-  candidate parts across suppliers (DigiKey, Mouser, LCSC, JLCPCB). Use when the
-  user asks for a price comparison table or a stock table, or wants to add a
-  part number to an existing one. Does not judge the design fit (use
-  component-select) and does not order anything.
+  Builds or updates a Markdown table of price, stock and lead time for known
+  part numbers across DigiKey, Mouser, LCSC and JLCPCB. Use when the user asks
+  for a price or stock comparison table, or wants to add a part number to an
+  existing one. Not for finding parts (use stock-select) or judging design fit
+  (use component-select). Does not order anything.
+argument-hint: "<MPN> [<MPN> ...] | add <MPN>"
 ---
 
 # Price Compare Table

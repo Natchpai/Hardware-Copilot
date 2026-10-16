@@ -1,14 +1,12 @@
 ---
 name: hw-link-audit
 description: >-
-  Read-only audit of KiCad library links in a project: symbol Footprint property
-  -> footprint library -> .kicad_mod file, symbol ki_fp_filters vs the linked
-  footprint, footprint 3D model paths -> existing files, fp-lib-table and
-  sym-lib-table vs folders, and schematic Footprint / lib_id nicknames.
-  Use when the user asks whether symbols, footprints, 3D models and library
-  tables are linked correctly, or wants a link/consistency check before or after
-  reorganizing libraries. Reports only; fixes belong to hw-footprint-sync and
-  hw-symbol-sync.
+  Read-only audit of KiCad library links: symbol Footprint properties and
+  ki_fp_filters, footprint 3D model paths, fp-lib-table and sym-lib-table
+  against folders, and schematic nicknames. Use when the user asks whether
+  symbols, footprints, 3D models and library tables are linked correctly, or
+  wants a link check before or after reorganizing libraries. Reports only;
+  fixes belong to hw-footprint-sync and hw-symbol-sync.
 argument-hint: "[project dir]"
 ---
 

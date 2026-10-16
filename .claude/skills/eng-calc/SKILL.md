@@ -1,12 +1,11 @@
 ---
 name: eng-calc
 description: >-
-  Perform, verify, or audit engineering calculations for electronic hardware.
-  Use when the user asks to calculate component values, power, current, voltage,
-  timing, filters, control parameters, losses, thermal behavior, tolerances,
-  margins, worst-case conditions, or to check an existing equation or result.
-  Apply the appropriate model to the actual problem; do not assume a fixed
-  topology, part, or manufacturer.
+  Performs, checks, or audits engineering calculations for electronic
+  hardware. Use when the user asks to calculate component values, power,
+  current, voltage, timing, filters, control parameters, losses, thermal
+  behavior, tolerances, margins or worst cases, or to check an existing
+  equation or result.
 argument-hint: "[calculation | specifications | equation to verify]"
 ---
 

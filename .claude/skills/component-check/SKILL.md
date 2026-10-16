@@ -1,11 +1,11 @@
 ---
 name: component-check
 description: >-
-  Checks and compares electronic components used in KiCad hardware designs.
-  Use when the user asks to verify a part number (MPN), datasheet, component
-  ratings, pinout, schematic symbol, footprint, package, pad-to-pin mapping,
-  BOM entry, or possible replacement part. Performs targeted, read-only
-  verification with evidence and identifies unresolved mismatches.
+  Checks and compares one or two electronic components used in a KiCad design,
+  read-only, with evidence. Use when the user asks to verify a part number
+  (MPN), datasheet, ratings, pinout, schematic symbol, footprint, package,
+  pad-to-pin mapping, BOM entry, or a possible replacement part. Not for
+  project-wide library link checks (use hw-link-audit).
 argument-hint: "[<reference> | <MPN> | compare <MPN1> <MPN2>]"
 ---
 

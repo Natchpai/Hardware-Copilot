@@ -1,11 +1,12 @@
 ---
 name: part-spec-table
 description: >-
-  Build or update a Markdown table that compares the specs of candidate parts
-  side by side, one column per part number. Use when the user asks for a spec
-  comparison table, or wants to add a part number to an existing one. Does not
-  choose the part and does not check stock or price (use component-select and
+  Builds or updates a Markdown table that compares the specs of candidate
+  parts, one column per part number. Use when the user asks for a spec
+  comparison table, or wants to add a part number to an existing one. Not for
+  choosing the part (use component-select) or price and stock (use
   price-compare-table).
+argument-hint: "<MPN> [<MPN> ...] | add <MPN>"
 ---
 
 # Part Spec Table

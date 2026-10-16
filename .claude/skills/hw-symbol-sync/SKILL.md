@@ -1,14 +1,8 @@
 ---
 name: hw-symbol-sync
 description: >-
-  Maintains project-local KiCad symbol libraries: splits a monolithic .kicad_sym
-  into a per-symbol .kicad_symdir with kicad-cli, keeps sym-lib-table consistent
-  with the symbol folders, and audits each symbol's Footprint link and
-  ki_fp_filters against the project's footprint libraries.
-  Use when the user asks to convert .kicad_sym to .kicad_symdir, align
-  sym-lib-table, or check/fix symbol footprint links and footprint filters.
-  Edits only with explicit engineer authorization; does not alter pins, graphics,
-  or other symbol content.
+  Split .kicad_sym into .kicad_symdir, align sym-lib-table, and fix symbol
+  footprint links and filters (edits only with approval).
 disable-model-invocation: true
 argument-hint: "[split <lib> | sym-lib-table | footprint-links]"
 ---
@@ -16,7 +10,9 @@ argument-hint: "[split <lib> | sym-lib-table | footprint-links]"
 # Symbol Sync
 
 Symbol scope only. Footprint libraries, 3D models, and `fp-lib-table` belong to
-`hw-footprint-sync`.
+`hw-footprint-sync`. Edit only library folders, `sym-lib-table`, and the
+`Footprint` and `ki_fp_filters` properties; leave pins, graphics and other
+symbol content unchanged.
 
 ## Locate the project layout first
 Do not assume paths. Find them, then use them for the rest of the task:

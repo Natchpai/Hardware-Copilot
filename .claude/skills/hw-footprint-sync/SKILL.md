@@ -1,15 +1,8 @@
 ---
 name: hw-footprint-sync
 description: >-
-  Synchronizes project-local KiCad footprint libraries: aligns 3D model folders
-  with footprint libraries, repoints local 3D model paths in footprints, aligns
-  fp-lib-table with the footprint folders, and fixes mismatched library
-  nicknames in schematic Footprint properties.
-  Use when the user asks to organize local 3D models, relink 3D models, or make
-  fp-lib-table / schematic footprint references consistent with the footprint
-  library folders.
-  Edits only with explicit engineer authorization; does not touch connectivity,
-  values, net names, or geometry.
+  Align footprint libraries, local 3D model folders and paths, fp-lib-table,
+  and schematic footprint nicknames (edits only with approval).
 disable-model-invocation: true
 argument-hint: "[3d | fp-lib-table | schematic-nicknames | all]"
 ---
@@ -17,7 +10,9 @@ argument-hint: "[3d | fp-lib-table | schematic-nicknames | all]"
 # Footprint Sync
 
 Footprint scope only. Symbol libraries and `sym-lib-table` belong to
-`hw-symbol-sync`.
+`hw-symbol-sync`. Edit only 3D folder names, local model path strings,
+`fp-lib-table`, and nickname text in schematic Footprint properties; leave
+connectivity, values, net names and geometry unchanged.
 
 Keep the footprint libraries, the local 3D model folders, `fp-lib-table`, and
 schematic Footprint references consistent. Run `hw-link-audit` first to get the

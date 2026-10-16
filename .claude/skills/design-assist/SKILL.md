@@ -1,12 +1,11 @@
 ---
 name: design-assist
 description: >-
-  Help design or improve electronic hardware from functional requirements through
-  architecture and circuit-level trade-offs. Use when the user asks how to design
-  a circuit or subsystem, compare design approaches, choose a topology or interface,
-  plan power, analog, digital, mixed-signal, or embedded hardware, or review design
-  assumptions before selecting parts. Reason from the current problem and research
-  relevant technical references; do not prescribe fixed devices or vendors.
+  Designs or improves electronic hardware from functional requirements to
+  architecture and circuit-level trade-offs. Use when the user asks how to
+  design a circuit or subsystem, compare design approaches, choose a topology
+  or interface, or review design assumptions before parts are chosen. Not for
+  picking a specific part (use component-select).
 argument-hint: "[design objective | subsystem | requirements]"
 ---
 

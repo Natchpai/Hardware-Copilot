@@ -1,6 +1,12 @@
 ---
 name: hardware-specification
-description: Gather, refine, translate, and document hardware and PCB requirements using beginner and general engineering specification templates. Use for stakeholder requirement collection, hardware specification drafting, PCB constraints, requirement analysis, and specification updates.
+description: >-
+  Gathers, refines and documents hardware and PCB requirements with beginner
+  and general specification templates. Use when the user asks to collect
+  stakeholder needs, draft or update a hardware specification, turn beginner
+  requirements into an engineering spec, or analyze requirements and PCB
+  constraints. Not for task tracking (use hardware-checklist).
+argument-hint: "beginner | general | translate | update"
 ---
 
 # Hardware Specification
