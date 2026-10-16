@@ -17,30 +17,66 @@ A modular, evidence-driven hardware engineering assistant built for **Claude Cod
 
 Skills are organized by **engineering task**, not by a fixed chip, vendor, or circuit topology. Claude chooses relevant skills as needed rather than loading all of them for every request.
 
+Each skill is **self-contained**: it works when copied alone. It carries a short evidence baseline (evidence labels, no PDF reads, read-only KiCad files) and follows `.claude/rules/` when the project has them. Other skills it mentions are optional companions; if one is missing, the skill does the step directly or marks it `NOT_VERIFIED`.
+
+The skills are grouped by design stage below. The groups are for documentation and copying only; all skills stay in `.claude/skills/<name>/`.
+
+### 1. Requirements and planning
+
 | Skill | Purpose | Status |
 | --- | --- | --- |
 | `hardware-specification` | Gather and document hardware and PCB requirements from beginner or engineering templates | Available |
 | `hardware-checklist` | Turn specification requirements into gated tasks with owner, status, and evidence | Available |
+
+### 2. Design and parts
+
+| Skill | Purpose | Status |
+| --- | --- | --- |
 | `design-assist` | Requirements, circuit architecture, alternatives, and trade-offs | Initial use tested |
 | `eng-calc` | Calculations, assumptions, margins, and worst-case analysis | Initial use tested |
 | `component-select` | Find and compare parts by engineering fit | Initial use tested |
+| `component-check` | Verify MPN, datasheet, symbol, package, footprint, and pin mapping | Initial use tested; exact suffix/compliance may remain unverified |
 | `part-spec-table` | Markdown table comparing candidate part specs, one column per part number | Available |
 | `stock-select` | Check sourcing via DigiKey, Mouser, LCSC, and JLCPCB Parts Library | Initial use tested |
 | `price-compare-table` | Markdown table comparing price, stock, and lead time across DigiKey, Mouser, LCSC, and JLCPCB | Available |
-| `component-check` | Verify MPN, datasheet, symbol, package, footprint, and pin mapping | Initial use tested; exact suffix/compliance may remain unverified |
+
+### 3. Schematic
+
+| Skill | Purpose | Status |
+| --- | --- | --- |
 | `sch-inspect` | Targeted read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)** |
-| `pcb-inspect` | Targeted read-only queries of saved KiCad boards | **v1.0 Stable (Scoped)** |
 | `sch-review` | Evidence-based schematic risk assessment | Initial real-project use tested |
+
+### 4. PCB
+
+| Skill | Purpose | Status |
+| --- | --- | --- |
+| `pcb-inspect` | Targeted read-only queries of saved KiCad boards | **v1.0 Stable (Scoped)** |
 | `pcb-review` | Evidence-based PCB layout risk assessment | Initial real-project use tested |
+
+### 5. Libraries
+
+| Skill | Purpose | Status |
+| --- | --- | --- |
+| `hw-link-audit` | Read-only check of symbol, footprint, 3D model, and library-table links | Available; used on one real project |
+| `hw-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and filters; **edits protected files only with approval** | Available; used on one real project |
+| `hw-footprint-sync` | Align footprint libraries, local 3D paths, and `fp-lib-table`; **edits protected files only with approval** | Available; used on one real project |
+
+### 6. Bring-up and debug
+
+| Skill | Purpose | Status |
+| --- | --- | --- |
 | `debug-assist` | Troubleshooting hypotheses and targeted measurement plans | Initial use tested |
+
+### 7. Docs and Git
+
+| Skill | Purpose | Status |
+| --- | --- | --- |
 | `git-workflow` | Git status, commit, and PR workflow under explicit approval | Available |
 | `hw-git-readme` | Create or maintain project-level Markdown using confirmed information | Available |
-| `hw-phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
 | `hw-git-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
 | `hw-git-session-log` | Optional engineering decision notes, invoked explicitly | Available |
-| `hw-link-audit` | Read-only check of symbol, footprint, 3D model, and library-table links | Available; used on one real project |
-| `hw-footprint-sync` | Align footprint libraries, local 3D paths, and `fp-lib-table`; **edits protected files only with approval** | Available; used on one real project |
-| `hw-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and filters; **edits protected files only with approval** | Available; used on one real project |
+| `hw-phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
 
 An inspection skill **extracts evidence**; a review skill **interprets evidence**. Inspection outputs alone are not a declaration that a design is correct.
 
@@ -73,12 +109,12 @@ Hardware-Copilot/
 
 ## Use in a KiCad project : manual copy only
 
-1. Copy what you need into the target project. Skills are independent, so take only the ones you want:
+1. Copy what you need into the target project. Skills are self-contained, so take a whole group from [What it does](#what-it-does) or single skills. `rules/` and `hooks/` are optional; they add the full policy and file protection:
 
    | Copy | Purpose |
    | --- | --- |
-   | `.claude/skills/<name>/` | The skills you want |
-   | `.claude/rules/` | Engineering and Git rules |
+   | `.claude/skills/<name>/` | The skills you want, one folder each |
+   | `.claude/rules/` | Full engineering and Git rules (skills follow them when present) |
    | `.claude/hooks/` (both files) + the `hooks` block of `.claude/settings.json` | File protection guard |
    | `CLAUDE.md` | General project instructions; merge with any existing one |
 

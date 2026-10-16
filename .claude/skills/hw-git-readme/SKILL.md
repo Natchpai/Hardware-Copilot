@@ -73,14 +73,13 @@ user. This skill is independent and does not determine engineering readiness.
   measured or verified; keep the template's note saying so.
 - If no human phase declaration is available, remove the `Current Phase`
   placeholder line entirely. Do not substitute `DRAFT`, `Not declared`,
-  `Unknown` or an inferred value. Recording a declared phase is handled by
-  `hw-phase-record` and `rules/hardware-workflow.md`.
+  `Unknown` or an inferred value. Recording a later phase change is a separate
+  task (`hw-phase-record`, if installed).
 - Keep the template's Mermaid workflow diagram. Its `class` lines mirror the
-  `Current Phase` value, using the mapping in `hw-phase-record` ("Diagram
-  sync"): earlier phases `done`, the declared phase `review`, later phases
+  `Current Phase` value with this mapping: earlier phases `done`, the declared phase `review`, later phases
   `inactive`, all four `done` for RELEASE. With no declared phase, all four
   stay `inactive`. When updating a README, make the diagram agree with the
   `Current Phase` it contains; never derive a phase from the diagram.
 - Do not modify the template file during normal README generation.
-- Writing the README is a content edit. Staging or committing it follows
-  `rules/git-workflow.md` and needs separate approval.
+- Writing the README is a content edit. Staging or committing it needs
+  separate approval. Follow `rules/git-workflow.md` if present.

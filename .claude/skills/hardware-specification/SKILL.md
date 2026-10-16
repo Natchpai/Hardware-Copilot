@@ -5,7 +5,7 @@ description: >-
   and general specification templates. Use when the user asks to collect
   stakeholder needs, draft or update a hardware specification, turn beginner
   requirements into an engineering spec, or analyze requirements and PCB
-  constraints. Not for task tracking (use hardware-checklist).
+  constraints. Not for task tracking.
 argument-hint: "beginner | general | translate | update"
 ---
 
@@ -71,9 +71,9 @@ Pick the mode from `$ARGUMENTS` or the request. If unclear, ask.
 
 ## Boundaries
 
-- Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user values, official web pages, or `notebooklm` with citations.
+- Never open or read a PDF. Datasheet values come from the user, official manufacturer web pages, or NotebookLM answers with cited text, used only after the user approves uploading the file. If the project has `.claude/rules/engineering.md`, follow its "Datasheet evidence" section.
 - KiCad design and library files are read-only.
-- The project phase is declared by the human (`rules/hardware-workflow.md`); a specification never sets or changes it.
+- The project phase (`DRAFT`, `PRELIMINARY`, `CHECK`, `RELEASE`) is declared by the human; a specification never sets or changes it.
 - Electrical specs, component ratings, manufacturing capabilities and test results come from the user or a cited source. Without one, write `TBD` or `NOT_VERIFIED`.
 - Architecture, components, suppliers, PCB stackup and fabrication process come from the requirements, not from a default.
 - Write only the specification file asked for: no extra logs, manifests, reports, skills, scripts or Git actions.
@@ -82,4 +82,4 @@ Pick the mode from `$ARGUMENTS` or the request. If unclear, ask.
 
 - Suggested names: `HARDWARE_BRIEF.md` (beginner stakeholder requirements) and `HARDWARE_SPEC.md` (general engineering specification). An existing project name wins.
 - Report the file written, the sections added or changed, and the open `TBD` items and conflicts.
-- To track work and evidence against the specification, use `hardware-checklist`.
+- Optional companion: `hardware-checklist`, if installed, tracks work and evidence against the specification.

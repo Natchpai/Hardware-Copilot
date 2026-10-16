@@ -4,8 +4,7 @@ description: >-
   Builds or updates a Markdown table that compares the specs of candidate
   parts, one column per part number. Use when the user asks for a spec
   comparison table, or wants to add a part number to an existing one. Not for
-  choosing the part (use component-select) or price and stock (use
-  price-compare-table).
+  choosing the part or price and stock.
 argument-hint: "<MPN> [<MPN> ...] | add <MPN>"
 ---
 
@@ -15,9 +14,10 @@ Make one table. One column per part, one row per spec. Keep it simple.
 
 ## Rules
 
-- Never invent a value. Datasheet values follow "Datasheet evidence" in
-  `rules/engineering.md`: user values, official web pages, or `notebooklm`
-  with citations.
+- Never invent a value. Never open or read a PDF. Datasheet values come from
+  the user, official manufacturer web pages, or NotebookLM answers with cited
+  text, used only after the user approves uploading the file. If the project
+  has `.claude/rules/engineering.md`, follow its "Datasheet evidence" section.
 - Mark every cell with an evidence label: `VERIFIED`, `ASSUMED`, `ESTIMATED`,
   `NOT_VERIFIED`. If no source is known, write `NOT_VERIFIED`. Leave no blank.
 - Put the source in the cell or in a short source list under the table

@@ -33,8 +33,24 @@ method**, not a formula bank, a topology, a component value or a part choice.
 - A calculated result is an **estimate, not hardware verification**. Claims of
   compliance, safety, thermal adequacy or design closure need source data and
   independent validation.
-- Read KiCad files only through the read-only inspect skills. Write files only
-  when the user asks.
+- Read KiCad files with targeted, read-only queries. Write files only when the
+  user asks.
+- Cite only sources you actually read.
+
+## Evidence baseline
+
+- Label each significant claim `VERIFIED` (named evidence: CAD data, a
+  calculation or an official source), `ASSUMED` (assumption stated),
+  `ESTIMATED` (method and margin stated) or `NOT_VERIFIED` (evidence missing
+  or check not run).
+- Never open or read a PDF. Datasheet values come from the user, official
+  manufacturer web pages, or NotebookLM answers with cited text, used only
+  after the user approves uploading the file. With none of these, the value is
+  `NOT_VERIFIED`.
+- KiCad design and library files are read-only. Propose changes; do not apply
+  them.
+- If the project has `.claude/rules/engineering.md`, follow it; it is the full
+  policy.
 
 ## Workflow
 
@@ -58,7 +74,7 @@ method**, not a formula bank, a topology, a component value or a part choice.
 7. **Report evidence and limits.** Keep math correctness, model validity and
    measured performance apart. Mark missing evidence `NOT_VERIFIED`.
 
-## Coordination
+## Optional companions
 
 - `design-assist`: calculations compare architectures; a formula alone does
   not choose the architecture.
@@ -69,9 +85,9 @@ method**, not a formula bank, a topology, a component value or a part choice.
   conditions and package limits.
 - `sch-inspect`: targeted schematic facts; inferred connectivity stays
   unverified.
-- Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user
-  values, official web pages, or `notebooklm` with citations. Cite only sources
-  you actually read.
+
+These help if installed. If one is missing, do the step directly under the
+same evidence rules, or mark the dependent check `NOT_VERIFIED`.
 
 ## Output
 
@@ -81,7 +97,7 @@ Match the size of the answer to the request. For a real calculation:
 2. **Model and equations:** formulas, conditions and limits.
 3. **Results:** values with sensible precision and units; a compact table for
    several operating points. Label each result `ESTIMATED` and state the
-   method and margin (`rules/engineering.md`).
+   method and margin.
 4. **Checks and implications:** sanity checks, margins, sensitivity, and the
    next evidence the design decision needs. Mark critical unknowns
    `NOT_VERIFIED`.

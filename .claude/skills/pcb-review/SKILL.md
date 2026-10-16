@@ -4,7 +4,7 @@ description: >-
   Reviews a KiCad PCB layout, read-only and evidence-based. Use when the user
   asks to assess layout risks, placement, routing, power, thermal,
   signal-integrity or manufacturability concerns in a PCB design. Not for
-  looking up layout data only (use pcb-inspect).
+  looking up layout data only.
 argument-hint: "[board, area, net, reference, or review concern]"
 ---
 
@@ -22,14 +22,15 @@ power domain, interface, component group, net or manufacturing risk. Choose
 checks from the design itself, not from a fixed circuit-type checklist or an
 architecture guessed from reference designators or net names.
 
-Use `pcb-inspect` for targeted saved-board evidence:
+Get targeted saved-board evidence with these queries (`pcb-inspect` if
+installed; otherwise targeted reads of the saved `.kicad_pcb`):
 
 - `summary`, `footprint` and `nearby` for placement context.
 - `pads` and `pad-distance` for transformed pad-centre geometry and assignments.
 - `net` for saved pad assignments only.
 - `tracks` and `vias` for saved routing primitive geometry and metadata.
 
-Respect its bounded output, ambiguity results and `NOT_VERIFIED` states. A
+Respect the bounded output, ambiguity results and `NOT_VERIFIED` states. A
 shared net name, track assignment, via assignment or geometric distance does
 not prove copper continuity, clearance, route completeness, return-path quality
 or electrical behavior.
@@ -38,17 +39,41 @@ Results reflect the saved `.kicad_pcb` file, not unsaved edits in the KiCad PCB
 Editor. Report editor-state consistency as `NOT_VERIFIED` unless it was
 checked.
 
-Use `component-check` and the datasheet only when the exact part, package,
-rating, pinout, thermal or layout guidance changes a finding. Datasheet values
-follow "Datasheet evidence" in `rules/engineering.md`: user values, official
-web pages, or `notebooklm` with citations. Use `eng-calc` for a stated model
-with known inputs and assumptions, and `design-assist` only when alternatives
-or design-level trade-offs need exploring. Call a companion skill only when the
-finding needs it.
+Check the exact part, package, rating, pinout, thermal or layout guidance
+against the datasheet only when it changes a finding. Calculate only with a
+stated model, known inputs and assumptions. Explore alternatives only when
+design-level trade-offs need it.
 
-Use `sch-inspect` when schematic connectivity or circuit intent is needed to
-read the PCB evidence. PCB net assignments alone do not show the intended
-electrical behavior.
+Use schematic connectivity or circuit intent when it is needed to read the PCB
+evidence. PCB net assignments alone do not show the intended electrical
+behavior.
+
+## Evidence baseline
+
+- Label each significant claim `VERIFIED` (named evidence: CAD data, a
+  calculation or an official source), `ASSUMED` (assumption stated),
+  `ESTIMATED` (method and margin stated) or `NOT_VERIFIED` (evidence missing
+  or check not run).
+- Never open or read a PDF. Datasheet values come from the user, official
+  manufacturer web pages, or NotebookLM answers with cited text, used only
+  after the user approves uploading the file. With none of these, the value is
+  `NOT_VERIFIED`.
+- KiCad design and library files are read-only. Propose changes; do not apply
+  them.
+- If the project has `.claude/rules/engineering.md`, follow it; it is the full
+  policy.
+
+## Optional companions
+
+- `pcb-inspect`: targeted saved-board queries.
+- `sch-inspect`: schematic connectivity and circuit intent.
+- `component-check`: exact part, package, pinout and layout guidance.
+- `eng-calc`: calculations with a stated model.
+- `design-assist`: alternatives and design-level trade-offs.
+
+These help if installed. If one is missing, do the step directly under the
+same evidence rules, or mark the dependent check `NOT_VERIFIED`. Call a
+companion only when the finding needs it.
 
 ## Review reasoning
 
@@ -84,8 +109,10 @@ Give every conclusion a status:
 - **NOT_VERIFIED:** the needed evidence is missing, ambiguous, unsupported or
   outside the tool's scope.
 
-For each finding give: severity (`CRITICAL`, `MAJOR`, `MINOR` or `INFO`, as
-defined in "Finding format" in `rules/engineering.md`), the status above, the
+For each finding give: severity (`CRITICAL`: credible hazard or severe defect
+with clear evidence; `MAJOR`: likely functional or reliability issue; `MINOR`:
+bounded margin or documentation issue; `INFO`: observation, not a defect), the
+status above, the
 evidence label, target and location, evidence source, engineering impact, and
 one next check or corrective action. Severity rates the individual finding,
 not the board. Recommend changes; never apply them. Output sections:
@@ -95,5 +122,5 @@ not the board. Recommend changes; never apply them. Output sections:
 Example finding row:
 
 ```text
-MAJOR | C14 / U2 VIN | Potential risk | VERIFIED | C14 pad centre is 11.8 mm from U2 pin 3 (pad-distance); decoupling effectiveness unproven | pcb-inspect pad-distance, saved board | Higher supply loop inductance | Move C14 closer or confirm with a visual check
+MAJOR | C14 / U2 VIN | Potential risk | VERIFIED | C14 pad centre is 11.8 mm from U2 pin 3 (pad-distance); decoupling effectiveness unproven | pad-distance query, saved board | Higher supply loop inductance | Move C14 closer or confirm with a visual check
 ```

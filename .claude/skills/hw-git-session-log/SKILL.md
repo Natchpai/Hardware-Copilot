@@ -75,12 +75,11 @@ Use a verified session date; do not fabricate citations, references, or decision
 - Read only enough of the existing log to avoid duplicating a decision; if one
   exists, propose an update note instead.
 - Record `ACCEPTED` only for decisions the human engineer stated. A log entry
-  does not declare a project phase or approve a design (see
-  `rules/hardware-workflow.md`).
-- Release-facing changes belong in `CHANGELOG.md` (see `hw-git-changelog`);
-  do not copy between them unasked.
-- Git actions on the log follow `rules/git-workflow.md` and need separate
-  approval.
+  does not declare a project phase or approve a design.
+- Release-facing changes belong in `CHANGELOG.md`; do not copy between them
+  unasked.
+- Git actions on the log need separate approval. Follow
+  `rules/git-workflow.md` if present.
 
 ## Boundaries
 - Do not edit KiCad files, engineering rules, other logs, or review states.

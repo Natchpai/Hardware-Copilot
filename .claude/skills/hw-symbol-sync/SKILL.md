@@ -9,8 +9,8 @@ argument-hint: "[split <lib> | sym-lib-table | footprint-links]"
 
 # Symbol Sync
 
-Symbol scope only. Footprint libraries, 3D models, and `fp-lib-table` belong to
-`hw-footprint-sync`. Edit only library folders, `sym-lib-table`, and the
+Symbol scope only. Footprint libraries, 3D models, and `fp-lib-table` are out
+of scope (`hw-footprint-sync` covers them, if installed). Edit only library folders, `sym-lib-table`, and the
 `Footprint` and `ki_fp_filters` properties; leave pins, graphics and other
 symbol content unchanged.
 
@@ -34,8 +34,8 @@ Do not assume paths. Find them, then use them for the rest of the task:
 - Never edit hooks or permission settings to gain access. If a hook or deny rule
   blocks an authorized action, report it and let the human adjust it. Do not
   bypass it.
-- Do not stage, commit, or push without separate approval; Git actions follow
-  `rules/git-workflow.md`.
+- Do not stage, commit, or push without separate approval; follow
+  `rules/git-workflow.md` if present.
 
 ## Naming convention (follow the reference library)
 Reference: the shared KiCad library repo whose path the human gives at the start
@@ -96,8 +96,9 @@ folder (no extra, no missing), with `name` and `uri` matching the folder name
 exactly. Keep empty libraries unless the human says to remove them.
 
 ## Audit symbol footprint links and ki_fp_filters
-Read-only first. Run `hw-link-audit` to classify every symbol's `Footprint` link
-and `ki_fp_filters` (its tables define the categories). If it cannot run, read
+Read-only first. If `hw-link-audit` is installed, run it to classify every
+symbol's `Footprint` link and `ki_fp_filters` (its tables define the
+categories). If it is not installed or cannot run, read
 the `Footprint` and `ki_fp_filters` properties of every
 `*.kicad_symdir/*.kicad_sym` (Grep with `-n false`; `grep -L` for files lacking
 either) and compare with `*.pretty/*.kicad_mod` (`ls`).

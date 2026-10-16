@@ -17,7 +17,7 @@ Maintain the repository-root `CHANGELOG.md` as a concise record of **notable, co
 - Write or update `CHANGELOG.md` **only upon an explicit user request**. Do not update it automatically after a design change, Git commit, or phase declaration.
 - Read the existing changelog first. Preserve existing version history, links, custom sections, and entries unless the user explicitly requests a change.
 - Gather evidence from user-provided notes, relevant text files, and targeted read-only Git queries such as `git log`, `git show`, or `git diff`. Git messages are clues, **not** proof that hardware verification occurred.
-- Raw `git diff` of KiCad files is mostly UUID, coordinate and ordering noise. Do not derive design changes from it. Use user notes and commit messages, or `sch-inspect`/`pcb-inspect` on the saved files to confirm a reference designator, value or footprint. Mark changes you cannot confirm `NOT_VERIFIED`.
+- Raw `git diff` of KiCad files is mostly UUID, coordinate and ordering noise. Do not derive design changes from it. Use user notes and commit messages, or targeted read-only queries of the saved files (`sch-inspect`/`pcb-inspect` if installed) to confirm a reference designator, value or footprint. Mark changes you cannot confirm `NOT_VERIFIED`.
 - Never open, parse, generate, or assess PDFs. Do not alter KiCad design/library files or formal approval records.
 
 ## Writing style
@@ -45,7 +45,7 @@ Maintain the repository-root `CHANGELOG.md` as a concise record of **notable, co
 2. Inspect the existing `CHANGELOG.md` and the smallest relevant source range. Do not scan unrelated design files or bulk export project evidence.
 3. Draft categorized, deduplicated entries; identify any assumptions or verification gaps.
 4. Apply only the explicitly requested changelog edit; preserve other sections and report the change succinctly.
-5. If the user did not authorize writing a file, present a proposed entry instead. Never stage, commit, push, tag, publish a GitHub Release, or alter Git branches without separate explicit approval; Git actions follow `rules/git-workflow.md`.
+5. If the user did not authorize writing a file, present a proposed entry instead. Never stage, commit, push, tag, publish a GitHub Release, or alter Git branches without separate explicit approval; follow `rules/git-workflow.md` if present.
 
 ## Example
 

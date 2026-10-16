@@ -27,12 +27,34 @@ hardware settings stay unchanged.
 4. **Update the diagnosis.** Revise or drop hypotheses as results come in.
    Propose a fix only when the evidence supports it.
 
-Use `sch-inspect` or `pcb-inspect` when saved KiCad structure matters to the
-diagnosis. Use `eng-calc`, `component-check`, datasheets or application notes
-when a calculation or a device limit changes the diagnosis. Datasheet values
-follow "Datasheet evidence" in `rules/engineering.md`: user values, official
-web pages, or `notebooklm` with citations. Load other files or skills only
-when the next step needs them.
+Use targeted reads of the saved schematic or board when KiCad structure
+matters to the diagnosis. Use calculations, datasheets or application notes
+when a calculation or a device limit changes the diagnosis. Load other files
+or skills only when the next step needs them.
+
+## Evidence baseline
+
+- Label each significant claim `VERIFIED` (named evidence: CAD data, a
+  calculation or an official source), `ASSUMED` (assumption stated),
+  `ESTIMATED` (method and margin stated) or `NOT_VERIFIED` (evidence missing
+  or check not run).
+- Never open or read a PDF. Datasheet values come from the user, official
+  manufacturer web pages, or NotebookLM answers with cited text, used only
+  after the user approves uploading the file. With none of these, the value is
+  `NOT_VERIFIED`.
+- KiCad design and library files are read-only. Propose changes; do not apply
+  them.
+- If the project has `.claude/rules/engineering.md`, follow it; it is the full
+  policy.
+
+## Optional companions
+
+- `sch-inspect` and `pcb-inspect`: targeted saved schematic and board queries.
+- `eng-calc`: calculations with stated assumptions.
+- `component-check`: device limits from the datasheet.
+
+These help if installed. If one is missing, do the step directly under the
+same evidence rules, or mark the dependent check `NOT_VERIFIED`.
 
 ## Evidence and safety
 

@@ -5,7 +5,7 @@ description: >-
   operating conditions, trade-offs and availability. Use when the user asks to
   choose an IC or component, find alternatives or a replacement for an obsolete
   part, or decide which candidate fits a circuit best. Not for supplier stock
-  and price (use stock-select) or a spec table (use part-spec-table).
+  and price or a spec table.
 argument-hint: "[requirements | function | existing MPN]"
 ---
 
@@ -17,22 +17,36 @@ preferred parts.
 
 ## Boundaries
 
-- KiCad design files and libraries are read-only. Propose changes to BOMs,
-  symbols, footprints or project settings; do not apply them.
+- Propose changes to BOMs, symbols, footprints or project settings; do not
+  apply them.
 - Search across vendors, part families, topologies and packages unless the
   design fixes one. Include parts the user already stocks when they ask for
   that.
 - Primary evidence: current manufacturer datasheets, product pages, errata and
   lifecycle notices. Stock, lead time and price come from authorized
   distributors, with region, quantity, date and uncertainty stated.
-- Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user
-  values, official web pages, or `notebooklm` with citations.
 - Design to **recommended operating conditions**. Absolute maximum ratings are
   limits, not design targets.
 - Every MPN, orderable suffix, datasheet figure, price, stock count and pin
   compatibility claim needs a source. Mark it `NOT_VERIFIED` when the source is
   missing.
 - Return a ranked shortlist, not an open-ended catalog.
+- Read only the documentation sections the current decision needs.
+
+## Evidence baseline
+
+- Label each significant claim `VERIFIED` (named evidence: CAD data, a
+  calculation or an official source), `ASSUMED` (assumption stated),
+  `ESTIMATED` (method and margin stated) or `NOT_VERIFIED` (evidence missing
+  or check not run).
+- Never open or read a PDF. Datasheet values come from the user, official
+  manufacturer web pages, or NotebookLM answers with cited text, used only
+  after the user approves uploading the file. With none of these, the value is
+  `NOT_VERIFIED`.
+- KiCad design and library files are read-only. Propose changes; do not apply
+  them.
+- If the project has `.claude/rules/engineering.md`, follow it; it is the full
+  policy.
 
 ## Workflow
 
@@ -67,16 +81,17 @@ preferred parts.
    adequate alternative exists. Search further only if the evidence is weak or
    a clearly better candidate is likely.
 
-## Coordination
+## Optional companions
 
 - `stock-select`: when supplier stock, price or JLCPCB assembly decides between
   survivors. Stock never overrides an engineering constraint.
 - `component-check`: deep check of a chosen MPN, symbol and pinout, footprint
   and package, BOM entry, or substitution.
 - `sch-inspect`: targeted as-designed schematic evidence.
-- `eng-calc`: sizing, stress, thermal and tolerance checks. If it is not
-  installed, say so and calculate inline.
-- Read only the documentation sections the current decision needs.
+- `eng-calc`: sizing, stress, thermal and tolerance checks.
+
+These help if installed. If one is missing, do the step directly under the
+same evidence rules, or mark the dependent check `NOT_VERIFIED`.
 
 ## Output
 
@@ -99,5 +114,5 @@ Context:   3V3 LDO from 5 V, 300 mA load, -40 to 85 C, SOT-23-5 preferred (ASSUM
 Shortlist: <MPN A> | RECOMMENDED | dropout below 1.7 V headroom at 300 mA (VERIFIED, maker page) | lowest quiescent current
            <MPN B> | ALTERNATIVE | pinout same as A (NOT_VERIFIED) | second source
            <MPN C> | REJECTED    | 200 mA max output, below the 300 mA load (VERIFIED, maker page)
-Next:      check B's pinout against A with component-check before using it as a second source.
+Next:      check B's pinout against A's datasheet before using it as a second source.
 ```

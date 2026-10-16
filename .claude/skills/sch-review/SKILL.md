@@ -5,7 +5,7 @@ description: >-
   correctness, risks, missing protection, component suitability and design
   assumptions. Use when the user asks for a schematic review, a circuit design
   check, a power or signal-path review, or an assessment of a KiCad schematic
-  before PCB layout. Not for looking up schematic data only (use sch-inspect).
+  before PCB layout. Not for looking up schematic data only.
 argument-hint: "[sheet | subsystem | reference | concern]"
 ---
 
@@ -24,17 +24,31 @@ manufacturer or device checklist.
   PASS, a gate closure, or part of a formal review framework.
 - Query the requested block or concern only. Use targeted queries, not full
   schematic dumps or a full netlist export.
-- Label each claim `VERIFIED`, `ASSUMED`, `ESTIMATED` or `NOT_VERIFIED`
-  (`rules/engineering.md`). Keep schematic evidence, calculations, datasheet
-  requirements, inferences and unknowns apart. An unsupported or ambiguous
-  connection is `NOT_VERIFIED`.
+- Keep schematic evidence, calculations, datasheet requirements, inferences
+  and unknowns apart. An unsupported or ambiguous connection is
+  `NOT_VERIFIED`.
 - Matching net labels, a parser's proposed connection, ERC success, or no
   visible errors do not show electrical correctness.
 - Check part-specific claims against the actual MPN and current documentation.
-  Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user
-  values, official web pages, or `notebooklm` with citations.
 - Changes, purchases, commits, reports and logs happen only when the user asks
   and the repository rules allow them.
+- ERC, simulation, lab measurement, PCB checks and formal release are separate
+  activities. Recommend them where needed and say they were not performed.
+
+## Evidence baseline
+
+- Label each significant claim `VERIFIED` (named evidence: CAD data, a
+  calculation or an official source), `ASSUMED` (assumption stated),
+  `ESTIMATED` (method and margin stated) or `NOT_VERIFIED` (evidence missing
+  or check not run).
+- Never open or read a PDF. Datasheet values come from the user, official
+  manufacturer web pages, or NotebookLM answers with cited text, used only
+  after the user approves uploading the file. With none of these, the value is
+  `NOT_VERIFIED`.
+- KiCad design and library files are read-only. Propose changes; do not apply
+  them.
+- If the project has `.claude/rules/engineering.md`, follow it; it is the full
+  policy.
 
 ## Workflow
 
@@ -42,8 +56,9 @@ manufacturer or device checklist.
    range, and the review goal. Prefer the user's specific concern over a
    project-wide sweep. Ask for a missing constraint only if going on without it
    would mislead; otherwise state the assumption.
-2. **Collect targeted evidence.** Use `sch-inspect` for the relevant symbols,
-   pins, local, hierarchical and project connectivity, and instance paths.
+2. **Collect targeted evidence.** Query the saved `.kicad_sch` (with
+   `sch-inspect` if installed) for the relevant symbols, pins, local,
+   hierarchical and project connectivity, and instance paths.
    Record the scope it actually covered and any parser limits. Ask for a human
    visual check where native data cannot settle a question.
 3. **Rebuild the intended behavior.** Signal and power path, operating modes,
@@ -54,11 +69,10 @@ manufacturer or device checklist.
    protection, feedback stability, timing, signal integrity, grounding,
    sequencing and interface compatibility, as they apply. Report only the
    checks you actually ran.
-5. **Check calculations and components.** `eng-calc` for stress, tolerance,
-   thermal, timing or worst-case numbers; `component-check` for pin mapping,
-   MPN, package and datasheet requirements. Use `component-select` or
-   `stock-select` only when the user asks for alternatives or sourcing, or a
-   finding cannot be resolved without them.
+5. **Check calculations and components.** Calculate stress, tolerance,
+   thermal, timing or worst-case numbers; check pin mapping, MPN, package and
+   datasheet requirements. Look at alternatives or sourcing only when the user
+   asks for them, or a finding cannot be resolved without them.
 6. **Challenge assumptions.** Test at least one adverse condition where it
    applies: input extremes, transients, reverse current, reset, an unpowered
    interface, startup or a short circuit. Keep a demonstrated defect apart
@@ -71,9 +85,10 @@ manufacturer or device checklist.
 
 Give each finding a severity and a status:
 
-- **Severity:** `CRITICAL`, `MAJOR`, `MINOR` or `INFO`, as defined in "Finding
-  format" in `rules/engineering.md`. Severity rates the individual finding,
-  not the whole schematic.
+- **Severity:** `CRITICAL` (credible hazard or severe defect with clear
+  evidence), `MAJOR` (likely functional or reliability issue), `MINOR`
+  (bounded margin or documentation issue) or `INFO` (observation, not a
+  defect). Severity rates the individual finding, not the whole schematic.
 - **Status:** **Confirmed defect** (direct CAD, datasheet or calculation
   evidence shows a specific mismatch), **Potential risk** (a plausible concern
   that lacks the constraint, model or inspection to confirm it), or
@@ -83,17 +98,19 @@ Give each finding a severity and a status:
 State uncertainties plainly, and keep hypothetical worst cases as risks, not
 proven faults.
 
-## Coordination and scope limits
+## Optional companions
 
-- `sch-inspect` gives scoped structural evidence. Its `project-net` results are
-  not full KiCad netlist or ERC parity. Respect its limits on buses, inherited
+- `sch-inspect`: scoped structural evidence. Its `project-net` results are not
+  full KiCad netlist or ERC parity. Respect its limits on buses, inherited
   symbols, hidden connectivity and ambiguous instances.
 - `eng-calc`: auditable equations, units, tolerances and worst cases.
 - `component-check`: datasheet and physical mapping of a chosen device.
+- `component-select` and `stock-select`: alternatives and sourcing.
 - `design-assist`: architecture alternatives when the review raises a basic
   design-choice question.
-- ERC, simulation, lab measurement, PCB checks and formal release are separate
-  activities. Recommend them where needed and say they were not performed.
+
+These help if installed. If one is missing, do the step directly under the
+same evidence rules, or mark the dependent check `NOT_VERIFIED`.
 
 ## Output
 
@@ -112,7 +129,7 @@ Match the size of the output to the requested review. For a full review:
 Example finding row:
 
 ```text
-MAJOR | U3 pin 4 / EN | Potential risk | VERIFIED | EN is tied to VIN through R12 only; no divider for UVLO | sch-inspect local-net, datasheet table 6 (via NotebookLM) | Startup below the intended input voltage | Add a divider or confirm the intended threshold
+MAJOR | U3 pin 4 / EN | Potential risk | VERIFIED | EN is tied to VIN through R12 only; no divider for UVLO | local-net query, datasheet table 6 (via NotebookLM) | Startup below the intended input voltage | Add a divider or confirm the intended threshold
 ```
 
 If no supported issue is found, say **"No issue found within the inspected

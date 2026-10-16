@@ -9,14 +9,16 @@ argument-hint: "[3d | fp-lib-table | schematic-nicknames | all]"
 
 # Footprint Sync
 
-Footprint scope only. Symbol libraries and `sym-lib-table` belong to
-`hw-symbol-sync`. Edit only 3D folder names, local model path strings,
+Footprint scope only. Symbol libraries and `sym-lib-table` are out of scope
+(`hw-symbol-sync` covers them, if installed). Edit only 3D folder names, local model path strings,
 `fp-lib-table`, and nickname text in schematic Footprint properties; leave
 connectivity, values, net names and geometry unchanged.
 
 Keep the footprint libraries, the local 3D model folders, `fp-lib-table`, and
-schematic Footprint references consistent. Run `hw-link-audit` first to get the
-list of mismatches, and again after the edits to confirm them.
+schematic Footprint references consistent. List the mismatches first, and
+again after the edits to confirm them: with `hw-link-audit` if installed;
+otherwise read the `(model ...)` paths, `fp-lib-table` entries and schematic
+Footprint nicknames you will change and compare them with the folders on disk.
 
 ## Locate the project layout first
 Do not assume paths. Find them, then use them for the rest of the task:
@@ -37,8 +39,8 @@ Do not assume paths. Find them, then use them for the rest of the task:
 - Never edit hooks or permission settings to gain access. If a hook or deny rule
   blocks an authorized edit, report the blocker and let the human adjust it. Do
   not bypass it with shell commands.
-- Do not stage, commit, or push without separate approval; Git actions follow
-  `rules/git-workflow.md`.
+- Do not stage, commit, or push without separate approval; follow
+  `rules/git-workflow.md` if present.
 
 ## Naming convention (follow the reference library)
 Reference: the shared KiCad library repo whose path the human gives at the start

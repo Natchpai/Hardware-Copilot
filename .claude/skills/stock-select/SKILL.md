@@ -4,8 +4,8 @@ description: >-
   Finds and filters electronic parts that can be sourced from DigiKey, Mouser,
   LCSC, or the JLCPCB Parts Library. Use when the user asks for in-stock parts,
   supplier-specific alternatives, availability, price breaks, MOQ, or JLCPCB
-  assembly-ready parts. Not for engineering fit (use component-select) or a
-  price table for known part numbers (use price-compare-table).
+  assembly-ready parts. Not for engineering fit or a price table for known
+  part numbers.
 argument-hint: "[function | MPN | requirements] [supplier] [quantity]"
 ---
 
@@ -32,9 +32,10 @@ requirement, not by a preferred manufacturer, part number or category.
   supplier stock is not a reservation.
 - Ordering, reserving, uploading a BOM, signing in and changing a KiCad project
   all need explicit authorization. Inspection is read-only.
-- `component-select` covers engineering fit and trade-offs; `component-check`
-  covers datasheet, package, footprint and pinout checks. Passing the stock
-  filters does **not** mean the part is electrically approved.
+- Engineering fit and trade-offs, and datasheet, package, footprint and pinout
+  checks, are separate work (`component-select` and `component-check`, if
+  installed). Passing the stock filters does **not** mean the part is
+  electrically approved.
 
 ## Workflow
 
