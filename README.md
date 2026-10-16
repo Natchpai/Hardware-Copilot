@@ -4,12 +4,12 @@ A modular, evidence-driven hardware engineering assistant built for **Claude Cod
 
 **Hardware-Copilot assists engineering decisions; it does not approve designs or replace the engineer, KiCad ERC/DRC, datasheets, simulation, or physical validation.**
 
-## v1.3.0
+## v2.1.0
 
-- Claude never reads PDF files. Datasheet content comes from values you give, official web pages, or the `notebooklm` skill (see `.claude/rules/engineering.md`).
-- Git and documentation skills are included: `git-workflow`, `hw-git-readme`, `hw-git-changelog`, `hw-git-session-log`, `hw-phase-record`.
-- `sch-inspect` and `pcb-inspect` are shorter; command details moved to `references/`.
-- Pushes to `main`/`master` and PDF reads are denied in `.claude/settings.json`.
+- Skills are self-contained: each one works when copied alone, and follows `.claude/rules/` when the project has them.
+- Skills are grouped by design stage in this README. Folders, names and commands are unchanged.
+- Descriptions no longer name other skills. Mentions of other skills are optional companions with a fallback.
+- `.claude/settings.json` allows `Edit` and `Write` without a prompt; edits to KiCad schematic, PCB, symbol, footprint, 3D model and `library/` files still ask.
 
 `DRAFT`, `PRELIMINARY`, `CHECK`, and `RELEASE` are human-declared project context. They are not gates, evidence of approval, or permission to commit, tag, or release.
 
@@ -154,7 +154,7 @@ Project-specific **golden tests** use real KiCad designs stored outside version 
 
 GitHub Actions runs the repository's configured checks; verify the individual job results and whether any golden cases were actually executed or skipped before interpreting a green workflow as real-project validation.
 
-Synthetic suites were re-run for v1.3.0; golden suites were not re-run.
+Synthetic suites were re-run for v2.1.0; golden suites were not re-run.
 
 | Suite | Last reported result |
 | --- | --- |
