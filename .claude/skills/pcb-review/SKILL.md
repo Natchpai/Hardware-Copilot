@@ -85,7 +85,7 @@ Classify every conclusion clearly:
   outside the tool's scope.
 
 For each material finding, include a severity (`CRITICAL`, `MAJOR`, `MINOR`,
-`INFO`, as in `sch-review`), the status above, the target/location, evidence,
+`INFO`, as defined in "Finding format" in `rules/engineering.md`), the status above, the target/location, evidence,
 engineering impact, and one practical next check or corrective action. Severity
 describes the individual finding, not the board. Recommend changes;
 never apply them. Keep the result concise: **Scope**, **Findings**, **Evidence**,

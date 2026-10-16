@@ -71,16 +71,12 @@ engineer makes final design and release decisions.
 
 ## Findings and severity
 
-- `CRITICAL`: credible hazard or design defect with potentially severe impact,
-  supported by clear evidence; describe the conditions, not absolute certainty.
-- `MAJOR`: likely functional or reliability issue that requires design attention.
-- `MINOR`: bounded improvement, margin concern, or documentation issue.
-- `INFO`: observation or optional suggestion, not an identified defect.
-- `NOT_VERIFIED`: insufficient or unsupported evidence to determine correctness;
-  **not** equivalent to PASS or FAIL.
+Rate each finding `CRITICAL`, `MAJOR`, `MINOR`, or `INFO` as defined in
+"Finding format" in `rules/engineering.md`. Severity rates the individual
+finding, not the whole schematic.
 
-Severity describes impact and evidence for the *individual finding*, not the
-status of the whole schematic. Identify uncertainties explicitly; avoid
+`NOT_VERIFIED` means the evidence is not enough to decide; it is **not**
+equivalent to PASS or FAIL. Identify uncertainties explicitly; avoid
 inflating hypothetical worst cases into proven faults.
 
 ## Coordination and scope limits

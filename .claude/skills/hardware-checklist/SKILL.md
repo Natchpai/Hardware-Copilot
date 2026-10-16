@@ -47,7 +47,7 @@ Report ID coverage and topic coverage separately. ID coverage is a script or exa
 
    `SEVERITY | ref | label | statement | source`
 
-   - Severity: `HIGH` (requirement with no task, or `DONE` with no evidence), `MEDIUM` (missing detail or mismatch), `LOW` (wording or format).
+   - Severity, from the scale in `engineering.md`: `MAJOR` (requirement with no task, or `DONE` with no evidence), `MINOR` (missing detail or mismatch), `INFO` (wording or format). `CRITICAL` is not used here.
    - Label: `VERIFIED`, `ASSUMED`, or `NOT_VERIFIED`, as in `engineering.md`.
    - Source: the script, or the spec and checklist sections read.
 

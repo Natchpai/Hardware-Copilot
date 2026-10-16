@@ -29,8 +29,9 @@ Make one table. One column per part, one row per supplier detail. Keep it simple
 - LCSC stock does not prove JLCPCB assembly stock. Check JLCPCB separately and
   note Basic or Extended.
 - Do not order, reserve, sign in, or upload a BOM. Do not edit KiCad files.
-- Write the file only when the user asks. Save it under
-  `hardware/AO-Horizon/documents/design/`.
+- Write the file only when the user asks. Save it in the KiCad project's
+  existing documents folder (near the `.kicad_pro`). If there is none, or more
+  than one, ask once.
 - Search only the suppliers the user names. If the user drops a supplier (for
   example Mouser), leave it out of the table and the notes.
 - Prefer the supplier product detail page over search snippets and aggregators.

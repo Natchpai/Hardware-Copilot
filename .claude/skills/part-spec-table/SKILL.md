@@ -24,8 +24,9 @@ Make one table. One column per part, one row per spec. Keep it simple.
 - Do not mix recommended operating values with absolute maximum values. Name
   which one a row holds.
 - Say which row decides the choice. Do not pick a winner unless asked.
-- Write the file only when the user asks. Save it under
-  `hardware/AO-Horizon/documents/design/`. Do not edit KiCad files.
+- Write the file only when the user asks. Save it in the KiCad project's
+  existing documents folder (near the `.kicad_pro`). If there is none, or more
+  than one, ask once. Do not edit KiCad files.
 - Never shorten the spec table to "key rows" unless the user asks. Keep every
   row and every `NOT_VERIFIED` cell. A summary may add to the table, not replace it.
 - Keep one record per topic. If a file for the topic exists, update it. Do not
