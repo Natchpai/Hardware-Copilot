@@ -46,6 +46,8 @@ user. This skill is independent and does not determine engineering readiness.
 5. Include `Current Phase` only when a human engineer explicitly declares one.
    Otherwise, remove the `Current Phase` placeholder line entirely; do not
    substitute a default value.
+6. Show the proposed content and wait for approval before writing the file,
+   unless the user already asked for the file to be written.
 
 ## Update
 1. Read the existing README before proposing an update.
