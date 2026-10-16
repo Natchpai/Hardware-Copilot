@@ -44,6 +44,7 @@ Make one table. One column per part, one row per supplier detail. Keep it simple
   user asks to drop it.
 - Keep one record per topic. Update the existing file. Do not delete files
   unless the user asks.
+- Table format: pad the first column of every table to the width of its longest cell (header included), so the source lines up. Match the dashes in the separator row to that width. Leave the other columns unpadded.
 
 ## Steps
 
@@ -61,19 +62,19 @@ Make one table. One column per part, one row per supplier detail. Keep it simple
 ```text
 Date: YYYY-MM-DD | Region: ... | Currency: ... | Qty: ...
 
-| Detail             | <MPN 1> | <MPN 2> | (new P/N) |
-| ------------------ | ------- | ------- | --------- |
-| DigiKey SKU        | ...     | ...     |           |
-| DigiKey stock      | 0       | 18,395  |           |
-| DigiKey qty 1      | $4.86   | $5.87   |           |
-| DigiKey qty 10     | $4.17   | $5.06   |           |
-| DigiKey lead time  | 45 weeks| ...     |           |
-| LCSC SKU           | C…      | `NOT_VERIFIED` |    |
-| LCSC stock         | 1,875   | `NOT_VERIFIED` |    |
-| LCSC qty 1         | $21.00  | `NOT_VERIFIED` |    |
-| LCSC qty 10        | ...     | ...     |           |
-| LCSC lead time     | ...     | ...     |           |
-| Notes              | page fetch, conflict | ... |      |
+| Detail            | <MPN 1> | <MPN 2> | (new P/N) |
+| ----------------- | --- | --- | --- |
+| DigiKey SKU       | ... | ... | |
+| DigiKey stock     | 0 | 18,395 | |
+| DigiKey qty 1     | $4.86 | $5.87 | |
+| DigiKey qty 10    | $4.17 | $5.06 | |
+| DigiKey lead time | 45 weeks | ... | |
+| LCSC SKU          | C... | `NOT_VERIFIED` | |
+| LCSC stock        | 1,875 | `NOT_VERIFIED` | |
+| LCSC qty 1        | $21.00 | `NOT_VERIFIED` | |
+| LCSC qty 10       | ... | ... | |
+| LCSC lead time    | ... | ... | |
+| Notes             | page fetch, conflict | ... | |
 ```
 
 Layout: part numbers go across the top (one column per part). Details go down
@@ -83,6 +84,14 @@ adding a column. Repeat the detail rows for each supplier the user names.
 
 Optional second table, same layout: one row each for best verified in-stock
 supplier, stock, and price.
+
+## Writing style
+
+- Write simple, direct English, like one engineer talking to another. Use everyday words, short sentences and active voice.
+- Avoid fancy words, marketing phrases and AI-style filler. Keep standard engineering terms and exact identifiers.
+- Do not use the em dash (`—`). Use a period, comma, colon or parentheses.
+- Do not reword existing text that is already clear and correct.
+- Priority: technical accuracy, then clarity, then brevity, then style.
 
 ## Output
 

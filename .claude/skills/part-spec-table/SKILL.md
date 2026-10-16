@@ -15,9 +15,9 @@ Make one table. One column per part, one row per spec. Keep it simple.
 
 ## Rules
 
-- Follow `.claude/rules/engineering.md`. Never invent a value. Never open a PDF.
-- Use only these sources: values the user gives, official manufacturer web
-  pages, or NotebookLM answers the user approved.
+- Never invent a value. Datasheet values follow "Datasheet evidence" in
+  `rules/engineering.md`: user values, official web pages, or `notebooklm`
+  with citations.
 - Mark every cell with an evidence label: `VERIFIED`, `ASSUMED`, `ESTIMATED`,
   `NOT_VERIFIED`. If no source is known, write `NOT_VERIFIED`. Leave no blank.
 - Put the source in the cell or in a short source list under the table
@@ -32,6 +32,7 @@ Make one table. One column per part, one row per spec. Keep it simple.
   row and every `NOT_VERIFIED` cell. A summary may add to the table, not replace it.
 - Keep one record per topic. If a file for the topic exists, update it. Do not
   split into extra files or delete files unless the user asks.
+- Table format: pad the first column of every table to the width of its longest cell (header included), so the source lines up. Match the dashes in the separator row to that width. Leave the other columns unpadded.
 
 ## Steps
 
@@ -51,13 +52,21 @@ Make one table. One column per part, one row per spec. Keep it simple.
 ## Table shape
 
 ```text
-| Parameter        | <MPN 1>          | <MPN 2>          | (new P/N) |
-| ---------------- | ---------------- | ---------------- | --------- |
-| Manufacturer     | name             | name             |           |
-| Product status   | Production `VERIFIED` | `NOT_VERIFIED` |         |
-| Supply range     | 1.71 to 3.6 V `VERIFIED` | `NOT_VERIFIED` |        |
-| Package          | LGA-14 2.5x3 mm `VERIFIED` | ...        |           |
+| Parameter      | <MPN 1> | <MPN 2> | (new P/N) |
+| -------------- | --- | --- | --- |
+| Manufacturer   | name | name | |
+| Product status | Production `VERIFIED` | `NOT_VERIFIED` | |
+| Supply range   | 1.71 to 3.6 V `VERIFIED` | `NOT_VERIFIED` | |
+| Package        | LGA-14 2.5x3 mm `VERIFIED` | ... | |
 ```
+
+## Writing style
+
+- Write simple, direct English, like one engineer talking to another. Use everyday words, short sentences and active voice.
+- Avoid fancy words, marketing phrases and AI-style filler. Keep standard engineering terms and exact identifiers.
+- Do not use the em dash (`—`). Use a period, comma, colon or parentheses.
+- Do not reword existing text that is already clear and correct.
+- Priority: technical accuracy, then clarity, then brevity, then style.
 
 ## Output
 
