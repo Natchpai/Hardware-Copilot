@@ -5,7 +5,7 @@ description: >-
   pads, nets, tracks, vias, placement, and distances in the saved .kicad_pcb.
   Use when the user asks to inspect, locate, or measure a footprint, pad, net,
   trace, via, or board area. Targeted queries only; it extracts evidence and
-  does not judge the layout (use pcb-review for that).
+  does not judge the layout.
 argument-hint: "[summary | footprint <ref> | pads <ref> | net <name> | tracks <net> | vias <net> | nearby <ref> | pad-distance <ref.pin> <ref.pin>]"
 ---
 
@@ -54,7 +54,8 @@ Not implemented (do not offer as commands): extended `component`, `area`, `check
 3. Return only relevant geometry and connectivity: footprints, pads, nets,
    tracks, vias, layers, applicable constraints.
 4. Expand to connected regions, stackup, or datasheet guidance only when needed;
-   datasheet content follows `rules/engineering.md` (no direct PDF reads).
+   datasheet content comes from the user, official web pages or cited
+   NotebookLM answers (no direct PDF reads).
 5. If structural data is insufficient, request a targeted visual inspection, not
    an export of the whole board.
 6. Report with references, net and layer names, coordinates, evidence, and

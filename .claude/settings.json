@@ -3,6 +3,8 @@
   "permissions": {
     "defaultMode": "default",
     "allow": [
+      "Edit",
+      "Write",
       "Read",
       "Glob",
       "Grep",
@@ -17,8 +19,6 @@
       "Bash(git push *)"
     ],
     "ask": [
-      "Edit",
-      "Write",
       "Edit(**/*.kicad_pcb)",
       "Edit(**/*.kicad_sch)",
       "Edit(**/*.kicad_sym)",

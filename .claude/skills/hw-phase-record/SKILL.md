@@ -14,15 +14,18 @@ Record only a phase explicitly declared by the human engineer. A recorded phase
 is project context, not evidence of verification, approval, or release.
 
 ## Accepted phases
-- `DRAFT`
-- `PRELIMINARY`
-- `CHECK`
-- `RELEASE`
+- `DRAFT`: schematic capture in progress; PCB work not started.
+- `PRELIMINARY`: schematic nearly complete; PCB work started.
+- `CHECK`: schematic and PCB mostly final; the human runs ERC and DRC on a
+  saved baseline.
+- `RELEASE`: an approved CHECK baseline is published.
+
+If the project has `rules/hardware-workflow.md`, it holds the full phase
+definitions.
 
 ## Record
 1. Accept a phase only when the human explicitly states one of the accepted
-   values (case-insensitive; write it in upper case). Phase meanings are
-   defined in `rules/hardware-workflow.md`.
+   values (case-insensitive; write it in upper case).
 2. Treat wording such as "record it in README.md" or "update the README" as
    explicit persistence. Otherwise acknowledge the declaration in
    conversation only and make no file changes. A phase that is a step back
@@ -40,8 +43,8 @@ is project context, not evidence of verification, approval, or release.
    the problem and do not modify the file.
 
 ## Diagram sync
-When persistence is requested (this includes `hw-git-readme` creating a README
-with a declared phase) and the README has the Mermaid workflow diagram (nodes
+When persistence is requested (this includes creating a new README with a
+declared phase) and the README has the Mermaid workflow diagram (nodes
 `A`-`D` for DRAFT, PRELIMINARY, CHECK, RELEASE, matched by order and label),
 update only
 its `class` assignment lines to match the declared phase:
@@ -63,8 +66,8 @@ not already there.
   release.
 - Do not generate, open, read, parse, or assess PDF documents.
 - Keep KiCad files and libraries read-only.
-- Editing `README.md` is a content edit; staging or committing it follows
-  `rules/git-workflow.md` and needs separate approval.
+- Editing `README.md` is a content edit; staging or committing it needs
+  separate approval. Follow `rules/git-workflow.md` if present.
 
 ## Output
 - State the declared phase and whether it was acknowledged only or recorded in

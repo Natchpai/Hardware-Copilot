@@ -5,7 +5,7 @@ description: >-
   architecture and circuit-level trade-offs. Use when the user asks how to
   design a circuit or subsystem, compare design approaches, choose a topology
   or interface, or review design assumptions before parts are chosen. Not for
-  picking a specific part (use component-select).
+  picking a specific part.
 argument-hint: "[design objective | subsystem | requirements]"
 ---
 
@@ -19,20 +19,32 @@ device or topology to use**.
 
 - Pick the approach from the requirements. Compare more than one manufacturer,
   circuit family or architecture unless the design already fixes one.
-- KiCad designs and libraries are read-only. Propose changes to files, parts,
-  BOM or review state; do not apply them.
-- Label each significant claim `VERIFIED`, `ASSUMED`, `ESTIMATED` or
-  `NOT_VERIFIED` (`rules/engineering.md`). An assumption stays an assumption;
-  do not turn it into a requirement.
+- Propose changes to files, parts, BOM or review state; do not apply them.
+- An assumption stays an assumption; do not turn it into a requirement.
 - Device-specific claims need the current datasheet, errata, application note
   or standard for that device or revision. Cite it, and keep recommended
   operating conditions apart from absolute maximum ratings.
-- Datasheet values follow "Datasheet evidence" in `rules/engineering.md`: user
-  values, official web pages, or `notebooklm` with citations.
 - Reasoning, calculation and structural inspection do not show that a design
   is safe, compliant, production-ready or validated. Name the check that would.
 - Load only the evidence the decision needs: the target sheet, section or
   page, not whole projects or catalogs.
+- Stay in the scope the user asked for. Early design help does not start a
+  schematic review, PCB review, purchase or documentation task.
+
+## Evidence baseline
+
+- Label each significant claim `VERIFIED` (named evidence: CAD data, a
+  calculation or an official source), `ASSUMED` (assumption stated),
+  `ESTIMATED` (method and margin stated) or `NOT_VERIFIED` (evidence missing
+  or check not run).
+- Never open or read a PDF. Datasheet values come from the user, official
+  manufacturer web pages, or NotebookLM answers with cited text, used only
+  after the user approves uploading the file. With none of these, the value is
+  `NOT_VERIFIED`.
+- KiCad design and library files are read-only. Propose changes; do not apply
+  them.
+- If the project has `.claude/rules/engineering.md`, follow it; it is the full
+  policy.
 
 ## Workflow
 
@@ -61,7 +73,7 @@ device or topology to use**.
    measurement or review that would confirm the design. Untested behavior is
    not `PASS`.
 
-## Coordination
+## Optional companions
 
 - `component-select`: candidate devices for the chosen approach. Keep part
   catalogs out of this skill.
@@ -71,10 +83,10 @@ device or topology to use**.
   needs.
 - `sch-inspect`: targeted schematic evidence; its connectivity results are
   scoped and may be `NOT_VERIFIED`.
-- `eng-calc`: auditable calculations, worst cases and tolerances. If it is not
-  installed, calculate inline with units and assumptions.
-- Stay in the scope the user asked for. Early design help does not start a
-  schematic review, PCB review, purchase or documentation task.
+- `eng-calc`: auditable calculations, worst cases and tolerances.
+
+These help if installed. If one is missing, do the step directly under the
+same evidence rules, or mark the dependent check `NOT_VERIFIED`.
 
 ## Output
 
@@ -99,5 +111,5 @@ Recommendation: synchronous buck. LDO rejected on heat.
 Basis:  LDO loss = (13.2 V - 3.3 V) x 0.6 A = 5.9 W at max input | ESTIMATED | too much for a small SMD package without a heatsink
         Buck at an ASSUMED 85% efficiency: about 0.35 W loss | ESTIMATED | efficiency NOT_VERIFIED until a part is chosen
 Risks:  MAJOR | 3V3 | NOT_VERIFIED | Ripple limit for the ADC reference is unknown | ask the engineer
-Next:   component-select for a buck converter; get the ADC ripple limit.
+Next:   shortlist buck converters; get the ADC ripple limit.
 ```

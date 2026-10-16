@@ -60,7 +60,7 @@ flowchart LR
     class D inactive
 ```
 
-<!-- Maintainer note: set the class lines from the declared phase (see hw-phase-record, "Diagram sync"); with no declared phase every node stays slate. Remove this comment in the generated README. -->
+<!-- Maintainer note: set the class lines from the declared phase (earlier phases done, declared phase review, later phases inactive, all four done for RELEASE); with no declared phase every node stays slate. Remove this comment in the generated README. -->
 
 A human engineer declares phase changes.
 

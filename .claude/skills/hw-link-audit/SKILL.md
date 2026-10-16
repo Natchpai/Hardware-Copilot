@@ -6,7 +6,7 @@ description: >-
   against folders, and schematic nicknames. Use when the user asks whether
   symbols, footprints, 3D models and library tables are linked correctly, or
   wants a link check before or after reorganizing libraries. Reports only;
-  fixes belong to hw-footprint-sync and hw-symbol-sync.
+  does not fix links.
 argument-hint: "[project dir]"
 ---
 
@@ -20,13 +20,14 @@ schematic symbol (lib_id) -> symbol (Footprint, ki_fp_filters)
 fp-lib-table / sym-lib-table <-> library folders on disk
 ```
 
-For a datasheet-level check of one part's symbol or footprint (pinout, land
-pattern), use `component-check`; this skill checks links and files, not
-electrical correctness.
+This skill checks links and files, not electrical correctness. A
+datasheet-level check of one part's symbol or footprint (pinout, land pattern)
+is separate work (`component-check`, if installed).
 
-This skill never edits files. To fix findings use `hw-footprint-sync` (3D paths,
-`fp-lib-table`, schematic footprint nicknames) or `hw-symbol-sync` (symbol links,
-filters, `sym-lib-table`), only with the engineer's explicit authorization.
+This skill never edits files. Fixes need the engineer's explicit
+authorization; if installed, `hw-footprint-sync` (3D paths, `fp-lib-table`,
+schematic footprint nicknames) and `hw-symbol-sync` (symbol links, filters,
+`sym-lib-table`) apply them.
 
 ## Run
 ```bash

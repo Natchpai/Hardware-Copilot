@@ -5,7 +5,7 @@ description: >-
   components, pins, nets, labels, hierarchical sheets, and sheet instances.
   Use when the user asks to inspect, trace, or explain schematic circuits,
   connections, or functional blocks. Targeted, read-only; it extracts evidence
-  and does not judge the design (use sch-review for that).
+  and does not judge the design.
 argument-hint: "[summary | component <ref> | pins <ref> | local-net <ref> | hier-net <ref> | connected-pins <ref> | project-net <ref> --pin <n> | instances | sheet <name>]"
 ---
 
@@ -82,8 +82,9 @@ circuit correctness.
 5. **Expand only as needed** through sheet pins, hierarchical or global labels,
    and power nets. A repeated local label in separate sheet instances is not
    globally connected.
-6. **Validate** with calculations, datasheet evidence (`rules/engineering.md`),
-   or targeted checks relevant to the question.
+6. **Validate** with calculations, datasheet evidence (from the user, official
+   web pages or cited NotebookLM answers; never a direct PDF read), or
+   targeted checks relevant to the question.
 7. **Report** with file, sheet instance, reference, pin/net, evidence, and scope.
 
 ## Scope levels

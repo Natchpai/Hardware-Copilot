@@ -4,8 +4,8 @@ description: >-
   Builds or updates a Markdown table of price, stock and lead time for known
   part numbers across DigiKey, Mouser, LCSC and JLCPCB. Use when the user asks
   for a price or stock comparison table, or wants to add a part number to an
-  existing one. Not for finding parts (use stock-select) or judging design fit
-  (use component-select). Does not order anything.
+  existing one. Not for finding parts or judging design fit. Does not order
+  anything.
 argument-hint: "<MPN> [<MPN> ...] | add <MPN>"
 ---
 
