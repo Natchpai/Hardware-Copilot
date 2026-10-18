@@ -77,6 +77,7 @@ The skills are grouped by design stage below. The groups are for documentation a
 | `hw-git-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
 | `hw-git-session-log` | Optional engineering decision notes, invoked explicitly | Available |
 | `hw-phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
+| `progress-update` | Update the spec, checklist, design records, README, and CHANGELOG from saved CAD data, git history, and session decisions, invoked explicitly | Available; full run not yet tested |
 
 An inspection skill **extracts evidence**; a review skill **interprets evidence**. Inspection outputs alone are not a declaration that a design is correct.
 
