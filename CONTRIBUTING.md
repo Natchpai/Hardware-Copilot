@@ -36,6 +36,7 @@ Add or update a synthetic test before you fix a confirmed bug in a parser.
 2. Keep the change small and focused on one thing.
 3. Use [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for commit messages and the PR title, for example `fix(sch-inspect): handle empty sheet`.
 4. Open a pull request against `dev` and fill in the [PR template](.github/pull_request_template.md).
+5. For a release, bump `version` in `.claude-plugin/plugin.json` so plugin users get the update.
 
 ## Project rules
 
