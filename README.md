@@ -25,8 +25,8 @@ The groups below follow the design stages. They are only for this README; every 
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `hardware-specification` | Collects and writes hardware and PCB requirements from a beginner or engineering template | Available |
-| `hardware-checklist` | Turns requirements into tasks with an owner, a status and the evidence needed | Available |
+| `hardware-specification` | Collects and writes hardware and PCB requirements from a beginner or engineering template | Available; used on one real project |
+| `hardware-checklist` | Turns requirements into tasks with an owner, a status and the evidence needed | Available; used on one real project |
 
 ### 2. Design and parts
 
@@ -34,17 +34,17 @@ The groups below follow the design stages. They are only for this README; every 
 | --- | --- | --- |
 | `design-assist` | Requirements, circuit architecture, options and trade-offs | Initial use tested |
 | `eng-calc` | Calculations, assumptions, margins and worst-case checks | Initial use tested |
-| `component-select` | Finds and compares parts by how well they fit the circuit | Initial use tested |
+| `component-select` | Finds and compares parts by how well they fit the circuit | Initial use tested; used on one real project |
 | `component-check` | Checks MPN, datasheet, symbol, package, footprint and pin mapping | Initial use tested; exact suffix and compliance may stay unverified |
-| `part-spec-table` | Markdown table of part specs, one column per part number | Available |
-| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library | Initial use tested |
-| `price-compare-table` | Markdown table of price, stock and lead time at DigiKey, Mouser, LCSC and JLCPCB | Available |
+| `part-spec-table` | Markdown table of part specs, one column per part number | Available; used on one real project |
+| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library | Initial use tested; used on one real project |
+| `price-compare-table` | Markdown table of price, stock and lead time at DigiKey, Mouser, LCSC and JLCPCB | Available; used on one real project |
 
 ### 3. Schematic
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `sch-inspect` | Small, read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)** |
+| `sch-inspect` | Small, read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)**; used on two real projects |
 | `sch-review` | Schematic risk review based on evidence | Initial real-project use tested |
 
 ### 4. PCB
@@ -63,9 +63,9 @@ These are global skills. They run from `~/.claude/skills/` in every project. The
 | `kicad-link-audit` | Read-only check of symbol, footprint, 3D model and library-table links | Available; used on one real project |
 | `kicad-symbol-sync` | Splits `.kicad_sym` into `.kicad_symdir`, aligns `sym-lib-table`, fixes symbol footprint links and filters; **edits protected files only with approval**; run by name only | Available; used on one real project |
 | `kicad-footprint-sync` | Aligns footprint libraries, local 3D paths and `fp-lib-table`; **edits protected files only with approval**; run by name only | Available; used on one real project |
-| `kicad-naming` | Suggests or checks KLC names for symbols, footprints, 3D models and library families; advice only | Available |
-| `kicad-lib-organize` | Imports, publishes and renames library items to KLC in a local library tree | Available |
-| `kicad-part-start` | Starting symbol, footprint and 3D model for a new MPN in a project library | Available |
+| `kicad-naming` | Suggests or checks KLC names for symbols, footprints, 3D models and library families; advice only | Available; used on one real project |
+| `kicad-lib-organize` | Imports, publishes and renames library items to KLC in a local library tree | Available; used on one real project |
+| `kicad-part-start` | Starting symbol, footprint and 3D model for a new MPN in a project library | Available; used on one real project |
 
 ### 6. Bring-up and debug
 
@@ -77,12 +77,12 @@ These are global skills. They run from `~/.claude/skills/` in every project. The
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `git-workflow` | Git status, commits and PRs, each with your approval | Available |
-| `hw-git-readme` | Writes or updates project Markdown from confirmed facts | Available |
+| `git-workflow` | Git status, commits and PRs, each with your approval | Available; used on one real project |
+| `hw-git-readme` | Writes or updates project Markdown from confirmed facts | Available; used on one real project |
 | `hw-git-changelog` | Keeps a changelog from confirmed project changes | Available |
 | `hw-git-session-log` | Optional notes on engineering decisions; run by name only | Available |
 | `hw-phase-record` | Records a project phase that you declare in an existing README | Available |
-| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions; run by name only | Available; full run not yet tested |
+| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions; run by name only | Available; used on one real project |
 
 An inspect skill **collects evidence**. A review skill **explains what the evidence means**. Inspect output alone does not mean a design is correct.
 
