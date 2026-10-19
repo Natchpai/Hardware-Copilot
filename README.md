@@ -19,7 +19,7 @@ Skills are organized by **engineering task**, not by a fixed chip, vendor, or ci
 
 Each skill is **self-contained**: it works when copied alone. It carries a short evidence baseline (evidence labels, no PDF reads, read-only KiCad files) and follows `.claude/rules/` when the project has them. Other skills it mentions are optional companions; if one is missing, the skill does the step directly or marks it `NOT_VERIFIED`.
 
-The skills are grouped by design stage below. The groups are for documentation and copying only; all skills stay in `.claude/skills/<name>/`.
+The skills are grouped by design stage below. The groups are for documentation and copying only; all skills stay in `.claude/skills/<name>/`, except the global KiCad skills in section 5.
 
 ### 1. Requirements and planning
 
@@ -56,11 +56,13 @@ The skills are grouped by design stage below. The groups are for documentation a
 
 ### 5. Libraries
 
+These are global KiCad skills: they run from `~/.claude/skills/` in every project, and their source is in the kicad-workspace repo under `skills-src/`, with install steps. This repo keeps no copy. The same group also has `kicad-naming` (KLC names) and `kicad-lib-organize` (import, publish and rename library items).
+
 | Skill | Purpose | Status |
 | --- | --- | --- |
-| `hw-link-audit` | Read-only check of symbol, footprint, 3D model, and library-table links | Available; used on one real project |
-| `hw-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and filters; **edits protected files only with approval** | Available; used on one real project |
-| `hw-footprint-sync` | Align footprint libraries, local 3D paths, and `fp-lib-table`; **edits protected files only with approval** | Available; used on one real project |
+| `kicad-link-audit` | Read-only check of symbol, footprint, 3D model, and library-table links | Available; used on one real project |
+| `kicad-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and filters; **edits protected files only with approval** | Available; used on one real project |
+| `kicad-footprint-sync` | Align footprint libraries, local 3D paths, and `fp-lib-table`; **edits protected files only with approval** | Available; used on one real project |
 
 ### 6. Bring-up and debug
 
