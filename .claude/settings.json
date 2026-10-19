@@ -16,22 +16,24 @@
       "Bash(git add *)",
       "Bash(git commit *)",
       "Bash(gh pr create *)",
-      "Bash(git push *)"
-    ],
-    "ask": [
-      "Edit(**/*.kicad_pcb)",
-      "Edit(**/*.kicad_sch)",
-      "Edit(**/*.kicad_sym)",
-      "Edit(**/*.kicad_mod)",
+      "Bash(git push *)",
+
       "Edit(**/*.step)",
       "Edit(**/*.stp)",
+
+      "Edit(**/*.kicad_sym)",
+      "Edit(**/*.kicad_mod)",
       "Edit(**/library/**)"
+    ],
+    "ask": [
+      "Edit(**/*.kicad_sch)",
+      "Edit(**/*.kicad_pcb)",
+      "Edit(**/*.kicad_pro)"
     ],
     "deny": [
       "Read(**/*.pdf)",
       "Read(~/.notebooklm/**)",
       "Bash(pdftotext *)",
-      "Edit(**/*.kicad_pro)",
       "Edit(**/*.kicad_wks)",
       "Edit(**/templates/**)",
       "Edit(**/*.wrl)",
