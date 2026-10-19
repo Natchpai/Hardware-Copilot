@@ -14,21 +14,14 @@
       "Bash(git log *)",
       "Bash(git branch *)",
       "Bash(git add *)",
-      "Bash(git commit *)",
-      "Bash(gh pr create *)",
-      "Bash(git push *)",
-
-      "Edit(**/*.step)",
-      "Edit(**/*.stp)",
-
-      "Edit(**/*.kicad_sym)",
-      "Edit(**/*.kicad_mod)",
-      "Edit(**/library/**)"
+      "Bash(git commit *)"
     ],
     "ask": [
       "Edit(**/*.kicad_sch)",
       "Edit(**/*.kicad_pcb)",
-      "Edit(**/*.kicad_pro)"
+      "Edit(**/*.kicad_pro)",
+      "Bash(git push *)",
+      "Bash(gh pr create *)"
     ],
     "deny": [
       "Read(**/*.pdf)",
