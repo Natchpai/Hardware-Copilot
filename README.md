@@ -10,7 +10,7 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 - You can install the skills as a Claude Code plugin (see [Install](#install)).
 - New `progress-update` skill. It updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and decisions made in the session.
 - New `global-rules/git-workflow.md`. It is the Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install it once per user.
-- `.claude/settings.json`: Claude can edit symbol, footprint, `library/` and STEP files without a prompt from `settings.json`. Edits to schematic, PCB and `.kicad_pro` files ask first (`.kicad_pro` was blocked before). The `protect.json` guard did not change and still asks for all of them.
+- `.claude/settings.json` no longer asks before edits to symbol, footprint, `library/` and STEP files. Edits to schematic, PCB and `.kicad_pro` files ask first (`.kicad_pro` was blocked before). `git push` and `gh pr create` now ask first. The `protect.json` guard did not change and still asks for all of them.
 - Added `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and Requirements, Contributing and License sections.
 
 ## Skills
@@ -21,38 +21,40 @@ Each skill works on its own when copied alone. It carries a short set of base ru
 
 The groups below follow the design stages. They are only for this README; every skill lives in `.claude/skills/<name>/`, except the global library skills in group 5.
 
+Status: **Stable** = fixed scope with regression tests · **Used** = run on a real project, results checked · **Tested** = tried on test cases only · **Untested** = no test record yet.
+
 ### 1. Requirements and planning
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `hardware-specification` | Collects and writes hardware and PCB requirements from a beginner or engineering template | Available |
-| `hardware-checklist` | Turns requirements into tasks with an owner, a status and the evidence needed | Available |
+| `hardware-specification` | Collects and writes hardware and PCB requirements from a beginner or engineering template | Used |
+| `hardware-checklist` | Turns requirements into tasks with an owner, a status and the evidence needed | Used |
 
 ### 2. Design and parts
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `design-assist` | Requirements, circuit architecture, options and trade-offs | Initial use tested |
-| `eng-calc` | Calculations, assumptions, margins and worst-case checks | Initial use tested |
-| `component-select` | Finds and compares parts by how well they fit the circuit | Initial use tested |
-| `component-check` | Checks MPN, datasheet, symbol, package, footprint and pin mapping | Initial use tested; exact suffix and compliance may stay unverified |
-| `part-spec-table` | Markdown table of part specs, one column per part number | Available |
-| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library | Initial use tested |
-| `price-compare-table` | Markdown table of price, stock and lead time at DigiKey, Mouser, LCSC and JLCPCB | Available |
+| `design-assist` | Requirements, circuit architecture, options and trade-offs | Tested |
+| `eng-calc` | Calculations, assumptions, margins and worst-case checks | Tested |
+| `component-select` | Finds and compares parts by how well they fit the circuit | Used |
+| `component-check` | Checks MPN, datasheet, symbol, package, footprint and pin mapping; exact suffix and compliance may stay unverified | Tested |
+| `part-spec-table` | Markdown table of part specs, one column per part number | Used |
+| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library | Used |
+| `price-compare-table` | Markdown table of price, stock and lead time at DigiKey, Mouser, LCSC and JLCPCB | Used |
 
 ### 3. Schematic
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `sch-inspect` | Small, read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)** |
-| `sch-review` | Schematic risk review based on evidence | Initial real-project use tested |
+| `sch-inspect` | Small, read-only queries of saved KiCad schematics | **Stable** |
+| `sch-review` | Schematic risk review based on evidence | Used |
 
 ### 4. PCB
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `pcb-inspect` | Small, read-only queries of saved KiCad boards | **v1.0 Stable (Scoped)** |
-| `pcb-review` | PCB layout risk review based on evidence | Initial real-project use tested |
+| `pcb-inspect` | Small, read-only queries of saved KiCad boards | **Stable** |
+| `pcb-review` | PCB layout risk review based on evidence | Used |
 
 ### 5. Libraries
 
@@ -60,29 +62,29 @@ These are global skills. They run from `~/.claude/skills/` in every project. The
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `kicad-link-audit` | Read-only check of symbol, footprint, 3D model and library-table links | Available; used on one real project |
-| `kicad-symbol-sync` | Splits `.kicad_sym` into `.kicad_symdir`, aligns `sym-lib-table`, fixes symbol footprint links and filters; **edits protected files only with approval**; run by name only | Available; used on one real project |
-| `kicad-footprint-sync` | Aligns footprint libraries, local 3D paths and `fp-lib-table`; **edits protected files only with approval**; run by name only | Available; used on one real project |
-| `kicad-naming` | Suggests or checks KLC names for symbols, footprints, 3D models and library families; advice only | Available |
-| `kicad-lib-organize` | Imports, publishes and renames library items to KLC in a local library tree | Available |
-| `kicad-part-start` | Starting symbol, footprint and 3D model for a new MPN in a project library | Available |
+| `kicad-link-audit` | Read-only check of symbol, footprint, 3D model and library-table links | Used |
+| `kicad-symbol-sync` | Splits `.kicad_sym` into `.kicad_symdir`, aligns `sym-lib-table`, fixes symbol footprint links and filters; **edits protected files only with approval**; run by name only | Used |
+| `kicad-footprint-sync` | Aligns footprint libraries, local 3D paths and `fp-lib-table`; **edits protected files only with approval**; run by name only | Used |
+| `kicad-naming` | Suggests or checks KLC names for symbols, footprints, 3D models and library families; advice only | Used |
+| `kicad-lib-organize` | Imports, publishes and renames library items to KLC in a local library tree | Used |
+| `kicad-part-start` | Starting symbol, footprint and 3D model for a new MPN in a project library | Used |
 
 ### 6. Bring-up and debug
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `debug-assist` | Possible causes of a fault and the next measurements to take | Initial use tested |
+| `debug-assist` | Possible causes of a fault and the next measurements to take | Tested |
 
 ### 7. Docs and Git
 
 | Skill | What it does | Status |
 | --- | --- | --- |
-| `git-workflow` | Git status, commits and PRs, each with your approval | Available |
-| `hw-git-readme` | Writes or updates project Markdown from confirmed facts | Available |
-| `hw-git-changelog` | Keeps a changelog from confirmed project changes | Available |
-| `hw-git-session-log` | Optional notes on engineering decisions; run by name only | Available |
-| `hw-phase-record` | Records a project phase that you declare in an existing README | Available |
-| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions; run by name only | Available; full run not yet tested |
+| `git-workflow` | Git status, commits and PRs, each with your approval | Used |
+| `hw-git-readme` | Writes or updates project Markdown from confirmed facts | Used |
+| `hw-git-changelog` | Keeps a changelog from confirmed project changes | Untested |
+| `hw-git-session-log` | Optional notes on engineering decisions; run by name only | Untested |
+| `hw-phase-record` | Records a project phase that you declare in an existing README | Untested |
+| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions; run by name only | Used |
 
 An inspect skill **collects evidence**. A review skill **explains what the evidence means**. Inspect output alone does not mean a design is correct.
 
