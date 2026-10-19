@@ -178,7 +178,7 @@ These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC par
 ## Engineering boundaries
 
 - Verify part specifications, lifecycle, pricing, and availability using current, attributable sources; distinguish observed facts from assumptions.
-- **Claude never reads PDF documents.** Datasheet content comes from values you supply, official web pages, or the optional `notebooklm` skill (you add the datasheet to a NotebookLM notebook; Claude queries it and cites the source). Without one of these, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/engineering.md`.
+- **Claude never reads PDF documents.** Datasheet content comes from values you supply, official web pages, or the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) (you add the datasheet to a NotebookLM notebook; Claude queries it and cites the source). Without one of these, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/engineering.md`.
 - Choose the smallest relevant query or skill; avoid sending whole CAD designs or large netlists to the model by default.
 - Keep conclusions traceable: **confirmed finding**, **potential risk**, or **`NOT_VERIFIED`**.
 - For PCB analysis, filled-zone state, complete copper connectivity, clearance, return-path quality, SI/PI, and thermal behavior are outside the inspection parser's verified scope.
