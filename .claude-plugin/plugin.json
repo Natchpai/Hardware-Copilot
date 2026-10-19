@@ -1,0 +1,9 @@
+{
+  "name": "hardware-copilot",
+  "version": "3.0.0",
+  "description": "Claude Code skills for KiCad 10 hardware engineering: requirements, calculations, part selection, schematic and PCB inspection and review, debugging, and project docs.",
+  "author": { "name": "Natchpai" },
+  "license": "MIT",
+  "repository": "https://github.com/Natchpai/Hardware-Copilot",
+  "skills": ["./.claude/skills/"]
+}
