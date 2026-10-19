@@ -1,0 +1,12 @@
+{
+  "name": "hardware-copilot",
+  "owner": { "name": "Natchpai" },
+  "description": "Hardware-Copilot skills for KiCad 10 hardware engineering.",
+  "plugins": [
+    {
+      "name": "hardware-copilot",
+      "source": ".",
+      "description": "Claude Code skills for KiCad 10 hardware engineering."
+    }
+  ]
+}

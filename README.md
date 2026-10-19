@@ -1,90 +1,186 @@
 # Hardware-Copilot
 
-A modular, evidence-driven hardware engineering assistant built for **Claude Code** and **KiCad 10**. It supports design exploration, calculations, component selection, schematic and PCB inspection, engineering reviews, and troubleshooting.
+Claude Code skills for hardware engineering with **KiCad 10**. They help with requirements, circuit design, calculations, part selection, schematic and PCB checks, debugging, and project docs.
 
-**Hardware-Copilot assists engineering decisions; it does not approve designs or replace the engineer, KiCad ERC/DRC, datasheets, simulation, or physical validation.**
+**Hardware-Copilot helps you make engineering decisions. It does not approve designs, and it does not replace you, KiCad ERC/DRC, datasheets, simulation, or testing on real hardware.**
 
-## v3.0.0
+## What's new in v3.0.0
 
-- **Breaking:** `hw-link-audit`, `hw-symbol-sync` and `hw-footprint-sync` are removed from this repo. Use the global `kicad-link-audit`, `kicad-symbol-sync` and `kicad-footprint-sync` skills from [kicad-workspace](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) instead (see [5. Libraries](#5-libraries)). If you copied the `hw-*` versions into a project, delete them and install the global ones.
-- New `progress-update` skill: updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, git history and session decisions.
-- New `global-rules/git-workflow.md`: the global Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install it once per user (see [Use in a KiCad project](#use-in-a-kicad-project-manual-copy-only)).
-- `.claude/settings.json` permissions: edits to symbol, footprint, `library/` and STEP files no longer ask in `settings.json`; schematic, PCB and `.kicad_pro` edits ask (`.kicad_pro` was denied before). The `protect.json` guard is unchanged and still asks for all of them.
+- **Breaking:** `hw-link-audit`, `hw-symbol-sync` and `hw-footprint-sync` are removed from this repo. Use the global `kicad-link-audit`, `kicad-symbol-sync` and `kicad-footprint-sync` skills from [kicad-workspace](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) instead (see [Libraries](#5-libraries)). If you copied the `hw-*` versions into a project, delete them and install the global ones.
+- You can install the skills as a Claude Code plugin (see [Install](#install)).
+- New `progress-update` skill. It updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and decisions made in the session.
+- New `global-rules/git-workflow.md`. It is the Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install it once per user.
+- `.claude/settings.json`: Claude can edit symbol, footprint, `library/` and STEP files without a prompt from `settings.json`. Edits to schematic, PCB and `.kicad_pro` files ask first (`.kicad_pro` was blocked before). The `protect.json` guard did not change and still asks for all of them.
+- Added `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and Requirements, Contributing and License sections.
 
-`DRAFT`, `PRELIMINARY`, `CHECK`, and `RELEASE` are human-declared project context. They are not gates, evidence of approval, or permission to commit, tag, or release.
+## Skills
 
-## What it does
+Skills are split by **task**, not by chip, vendor or circuit type. Claude picks the skills a request needs. It does not load all of them every time.
 
-Skills are organized by **engineering task**, not by a fixed chip, vendor, or circuit topology. Claude chooses relevant skills as needed rather than loading all of them for every request.
+Each skill works on its own when copied alone. It carries a short set of base rules (evidence labels, no PDF reading, KiCad files are read-only) and follows `.claude/rules/` when a project has them. If a skill mentions another skill that is not installed, it does that step itself or marks it `NOT_VERIFIED`.
 
-Each skill is **self-contained**: it works when copied alone. It carries a short evidence baseline (evidence labels, no PDF reads, read-only KiCad files) and follows `.claude/rules/` when the project has them. Other skills it mentions are optional companions; if one is missing, the skill does the step directly or marks it `NOT_VERIFIED`.
-
-The skills are grouped by design stage below. The groups are for documentation and copying only; all skills stay in `.claude/skills/<name>/`, except the global KiCad skills in section 5.
+The groups below follow the design stages. They are only for this README; every skill lives in `.claude/skills/<name>/`, except the global library skills in group 5.
 
 ### 1. Requirements and planning
 
-| Skill | Purpose | Status |
+| Skill | What it does | Status |
 | --- | --- | --- |
-| `hardware-specification` | Gather and document hardware and PCB requirements from beginner or engineering templates | Available |
-| `hardware-checklist` | Turn specification requirements into gated tasks with owner, status, and evidence | Available |
+| `hardware-specification` | Collects and writes hardware and PCB requirements from a beginner or engineering template | Available |
+| `hardware-checklist` | Turns requirements into tasks with an owner, a status and the evidence needed | Available |
 
 ### 2. Design and parts
 
-| Skill | Purpose | Status |
+| Skill | What it does | Status |
 | --- | --- | --- |
-| `design-assist` | Requirements, circuit architecture, alternatives, and trade-offs | Initial use tested |
-| `eng-calc` | Calculations, assumptions, margins, and worst-case analysis | Initial use tested |
-| `component-select` | Find and compare parts by engineering fit | Initial use tested |
-| `component-check` | Verify MPN, datasheet, symbol, package, footprint, and pin mapping | Initial use tested; exact suffix/compliance may remain unverified |
-| `part-spec-table` | Markdown table comparing candidate part specs, one column per part number | Available |
-| `stock-select` | Check sourcing via DigiKey, Mouser, LCSC, and JLCPCB Parts Library | Initial use tested |
-| `price-compare-table` | Markdown table comparing price, stock, and lead time across DigiKey, Mouser, LCSC, and JLCPCB | Available |
+| `design-assist` | Requirements, circuit architecture, options and trade-offs | Initial use tested |
+| `eng-calc` | Calculations, assumptions, margins and worst-case checks | Initial use tested |
+| `component-select` | Finds and compares parts by how well they fit the circuit | Initial use tested |
+| `component-check` | Checks MPN, datasheet, symbol, package, footprint and pin mapping | Initial use tested; exact suffix and compliance may stay unverified |
+| `part-spec-table` | Markdown table of part specs, one column per part number | Available |
+| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library | Initial use tested |
+| `price-compare-table` | Markdown table of price, stock and lead time at DigiKey, Mouser, LCSC and JLCPCB | Available |
 
 ### 3. Schematic
 
-| Skill | Purpose | Status |
+| Skill | What it does | Status |
 | --- | --- | --- |
-| `sch-inspect` | Targeted read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)** |
-| `sch-review` | Evidence-based schematic risk assessment | Initial real-project use tested |
+| `sch-inspect` | Small, read-only queries of saved KiCad schematics | **v1.0 Stable (Scoped)** |
+| `sch-review` | Schematic risk review based on evidence | Initial real-project use tested |
 
 ### 4. PCB
 
-| Skill | Purpose | Status |
+| Skill | What it does | Status |
 | --- | --- | --- |
-| `pcb-inspect` | Targeted read-only queries of saved KiCad boards | **v1.0 Stable (Scoped)** |
-| `pcb-review` | Evidence-based PCB layout risk assessment | Initial real-project use tested |
+| `pcb-inspect` | Small, read-only queries of saved KiCad boards | **v1.0 Stable (Scoped)** |
+| `pcb-review` | PCB layout risk review based on evidence | Initial real-project use tested |
 
 ### 5. Libraries
 
-These are global KiCad skills: they run from `~/.claude/skills/` in every project. Their source and install steps are in the [kicad-workspace](https://github.com/Natchpai/kicad-workspace) repo under [`skills-src/`](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src). This repo keeps no copy, so there is one source to maintain.
+These are global skills. They run from `~/.claude/skills/` in every project. Their source and install steps are in [kicad-workspace `skills-src/`](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src). This repo keeps no copy, so there is only one place to maintain them.
 
-| Skill | Purpose | Status |
+| Skill | What it does | Status |
 | --- | --- | --- |
-| `kicad-link-audit` | Read-only check of symbol, footprint, 3D model, and library-table links | Available; used on one real project |
-| `kicad-symbol-sync` | Split `.kicad_sym` into `.kicad_symdir`, align `sym-lib-table`, fix symbol footprint links and filters; **edits protected files only with approval**; invoke explicitly | Available; used on one real project |
-| `kicad-footprint-sync` | Align footprint libraries, local 3D paths, and `fp-lib-table`; **edits protected files only with approval**; invoke explicitly | Available; used on one real project |
-| `kicad-naming` | Propose or check KLC names for symbols, footprints, 3D models and library families; advises only | Available |
-| `kicad-lib-organize` | Import, publish and KLC-rename library items into a local library tree | Available |
+| `kicad-link-audit` | Read-only check of symbol, footprint, 3D model and library-table links | Available; used on one real project |
+| `kicad-symbol-sync` | Splits `.kicad_sym` into `.kicad_symdir`, aligns `sym-lib-table`, fixes symbol footprint links and filters; **edits protected files only with approval**; run by name only | Available; used on one real project |
+| `kicad-footprint-sync` | Aligns footprint libraries, local 3D paths and `fp-lib-table`; **edits protected files only with approval**; run by name only | Available; used on one real project |
+| `kicad-naming` | Suggests or checks KLC names for symbols, footprints, 3D models and library families; advice only | Available |
+| `kicad-lib-organize` | Imports, publishes and renames library items to KLC in a local library tree | Available |
 | `kicad-part-start` | Starting symbol, footprint and 3D model for a new MPN in a project library | Available |
 
 ### 6. Bring-up and debug
 
-| Skill | Purpose | Status |
+| Skill | What it does | Status |
 | --- | --- | --- |
-| `debug-assist` | Troubleshooting hypotheses and targeted measurement plans | Initial use tested |
+| `debug-assist` | Possible causes of a fault and the next measurements to take | Initial use tested |
 
 ### 7. Docs and Git
 
-| Skill | Purpose | Status |
+| Skill | What it does | Status |
 | --- | --- | --- |
-| `git-workflow` | Git status, commit, and PR workflow under explicit approval | Available |
-| `hw-git-readme` | Create or maintain project-level Markdown using confirmed information | Available |
-| `hw-git-changelog` | Maintain a human-readable changelog from confirmed project changes | Available |
-| `hw-git-session-log` | Optional engineering decision notes, invoked explicitly | Available |
-| `hw-phase-record` | Record an explicitly human-declared project phase in an existing README | Available |
-| `progress-update` | Update the spec, checklist, design records, README, and CHANGELOG from saved CAD data, git history, and session decisions, invoked explicitly | Available; full run not yet tested |
+| `git-workflow` | Git status, commits and PRs, each with your approval | Available |
+| `hw-git-readme` | Writes or updates project Markdown from confirmed facts | Available |
+| `hw-git-changelog` | Keeps a changelog from confirmed project changes | Available |
+| `hw-git-session-log` | Optional notes on engineering decisions; run by name only | Available |
+| `hw-phase-record` | Records a project phase that you declare in an existing README | Available |
+| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions; run by name only | Available; full run not yet tested |
 
-An inspection skill **extracts evidence**; a review skill **interprets evidence**. Inspection outputs alone are not a declaration that a design is correct.
+An inspect skill **collects evidence**. A review skill **explains what the evidence means**. Inspect output alone does not mean a design is correct.
+
+`DRAFT`, `PRELIMINARY`, `CHECK` and `RELEASE` are phases that you declare. They are not gates, they do not mean a design is approved, and they do not give permission to commit, tag or release.
+
+## Requirements
+
+- [Claude Code](https://code.claude.com/docs)
+- Python 3.10 or later, standard library only. Tested on Python 3.14 (Windows) and in GitHub Actions (`ubuntu-latest`).
+- KiCad 10 saved files (`.kicad_sch` version `20260306`, `.kicad_pcb` version `20260206`). Older file formats are not tested.
+- Optional: the global library skills from [kicad-workspace](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src), and [notebooklm-py](https://github.com/teng-lin/notebooklm-py) for datasheet questions.
+
+## Install
+
+### Option 1: Claude Code plugin (skills only)
+
+In Claude Code, run:
+
+```text
+/plugin marketplace add Natchpai/Hardware-Copilot
+/plugin install hardware-copilot@hardware-copilot
+```
+
+On Claude Code 2.1.275 or later, one line does both: `/plugin install hardware-copilot --marketplace Natchpai/Hardware-Copilot`.
+
+Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A plugin does not load rules, `CLAUDE.md` or the file guard. For those, copy the files as in option 2.
+
+### Option 2: copy files into a KiCad project
+
+1. Copy what you need. Each skill works alone, so take a whole group from [Skills](#skills) or single skills. `rules/` and `hooks/` are optional; they add the full rules and file protection.
+
+   | Copy | Why |
+   | --- | --- |
+   | `.claude/skills/<name>/` | The skills you want, one folder each |
+   | `.claude/rules/` | Full engineering and Git rules (skills follow them when present) |
+   | `.claude/hooks/` (both files) and the `hooks` block of `.claude/settings.json` | File protection guard |
+   | `CLAUDE.md` | General project instructions; merge it with your own |
+   | `global-rules/git-workflow.md` to `~/.claude/rules/git-workflow.md` | Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install once per user, not per project. It sits outside `.claude/rules/` so it does not load twice |
+   | Global `kicad-*` skills from [kicad-workspace `skills-src/`](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) | Library skills in [group 5](#5-libraries). Install once per user to `~/.claude/skills/` using that folder's README |
+
+2. Check `.claude/settings.json` (permissions) and `.claude/hooks/protect.json` (protection rules). Edit `protect.json` to change which files are blocked, asked about or allowed; no code change is needed. The guard runs on top of `settings.json`: if `protect.json` asks for a path, you still get a prompt even when `settings.json` allows it.
+3. Open the project in Claude Code and ask an engineering question in normal language. You can also call a skill by name.
+4. Keep schematic and PCB files under your control. Review every design change Claude proposes.
+
+Nothing installs or updates itself, and nothing is written back to your design on its own. Inspect and review skills never change KiCad design or library files. Protected files change only through an edit you approve, for example with the global library sync skills; the guard asks each time. Every Git write needs your approval.
+
+### Example requests
+
+- "Compare architecture options for a 3.3 V battery-powered design before I pick an IC."
+- "Find two other ADCs with suitable ratings, then check stock at Mouser and DigiKey."
+- "Inspect U103 pin 8 in the saved schematic, then review possible gate-driver risks."
+- "Review decoupling placement and gate routing on the saved PCB, and say what still needs DRC or a visual check."
+- "Help me find the cause of startup oscillation and suggest the next safe measurement."
+
+## Inspection commands
+
+The inspect scripts use only the Python standard library and print JSON with a size limit. See each skill's `SKILL.md` and the script's `--help` for the **current syntax and options**.
+
+- **Schematic:** `summary`, `component`, `sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `instances`, `project-net`.
+- **PCB:** `summary`, `footprint`, `pads`, `net`, `tracks`, `vias`, `nearby`, `pad-distance`.
+
+Queries read the **saved** `.kicad_sch` and `.kicad_pcb` files, not unsaved edits in the KiCad editor. Shared nets, pad-center distances and track or via geometry do not prove copper is connected, clearances are met, or the board is correct. Anything unsupported or unclear is reported as `NOT_VERIFIED`, not guessed.
+
+## Tests and CI
+
+Run the synthetic tests from the repository root:
+
+```sh
+python -m unittest discover -s .claude/skills/sch-inspect/tests -p 'test_query_sch.py' -v
+python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_pcb.py' -v
+```
+
+**Golden tests** use real KiCad designs kept outside Git under `hardware/`. They are opt-in. With no project set, they **SKIP** instead of claiming a pass. A project path that is set but wrong makes them **FAIL**. See each test module for its environment variable and command. For schematic golden tests, set `KICAD_GOLDEN_PROJECT` to the root `.kicad_sch` file.
+
+GitHub Actions runs the checks on every push and PR. Before you treat a green run as a real-project check, look at each job and see whether the golden tests ran or skipped.
+
+Synthetic tests were run again for v3.0.0 (Python 3.14.7, Windows). Golden tests were not.
+
+| Suite | Last result |
+| --- | --- |
+| Schematic synthetic | 21/21 passed (v3.0.0) |
+| PCB synthetic | 31/31 passed (v3.0.0) |
+| PCB golden (real project) | 2/2 passed (earlier run) |
+| Schematic golden (real project) | 5/5 passed (earlier run) |
+
+These are **reported test results**. They do not show that the scripts match KiCad's own netlist, ERC or DRC everywhere. Running natively on macOS and OS-level read-only sandboxing have not been checked.
+
+## Engineering limits
+
+- Check part specs, lifecycle, price and stock against current sources you can name. Keep facts and assumptions apart.
+- **Claude never reads PDF files.** Datasheet values come from you, official web pages, or the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) (you add the datasheet to a NotebookLM notebook; Claude asks it questions and cites the source). Without one of these, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/engineering.md`.
+- Use the smallest query or skill that answers the question. Do not send whole designs or large netlists to the model by default.
+- Every conclusion is one of: **confirmed finding**, **possible risk** or **`NOT_VERIFIED`**.
+- PCB: zone fill state, full copper connectivity, clearance, return paths, SI/PI and thermal behavior are outside what the inspect script checks.
+- Schematic: complex bus expansion, hidden connections, inherited symbols and unclear repeated instances may stay unresolved.
+- KiCad ERC/DRC results, visual checks, simulation, measurements and manufacturer data are separate evidence. None of them is assumed to pass.
+
+See `CLAUDE.md`, `.claude/rules/` and each skill's `SKILL.md` for how Claude works here. Hardware-Copilot does not depend on any formal review or approval process.
 
 ## Repository layout
 
@@ -92,6 +188,12 @@ An inspection skill **extracts evidence**; a review skill **interprets evidence*
 Hardware-Copilot/
 ├── CLAUDE.md
 ├── README.md
+├── CONTRIBUTING.md
+├── CODE_OF_CONDUCT.md
+├── LICENSE
+├── .claude-plugin/
+│   ├── plugin.json           # Plugin manifest (skills only)
+│   └── marketplace.json      # Lets /plugin install from this repo
 ├── .claude/
 │   ├── settings.json
 │   ├── rules/
@@ -107,88 +209,27 @@ Hardware-Copilot/
 │       │   ├── SKILL.md
 │       │   ├── scripts/query_pcb.py
 │       │   └── tests/
-│       └── ...other task-oriented skills...
+│       └── ...other skills...
 ├── global-rules/
-│   └── git-workflow.md     # Global Git baseline; install to ~/.claude/rules/
+│   └── git-workflow.md       # Git safety baseline; install to ~/.claude/rules/
 ├── .github/
+│   ├── pull_request_template.md
 │   └── workflows/
-└── hardware/               # Local KiCad test projects; gitignored
+└── hardware/                 # Local KiCad test projects; not in Git
 ```
 
-## Use in a KiCad project: manual copy only
+## How this project is built
 
-1. Copy what you need into the target project. Skills are self-contained, so take a whole group from [What it does](#what-it-does) or single skills. `rules/` and `hooks/` are optional; they add the full policy and file protection:
+**Read-only inspection · Your approval for every change · Small context · Standard-library scripts · Manual copy or plugin install · Tests before bug fixes**
 
-   | Copy | Purpose |
-   | --- | --- |
-   | `.claude/skills/<name>/` | The skills you want, one folder each |
-   | `.claude/rules/` | Full engineering and Git rules (skills follow them when present) |
-   | `.claude/hooks/` (both files) + the `hooks` block of `.claude/settings.json` | File protection guard |
-   | `CLAUDE.md` | General project instructions; merge with any existing one |
-   | `global-rules/git-workflow.md` to `~/.claude/rules/git-workflow.md` | Global Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install once per user, not per project. Kept outside `.claude/rules/` so it does not load twice |
-   | Global `kicad-*` skills from [kicad-workspace `skills-src/`](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) | Library skills in [5. Libraries](#5-libraries); install once per user to `~/.claude/skills/` by following that folder's README |
+You do not need a Git tag, checksum file or build step to use this repo.
 
-2. Review `.claude/settings.json` (permissions) and `.claude/hooks/protect.json` (protection rules). Adjust `protect.json` to change which files are denied, asked about, or allowed; no code change is needed. The guard runs on top of `settings.json`: a path that `settings.json` allows still prompts if `protect.json` asks for it.
-3. Open that project in Claude Code and ask an engineering question in natural language. You can also invoke a specific skill when you want a particular workflow.
-4. Keep schematic/PCB project files under human control. Review every proposed design change yourself.
+## Contributing and support
 
-There is **no installer, auto-installation, migration tool, or automatic write-back**. Inspection and review skills never modify KiCad design or library files. Protected files can change only through an explicitly approved edit, such as the global library sync skills; the guard asks for approval each time. Git writes require explicit approval.
+Report bugs and ask questions in [GitHub Issues](https://github.com/Natchpai/Hardware-Copilot/issues). Pull requests are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests and commit style. Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-Example requests:
+## License
 
-- “Compare architecture options for a 3.3 V battery-powered design before selecting an IC.”
-- “Find two alternative ADCs with suitable ratings, then check stock at Mouser and DigiKey.”
-- “Inspect U103 pin 8 in the saved schematic, then review possible gate-driver risks.”
-- “Review decoupling placement and gate-routing risks on the saved PCB; state what still needs DRC or visual inspection.”
-- “Help isolate the cause of startup oscillation and recommend the next safe measurement.”
+[MIT](LICENSE) © 2026 Natchpai
 
-## Inspection commands
-
-The inspection parsers use Python's standard library and produce bounded JSON output. See each skill's `SKILL.md` and script `--help` for its **current CLI syntax and options**.
-
-- **Schematic:** `summary`, `component`, `sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `instances`, `project-net`.
-- **PCB:** `summary`, `footprint`, `pads`, `net`, `tracks`, `vias`, `nearby`, `pad-distance`.
-
-Queries reflect **saved** `.kicad_sch` / `.kicad_pcb` files, not unsaved edits in the KiCad editor. Shared net assignments, pad-center distances, and track/via geometry do not prove copper continuity, electrical clearance, or physical correctness. Unsupported and ambiguous evidence must be reported as `NOT_VERIFIED` rather than inferred.
-
-## Tests and CI
-
-Run synthetic regression tests from the repository root:
-
-```sh
-python -m unittest discover -s .claude/skills/sch-inspect/tests -p 'test_query_sch.py' -v
-python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_pcb.py' -v
-```
-
-Project-specific **golden tests** use real KiCad designs stored outside version control under `hardware/`. They are opt-in: without a configured project, tests should clearly **SKIP**, not silently claim validation; an explicitly invalid project path should **FAIL**. Follow the corresponding test module's documented environment variable and command. For schematic golden tests, use `KICAD_GOLDEN_PROJECT` with the root `.kicad_sch` file.
-
-GitHub Actions runs the repository's configured checks; verify the individual job results and whether any golden cases were actually executed or skipped before interpreting a green workflow as real-project validation.
-
-Synthetic suites were re-run for v3.0.0 (Python 3.14.7, Windows); golden suites were not re-run.
-
-| Suite | Last reported result |
-| --- | --- |
-| Schematic synthetic regression | 21/21 passed (v3.0.0) |
-| PCB synthetic regression | 31/31 passed (v3.0.0) |
-| PCB configured real-project golden | 2/2 passed (earlier run) |
-| Real-project schematic golden | 5/5 passed in earlier validation |
-
-These are **reported test results**, not proof of KiCad-wide netlist/ERC/DRC parity. Native macOS execution and OS-enforced sandbox read-only protection have not been independently established.
-
-## Engineering boundaries
-
-- Verify part specifications, lifecycle, pricing, and availability using current, attributable sources; distinguish observed facts from assumptions.
-- **Claude never reads PDF documents.** Datasheet content comes from values you supply, official web pages, or the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) (you add the datasheet to a NotebookLM notebook; Claude queries it and cites the source). Without one of these, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/engineering.md`.
-- Choose the smallest relevant query or skill; avoid sending whole CAD designs or large netlists to the model by default.
-- Keep conclusions traceable: **confirmed finding**, **potential risk**, or **`NOT_VERIFIED`**.
-- For PCB analysis, filled-zone state, complete copper connectivity, clearance, return-path quality, SI/PI, and thermal behavior are outside the inspection parser's verified scope.
-- For schematic analysis, complex bus expansion, hidden connections, inherited symbols, and ambiguous repeated instances may remain unresolved.
-- Existing KiCad ERC/DRC results, visual inspection, simulations, measurements, and manufacturer data are separate evidence sources, not implied passes.
-
-See `CLAUDE.md`, `.claude/rules/`, and each skill's `SKILL.md` for operating guidance. Hardware-Copilot is independent of any formal hardware review gate or approval framework.
-
-## Development principles
-
-**Read-only inspection · Explicit human approval · Minimal context · Portable standard-library queries · Manual deployment · Tests before confirmed bug fixes**
-
-No Git tag, checksum/SHA manifest, installer, or generated release artifact is required to use this repository.
+Hardware-Copilot is an independent project. It is not affiliated with or endorsed by Anthropic or the KiCad project.
