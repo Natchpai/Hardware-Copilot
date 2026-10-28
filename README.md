@@ -4,14 +4,18 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 
 **Hardware-Copilot helps you make engineering decisions. It does not approve designs, and it does not replace you, KiCad ERC/DRC, datasheets, simulation, or testing on real hardware.**
 
-## What's new in v3.0.0
+## What's new in v3.1.0
 
-- **Breaking:** `hw-link-audit`, `hw-symbol-sync` and `hw-footprint-sync` are removed from this repo. Use the global `kicad-link-audit`, `kicad-symbol-sync` and `kicad-footprint-sync` skills from [kicad-workspace](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) instead (see [Libraries](#5-libraries)). If you copied the `hw-*` versions into a project, delete them and install the global ones.
-- You can install the skills as a Claude Code plugin (see [Install](#install)).
-- New `progress-update` skill. It updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and decisions made in the session.
-- New `global-rules/git-workflow.md`. It is the Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install it once per user.
-- `.claude/settings.json` no longer asks before edits to symbol, footprint, `library/` and STEP files. Edits to schematic, PCB and `.kicad_pro` files ask first (`.kicad_pro` was blocked before). `git push` and `gh pr create` now ask first. The `protect.json` guard did not change and still asks for all of them.
-- Added `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, and Requirements, Contributing and License sections.
+- **New PDF rule** in `.claude/rules/pdf.md`, the one place for PDF handling. Claude may read the project's own report PDFs and build report PDFs when you ask. It does not read schematic, PCB or datasheet PDFs directly. NotebookLM is the default datasheet source; if it has a problem, Claude asks you what to do.
+- The NotebookLM procedure moved to `.claude/rules/notebooklm.md`, which loads only for PDF and `documents/` paths.
+- `progress-update` runs a preflight script first (`scripts/progress_preflight.py`). It prints one JSON with commits, changed files, per-sheet parts, library and doc checks, so the skill reads less of the KiCad files.
+- **Permissions changed** in `.claude/settings.json` and `.claude/hooks/protect.json`:
+  - Edits to symbol, footprint, `library/`, STEP and `.kicad_pro` files run without a prompt in both files. Schematic and PCB edits still ask.
+  - `git push` and `gh pr create` run without a prompt, and `git merge` asks instead of being blocked. `CLAUDE.md` still requires your approval in chat for every Git write.
+  - PDF reads ask first. PDFs under `documents/schematic*/` and `documents/manufacturing/` are blocked.
+- `CLAUDE.md` adds Git, external-model provider, workflow and compact sections.
+
+Earlier changes are in [Releases](https://github.com/Natchpai/Hardware-Copilot/releases).
 
 ## Skills
 
@@ -129,7 +133,7 @@ Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A
 3. Open the project in Claude Code and ask an engineering question in normal language. You can also call a skill by name.
 4. Keep schematic and PCB files under your control. Review every design change Claude proposes.
 
-Nothing installs or updates itself, and nothing is written back to your design on its own. Inspect and review skills never change KiCad design or library files. Protected files change only through an edit you approve, for example with the global library sync skills; the guard asks each time. Every Git write needs your approval.
+Nothing installs or updates itself, and nothing is written back to your design on its own. Inspect and review skills never change KiCad design or library files. Protected files change only through an edit you approve, for example with the global library sync skills. The guard asks before every schematic and PCB edit. Every Git write needs your approval.
 
 ### Example requests
 
@@ -161,12 +165,12 @@ python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_p
 
 GitHub Actions runs the checks on every push and PR. Before you treat a green run as a real-project check, look at each job and see whether the golden tests ran or skipped.
 
-Synthetic tests were run again for v3.0.0 (Python 3.14.7, Windows). Golden tests were not.
+Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). Golden tests were not.
 
 | Suite | Last result |
 | --- | --- |
-| Schematic synthetic | 21/21 passed (v3.0.0) |
-| PCB synthetic | 31/31 passed (v3.0.0) |
+| Schematic synthetic | 21/21 passed (v3.1.0) |
+| PCB synthetic | 31/31 passed (v3.1.0) |
 | PCB golden (real project) | 2/2 passed (earlier run) |
 | Schematic golden (real project) | 5/5 passed (earlier run) |
 
@@ -175,7 +179,7 @@ These are **reported test results**. They do not show that the scripts match KiC
 ## Engineering limits
 
 - Check part specs, lifecycle, price and stock against current sources you can name. Keep facts and assumptions apart.
-- **Claude never reads PDF files.** Datasheet values come from you, official web pages, or the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) (you add the datasheet to a NotebookLM notebook; Claude asks it questions and cites the source). Without one of these, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/engineering.md`.
+- **Claude never reads datasheet, schematic or PCB PDFs directly.** It may read the project's own report PDFs and build report PDFs when you ask. Datasheet values come from the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) by default (the datasheet sits in a NotebookLM notebook; Claude asks it questions and cites the source), or from you or official web pages. Claude asks before uploading a PDF, and asks you what to do if NotebookLM has a problem. Without a source, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/pdf.md`.
 - Use the smallest query or skill that answers the question. Do not send whole designs or large netlists to the model by default.
 - Every conclusion is one of: **confirmed finding**, **possible risk** or **`NOT_VERIFIED`**.
 - PCB: zone fill state, full copper connectivity, clearance, return paths, SI/PI and thermal behavior are outside what the inspect script checks.

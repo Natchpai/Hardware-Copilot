@@ -42,7 +42,7 @@ Add or update a synthetic test before you fix a confirmed bug in a parser.
 
 Changes must keep the rules in [CLAUDE.md](CLAUDE.md) and [.claude/rules/](.claude/rules/):
 
-- Skills never read PDF files. Datasheet values come from the user, official web pages or NotebookLM.
+- Skills never read datasheet, schematic or PCB PDFs. Datasheet values come from NotebookLM (default), the user or official web pages. PDF rules are in `.claude/rules/pdf.md`.
 - Inspection and review skills treat KiCad design and library files as read-only.
 - Findings carry evidence labels (`VERIFIED`, `ASSUMED`, `ESTIMATED`, `NOT_VERIFIED`).
 - Each skill stays self-contained: it works when copied alone.

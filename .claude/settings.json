@@ -14,20 +14,33 @@
       "Bash(git log *)",
       "Bash(git branch *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(gh pr create *)",
+      "Bash(git push *)",
+
+      "Edit(**/*.step)",
+      "Edit(**/*.stp)",
+
+      "Edit(**/*.kicad_sym)",
+      "Edit(**/*.kicad_mod)",
+      "Edit(**/*.kicad_pro)",
+      "Edit(**/library/**)"
     ],
     "ask": [
       "Edit(**/*.kicad_sch)",
       "Edit(**/*.kicad_pcb)",
-      "Edit(**/*.kicad_pro)",
-      "Bash(git push *)",
-      "Bash(gh pr create *)"
+      "Bash(git merge *)",
+
+      "Bash(pdftotext *)",
+      "Read(**/*.pdf)"
     ],
     "deny": [
-      "Read(**/*.pdf)",
-      "Read(~/.notebooklm/**)",
-      "Bash(pdftotext *)",
       "Edit(**/*.kicad_wks)",
+      "Read(~/.notebooklm/**)",
+      "Read(**/documents/schematic/**/*.pdf)",
+      "Read(**/documents/Schematics/**/*.pdf)",
+      "Read(**/documents/manufacturing/**/*.pdf)",
+      "Read(**/documents/Manufacturing/**/*.pdf)",
       "Edit(**/templates/**)",
       "Edit(**/*.wrl)",
       "Bash(git push origin main*)",
@@ -38,7 +51,6 @@
       "Bash(git push -f *)",
       "Bash(git reset --hard *)",
       "Bash(git clean -fd *)",
-      "Bash(git merge *)",
       "Bash(gh pr merge *)"
     ]
   },
