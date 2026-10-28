@@ -26,7 +26,7 @@ Native design files and local libraries are protected by the `.claude/hooks/prot
 - Respect existing project conventions, documentation, and workflows.
 - Use available tools and capabilities appropriate to the task.
 - Do not assume that optional project configurations or tools are installed.
-- Never read PDF files. For datasheet content use values the engineer gives, official web pages, or the `notebooklm` skill; if none is available, report `NOT_VERIFIED` and say so (see `.claude/rules/engineering.md`).
+- PDFs: follow `.claude/rules/pdf.md` (project reports may be read and generated; schematic, PCB and datasheet PDFs are not read directly).
 - Language: follow the project's convention. If none is stated, write files and commit messages in English and reply in the user's language.
 
 ## Working Approach

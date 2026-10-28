@@ -175,7 +175,7 @@ These are **reported test results**. They do not show that the scripts match KiC
 ## Engineering limits
 
 - Check part specs, lifecycle, price and stock against current sources you can name. Keep facts and assumptions apart.
-- **Claude never reads PDF files.** Datasheet values come from you, official web pages, or the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) (you add the datasheet to a NotebookLM notebook; Claude asks it questions and cites the source). Without one of these, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/engineering.md`.
+- **Claude never reads datasheet, schematic or PCB PDFs directly.** It may read the project's own report PDFs and build report PDFs when you ask. Datasheet values come from the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) by default (the datasheet sits in a NotebookLM notebook; Claude asks it questions and cites the source), or from you or official web pages. Claude asks before uploading a PDF, and asks you what to do if NotebookLM has a problem. Without a source, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/pdf.md`.
 - Use the smallest query or skill that answers the question. Do not send whole designs or large netlists to the model by default.
 - Every conclusion is one of: **confirmed finding**, **possible risk** or **`NOT_VERIFIED`**.
 - PCB: zone fill state, full copper connectivity, clearance, return paths, SI/PI and thermal behavior are outside what the inspect script checks.

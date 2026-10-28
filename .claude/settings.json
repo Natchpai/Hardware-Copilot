@@ -21,12 +21,16 @@
       "Edit(**/*.kicad_pcb)",
       "Edit(**/*.kicad_pro)",
       "Bash(git push *)",
-      "Bash(gh pr create *)"
+      "Bash(gh pr create *)",
+      "Read(**/*.pdf)",
+      "Bash(pdftotext *)"
     ],
     "deny": [
-      "Read(**/*.pdf)",
       "Read(~/.notebooklm/**)",
-      "Bash(pdftotext *)",
+      "Read(**/documents/schematic/**/*.pdf)",
+      "Read(**/documents/Schematics/**/*.pdf)",
+      "Read(**/documents/manufacturing/**/*.pdf)",
+      "Read(**/documents/Manufacturing/**/*.pdf)",
       "Edit(**/*.kicad_wks)",
       "Edit(**/templates/**)",
       "Edit(**/*.wrl)",
