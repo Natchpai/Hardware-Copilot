@@ -1,54 +1,46 @@
 ---
 name: git-workflow
 description: >-
-  Assists with Git and GitHub workflows: inspecting repository status,
-  analyzing changes, managing branches, writing Conventional Commits, and
-  preparing pull requests. Use when the user asks what changed, wants to
-  commit, create or switch a branch, summarize a diff, or open a PR.
+  Git and GitHub work: status and diffs, branches, Conventional Commits and
+  pull requests. Use when the user asks what changed, or wants to commit,
+  create or switch a branch, or open a PR.
 argument-hint: "status | branch [name] | commit [scope] | pr [base]"
 ---
 
 # Git Workflow
 
-Manage Git and GitHub changes without modifying project content except as
-explicitly approved by the user.
-
 Shared safety policy (approval tiers, default-branch rules, solo-repository
-opt-in, secrets, `NOT_VERIFIED`) lives in `rules/git-workflow.md`; follow it.
-This skill adds the conventions and the procedure. If that file is missing,
-treat every state-changing action as needing its own approval, and never push
-to the default branch.
-Examples and the proposal template are in `references/examples.md`; read it
-when drafting a proposal, commit message or PR body.
+opt-in, secrets, `NOT_VERIFIED`) lives in `~/.claude/rules/git-workflow.md`,
+which is always loaded; follow it. This skill adds the conventions and the
+procedure. If that rule is not in your context, treat every state-changing
+action as needing its own approval, and push only feature branches.
+
+Read `references/examples.md` when drafting a proposal, commit message or PR
+body.
 
 ## Local safeguards
 - Read repository-local instructions (CONTRIBUTING, CLAUDE.md, branch rules);
   they override the defaults here.
-- A Git operation does not grant permission to edit source files, generated
-  artifacts, or repository configuration.
-- Tool permissions and branch protection still apply; this skill grants none.
+- Change only Git state. Source files, generated artifacts and repository
+  configuration stay as they are unless the user asks for that edit
+  separately.
 
 ## Execution gate
 - Read-only inspection needs no approval.
 - Before any state-changing action, present one **proposal** (template in
   `references/examples.md`) listing every action with exact paths, then stop.
-- Apply the approval tiers in the rules: one approval covers the Tier 1
-  actions the proposal lists; each Tier 2 action (push, PR, tag, amend, ...)
-  needs its own explicit approval, even within the same proposal. Any later
+- Apply the rules' approval tiers to the actions in the proposal. Any later
   action or change of scope needs a new proposal.
-- Advance or blanket approval ("approve everything", "no need to ask again")
-  does not skip the proposal: show it and ask once. Approval is tied to the
-  listed actions.
-- If asked to push to the default or a protected branch, decline whatever the
-  user says and offer the allowed route: push a feature branch and open a PR.
-  Repeating the request does not change the answer. The only exception is the
-  solo-repository opt-in in the rules.
+- Show the proposal even when the user gave advance or blanket approval ("no
+  need to ask again"). Approval covers only the listed actions.
+- For a request to push to the default or a protected branch, offer the
+  allowed route: push a feature branch and open a PR. Keep that answer when
+  the request is repeated. The only exception is the solo-repository opt-in.
 - After each approved action, verify the real result (`git status`,
-  `git log -1`, or the tool output) and report it. Do not infer success from
-  an exit code alone.
+  `git log -1`, or the tool output) and report it. An exit code alone is not
+  proof of success.
 
 ## Conventions
-- Write commit messages, branch names and PRs in English.
 - Commits follow Conventional Commits 1.0.0: `<type>(<scope>): <description>`.
 - Types: `feat`, `fix`, `refactor`, `docs`, `chore`, `test`, `perf`, `build`,
   `ci`. A repository that defines its own types or scopes overrides this list.
@@ -65,14 +57,15 @@ when drafting a proposal, commit message or PR body.
 
 ## Dispatch
 Interpret `$ARGUMENTS` as one of:
-- `status` : inspect only.
-- `branch [name]` : propose creating or switching a branch.
-- `commit [scope]` : propose and, after approval, create focused commit(s).
+- `status`: inspect only.
+- `branch [name]`: propose creating or switching a branch.
+- `commit [scope]`: propose and, after approval, create focused commit(s).
   `scope` is an optional commit-scope hint (for example `uart`), not a path.
-- `pr [base]` : propose and, after approval, push and open a PR.
-- Omitted or unsupported : list these choices; change nothing.
-- Tag, release, merge, rebase, reset and deletion requests need their own
-  proposal; never fold them into a commit or PR workflow.
+- `pr [base]`: propose and, after approval, push and open a PR.
+- No argument: infer the command from the user's request. If it is unclear,
+  list these choices and change nothing.
+- Tag, release, merge, rebase, reset and deletion requests each get their own
+  proposal, separate from any commit or PR workflow.
 
 ## Shared inspection
 1. Establish repository root, branch, upstream and working-tree state
@@ -93,44 +86,48 @@ Interpret `$ARGUMENTS` as one of:
    explicitly confirms each flagged item, and list flagged items as
    "Excluded" in the proposal. Suggesting a `.gitignore` entry is fine; editing
    it needs its own request.
-7. Preserve user changes and staged content. Never edit, discard or rewrite
-   files as part of Git work.
-8. Report unavailable evidence as `NOT_VERIFIED`. If inspection fails, report
-   the failure and change nothing.
+7. If inspection fails, report the failure and change nothing. Report evidence
+   you could not get as `NOT_VERIFIED`.
+
+Done when branch, upstream and any state from "Repository states" are known,
+and every changed path (staged, unstaged, untracked) is either a candidate or
+listed as Excluded with a reason.
 
 ## Repository states
 Detect these during inspection and adapt the proposal:
-- **Merge, rebase, cherry-pick or bisect in progress** : report it and stop;
-  do not commit or switch branches until the user decides how to proceed.
-- **Detached HEAD** : propose a new branch before committing.
-- **On `main`/`master` or a protected branch** : propose a new branch first;
-  commit there only if the user explicitly says so. Never push to it
-  directly; deliver through a branch and PR. With the solo-repository opt-in,
-  propose committing on the default branch instead, and propose the push as
-  its own Tier 2 action.
-- **No upstream** : note it; propose `git push -u origin <branch>` in the PR
+- **Merge, rebase, cherry-pick or bisect in progress**: report it and stop.
+  Commit or switch branches only after the user decides how to proceed.
+- **Detached HEAD**: propose a new branch before committing.
+- **On the default or a protected branch**:
+  - With the solo-repository opt-in (default branch only): propose committing
+    on it, and propose the push as its own Tier 2 action.
+  - Otherwise: propose a new feature branch first and deliver through a PR.
+    Commit on the default or protected branch itself only if the user
+    explicitly asks; push only the feature branch.
+- **No upstream**: note it; propose `git push -u origin <branch>` in the PR
   flow.
-- **No remote** : report that pushing and PRs are not possible yet. Adding a
+- **No remote**: report that pushing and PRs are not possible yet. Adding a
   remote changes repository configuration and needs its own proposal.
-- **Dirty tree when switching branches** : creating a new branch carries the
+- **Dirty tree when switching branches**: creating a new branch carries the
   changes by default; switching to an existing branch may conflict, so
   propose carrying or stashing. Stash is a mutation and needs approval.
-- **Empty repository (no commits)** : say so; the first commit is a normal
+- **Empty repository (no commits)**: say so; the first commit is a normal
   commit proposal.
-- **Behind the base or upstream** : report it; propose a merge or rebase
+- **Behind the base or upstream**: report it; propose a merge or rebase
   only as a separate proposal.
 
 ## status
-Report branch, upstream, clean/dirty state, and concise logical change
-groups, distinguishing staged, unstaged and untracked paths, plus any state
-from "Repository states". Suggest a commit or branch name only when useful.
-Perform no writes.
+Report branch, upstream, clean/dirty state, and logical change groups,
+distinguishing staged, unstaged and untracked paths, plus any state from
+"Repository states". Suggest a commit or branch name only when useful. Done
+when every changed path appears in exactly one group.
 
 ## branch
 1. Inspect current branch and ahead/behind state.
 2. Propose `<type>/<short-kebab-description>` using a type from Conventions.
 3. After approval, create or switch (`git switch -c <name>` or
-   `git switch <name>`). Never delete, rename or force-move a branch.
+   `git switch <name>`). Deleting, renaming or force-moving a branch is a
+   separate Tier 2 proposal.
 
 ## commit
 1. Inspect staged and unstaged diffs, including pre-existing staged content.
@@ -138,13 +135,12 @@ Perform no writes.
    path level (interactive staging is unsupported); flag files that mix
    concerns and ask how to proceed. Propose the split by default; the user may
    ask for a single commit. Name a new branch after the primary group's type.
-3. Draft each message per Conventions, reusing scopes seen in history.
+3. Draft each message per Conventions.
 4. Present the proposal. Stop for approval.
 5. After approval, stage only the listed paths (`git add -- <paths>`), recheck
    `git diff --cached`, and stop if it differs materially from the proposal.
 6. Commit. Amend only with explicit Tier 2 approval and an unpushed commit.
-7. If a hook fails, report its output and propose a fix; do not retry
-   silently or bypass it.
+7. If a hook fails, report its output and propose a fix. Hooks stay enabled.
 8. Report the hash and remaining changes. Push only if the user separately
    approved it.
 
@@ -155,22 +151,27 @@ Perform no writes.
    creating a duplicate.
 3. Review the whole range (`git log <base>..HEAD`,
    `git diff <base>...HEAD --stat`); separate committed work from local
-   changes.
+   changes. Done when every commit in the range is reflected in the summary.
 4. Fill the repository PR template (`.github/pull_request_template.md` or
    `pull_request_template.md`), preserving its sections:
-   - Check **Type of Change** and **Affected Areas** only from the diff.
-   - Check **Validation Performed** only for checks actually run; otherwise
-     leave unchecked and write `NOT_VERIFIED` under Results.
-   - Add `Closes #n` only when the branch name, commits or user supply the
-     issue.
+   - **Summary**: purpose and why, from the whole range, not just the last
+     commit.
+   - **Type of Change** and **Affected Areas**: check only from the diff and
+     changed paths (a docs-only diff means Documentation).
+   - **Validation Performed**: check only checks actually run and put their
+     results under "Results / evidence"; otherwise leave unchecked and write
+     `NOT_VERIFIED`.
+   - **Related Issues**: add `Closes #n` only when the branch name, commits or
+     user supply the issue.
 5. Use a Conventional Commit-style title. Propose a draft PR when validation
-   is `NOT_VERIFIED` (see Conventions).
+   is `NOT_VERIFIED`.
 6. Present base/head, required push, title, body, impact and risks as one
    proposal.
-7. After approval, push the feature branch (`git push -u origin <branch>`;
-   never the base or default branch) and create the PR (`gh pr create`) only
-   if `gh` is available and authenticated.
-8. Report the PR URL only if the tool returned one. Never merge.
+7. After approval, push the feature branch (`git push -u origin <branch>`)
+   and create the PR (`gh pr create`) only if `gh` is available and
+   authenticated.
+8. Report the PR URL only if the tool returned one. Merging is left to the
+   user.
 
 ## Platform notes
 Line-ending warnings (LF/CRLF) are informational; do not report them as risks
@@ -181,5 +182,4 @@ or PR bodies with a here-string or a message file outside the repository
 rather than relying on shell escapes. Use forward slashes in paths.
 
 ## Output
-Keep summaries concise, factual and actionable. Do not create logs, reports
-or temporary files in the repository unless asked.
+Keep logs, reports and temporary files outside the repository unless asked.
