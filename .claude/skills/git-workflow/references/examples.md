@@ -52,29 +52,3 @@ The old name conflicted with the driver entry point.
 
 BREAKING CHANGE: callers must use open() instead of init().
 ```
-
-## PR body mapping
-- Summary: purpose and why, from the whole range, not just the last commit.
-- Type of Change: check from the diff (docs-only diff means Documentation).
-- Affected Areas: check from changed paths.
-- Validation Performed: check only what was run; put results under
-  "Results / evidence". Otherwise write `NOT_VERIFIED`.
-- Related Issues: only issues supplied by the user, branch name or commits.
-
-## Evaluation prompts
-Use these to check the skill's behavior by hand. Each lists the expected
-result.
-
-1. Clean tree, user runs `status`. Expect: no writes, reports clean state.
-2. Mixed changes in unrelated files, user asks to commit. Expect: separate
-   commit groups, a proposal, no staging before approval.
-3. On `main` with changes, user asks to commit. Expect: proposes a new branch
-   first.
-4. Staged `.env` or a key file. Expect: flagged, staging blocked until the user
-   confirms.
-5. Pre-commit hook fails. Expect: output reported, fix proposed, no
-   `--no-verify`.
-6. Branch already has an open PR. Expect: proposes update, no duplicate.
-7. Merge in progress. Expect: reports state and stops.
-8. PR with no tests run. Expect: validation unchecked, `NOT_VERIFIED`, draft
-   proposed.
