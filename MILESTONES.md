@@ -3,6 +3,118 @@
 Planned work for the skills in this repo. One section per milestone. Tick a
 task when its change is merged, and move finished milestones to the bottom.
 
+## M4: sch-inspect and pcb-inspect bug fixes (symbol lookup, body style, via type)
+
+Status: tasks done on `fix/inspect-symbol-lookup-and-via-type` on 2026-11-11
+as sch-inspect 1.1.1, pcb-inspect 1.1.1 and plugin v3.3.1. Not merged.
+Scope: `.claude/skills/sch-inspect/` and `.claude/skills/pcb-inspect/`
+Source: read-through of `query_sch.py` v1.1.0 and `query_pcb.py` v1.1 on
+2026-11-11. Each bug was reproduced with a synthetic fixture. File-format
+facts were checked against the KiCad source (`master`) and the KiCad dev
+docs. All 33 and 44 unit tests passed before this work, so every bug was in
+a case the tests did not cover, or covered with a fixture KiCad never writes.
+
+Goal: fix wrong or missing data in cases the 1.1 tests missed. No new
+commands.
+
+### Tasks
+
+Tasks 1, 2, 6 and 7 gave wrong engineering data. The rest are smaller.
+
+- [x] **1. sch: look up the embedded symbol by `lib_name`.**
+  KiCad writes `(lib_name "X_1")` when placed symbols share a `lib_id` but
+  differ, and stores the definition under that name. The script used
+  `lib_id` only, so pins came from the wrong definition or the symbol was
+  "unavailable", and the `(power)` flag was read from the wrong entry.
+  Done: `lib_definition()` is used by `pins_from_symbol`,
+  `power_symbol_anchors` and `build_project_graph`. Test 34.
+
+- [x] **2. sch: keep only the pins of the placed body style.**
+  Sub-symbols are named `NAME_<unit>_<body style>`. The style was ignored,
+  so a symbol with an alternate (De Morgan) body listed every pin twice,
+  sometimes at a second position.
+  Done: `(body_style N)`, or legacy `(convert N)`, selects style N and
+  style 0. Test 35.
+
+- [x] **3. sch: return JSON for malformed data.**
+  `(uuid)` with no value, or a wire point with one coordinate, gave a
+  Python traceback and exit code 1. `SKILL.md` promises JSON on stderr.
+  Done: `main()` catches the same exception set as `query_pcb.py`. Test 36.
+
+- [x] **4. sch: sort units as numbers in `components`.**
+  Units came out as `1, 10, 11, 2`. Test 37.
+
+- [x] **5. sch: `sheet <file name>` matches a sheet in a subfolder.**
+  `sheet child.kicad_sch` found nothing for `Sheetfile`
+  `sub/child.kicad_sch`, while `components --sheet` did. Test 38.
+
+- [x] **6. pcb: read the via type KiCad writes.**
+  KiCad saves `(via blind ...)`, `(via buried ...)` and `(via micro ...)`,
+  and no word for a through via. The script looked for `(type blind)`, so
+  every via had `via_type: null`. The test fixture used the same invented
+  form.
+  Done: the bare word is read, and no word is reported as `through` with
+  `via_type_status: STRUCTURAL_EVIDENCE`. `references/cli.md`,
+  `tests/golden.example.json` and its evidence note say so.
+
+- [x] **7. pcb: a net named `0` is a net on a board with no net table.**
+  KiCad 10 writes `(net "0")` for that net and `(net "")` for no net. The
+  script treated `0` as "no net" in both formats.
+  Done: `0` means unconnected only when a net table exists.
+
+- [x] **8. pcb: `net` counts each footprint.**
+  Rows were keyed by reference, so footprints that share one (`REF**`)
+  became one row, and a footprint with no Reference failed the command.
+  Done: rows are keyed by position in the file.
+
+- [x] **9. pcb: `natural_key` no longer fails on a superscript digit.**
+  `"²".isdigit()` is true and `int("²")` raises, so one such reference
+  failed `net` for the whole board.
+
+- [x] **10. pcb: reject a file whose root is not `(kicad_pcb`.**
+  It returned an empty `BOARD_SUMMARY`. `query_sch.py` already rejected
+  the same case.
+
+- [x] **11. pcb: count `PASS` correctly when a subTest fails.**
+  `tests/run_tests.py` now uses the same count as the sch-inspect runner.
+
+### Check on a real project
+
+Run on 2026-11-11 against the 2-phase buck project (KiCad 10.0, 14 sheet
+instances, 455 references, 306 footprints, 797 vias), on macOS with
+Python 3.15.
+
+- Unit tests: 38 and 48 pass. Golden tests: both pass.
+- sch: 2733 commands, old script against new, from the project root.
+  Output is identical, and so are the project graph's groups and edges.
+- pcb: 2239 commands, old script against new. Only the via type fields
+  changed: all 797 vias report `through`, and the file has 797 top-level
+  `via` forms with no type word.
+- This project has no `lib_name`, no body style other than 1, no blind,
+  buried or micro via, and no net named `0`. Tasks 1, 2 and 7, and the
+  non-through types of task 6, are covered by synthetic tests only. On
+  real data they are `NOT_VERIFIED`.
+
+### Still open
+
+- **`mirror y` at 90 and 270 degrees** (from M1 task 5). The project has
+  `mirror y` at 0 degrees only (13 symbols), so it stays `NOT_VERIFIED`.
+- Seen and left alone, because they are design choices: a wire end that
+  lands mid-wire with no junction counts as connected; same-name
+  hierarchical labels in one sheet join only through a wired parent pin;
+  `candidate_labels_on_same_segment` is capped at 10, not at `--limit`.
+
+### Exit criteria
+
+- All tasks ticked or moved to a later milestone with a reason. Met.
+- A synthetic test was added before each parser fix (see
+  `CONTRIBUTING.md`). Met: each new test failed on the old script.
+- Unit tests pass on Windows and macOS in CI. Not met yet: run on macOS
+  locally only; CI runs when the branch is pushed.
+- `version` in `.claude-plugin/plugin.json`, `VERSION` in `query_pcb.py`
+  and the version in the `query_sch.py` docstring are bumped. Met: 3.3.1,
+  1.1.1 and 1.1.1.
+
 ## M2: pcb-inspect 1.1 (back-side fix, KiCad 10 nets, net totals)
 
 Status: done in v3.3.0 (PRs #24, #25 and the 1.1 release PR). Checked on one
