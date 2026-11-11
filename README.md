@@ -190,14 +190,14 @@ An unknown key fails the case. A pin or name check on a truncated result also fa
 
 GitHub Actions runs the checks on every push and PR. Before you treat a green run as a real-project check, look at each job and see whether the golden tests ran or skipped.
 
-Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). Golden tests were not.
+Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). For v3.2.0 the schematic synthetic and golden tests were run on macOS (Python 3.15); CI runs the schematic synthetic tests on Linux, Windows and macOS.
 
 | Suite | Last result |
 | --- | --- |
-| Schematic synthetic | 21/21 passed (v3.1.0) |
+| Schematic synthetic | 32/32 passed (v3.2.0, macOS) |
 | PCB synthetic | 31/31 passed (v3.1.0) |
 | PCB golden (real project) | 2/2 passed (earlier run) |
-| Schematic golden (real project) | 5/5 passed (earlier run) |
+| Schematic golden (real project) | 12/12 cases passed (v3.2.0, one local project) |
 
 These are **reported test results**. They do not show that the scripts match KiCad's own netlist, ERC or DRC everywhere. Running natively on macOS and OS-level read-only sandboxing have not been checked.
 
