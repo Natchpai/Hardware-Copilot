@@ -110,8 +110,10 @@ Task 1 is a confirmed defect and comes first. The rest are ordered by value.
 
 ## M3: sch-review 1.1 (requirements, pin coverage, rule conflicts)
 
-Status: tasks done, not merged. Exit criterion 3 (one real block review
-read by the engineer) is still open.
+Status: tasks and exit criteria done on `feat/sch-review-1.1`, not merged.
+The real block review was the `MCU_power` sheet of the 2-phase buck project
+on 2026-11-11, read by the engineer. It found that pin status comes from
+`local-net`, not `pins`; step 3 was fixed.
 Scope: `.claude/skills/sch-review/SKILL.md` (the skill has no script)
 Source: read-through on 2026-11-10 against `.claude/rules/engineering.md`,
 `.claude/rules/pdf.md` and `sch-inspect`. The skill was not run on a real
