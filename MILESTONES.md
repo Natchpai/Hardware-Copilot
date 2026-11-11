@@ -5,7 +5,8 @@ task when its change is merged, and move finished milestones to the bottom.
 
 ## M2: pcb-inspect 1.1 (back-side fix, KiCad 10 nets, net totals)
 
-Status: not started
+Status: done in v3.3.0 (PRs #24, #25 and the 1.1 release PR). Checked on one
+of the two boards; the 482-footprint board was not available for this work.
 Scope: `.claude/skills/pcb-inspect/` only
 Source: review of `query_pcb.py` on 2026-11-10, run against two routed
 KiCad 10 boards (file version 20260206): one with 306 footprints, 1599
@@ -20,7 +21,7 @@ dumping every segment.
 
 Task 1 is a confirmed defect and comes first. The rest are ordered by value.
 
-- [ ] **1. Remove the extra B.Cu mirror in `board_position`.**
+- [x] **1. Remove the extra B.Cu mirror in `board_position`.**
   `scripts/query_pcb.py:329` negates the pad's local X for a footprint on
   `B.Cu`. The saved file already stores flipped local coordinates, so the
   script mirrors twice. Evidence: on the 306-footprint board, back-side pad
@@ -41,7 +42,7 @@ Task 1 is a confirmed defect and comes first. The rest are ordered by value.
   `references/cli.md` and the limitation strings no longer say "B.Cu mirror
   transform".
 
-- [ ] **2. Treat name-only nets as the normal KiCad 10 format.**
+- [x] **2. Treat name-only nets as the normal KiCad 10 format.**
   KiCad 10 boards have no net table and store `(net "name")` on each item.
   Both test boards had 0 declared nets, so every pad, track and via reports
   `ASSIGNED_WITHOUT_DECLARATION` and `net_declaration_status: NOT_VERIFIED`
@@ -51,7 +52,7 @@ Task 1 is a confirmed defect and comes first. The rest are ordered by value.
   nets, `ASSIGNED_WITHOUT_DECLARATION` is kept only for a board that has a
   net table but is missing that entry, and `SKILL.md` and `cli.md` say so.
 
-- [ ] **3. Add per-net totals to `tracks` and `vias`.**
+- [x] **3. Add per-net totals to `tracks` and `vias`.**
   Output is a list cut at `--limit`. To get total length the agent must
   raise the limit and add up segments in context.
   Done when: `tracks` also returns, over all matches and not only the
@@ -59,14 +60,14 @@ Task 1 is a confirmed defect and comes first. The rest are ordered by value.
   widths with a count each. `vias` returns a count per size, drill and layer
   span. The existing note that this is not routed-path length stays.
 
-- [ ] **4. Add a `zones <net>` command.**
+- [x] **4. Add a `zones <net>` command.**
   Zones are skipped by `scan_board`. One test board has 133. Power and
   ground questions cannot be answered without them.
   Done when: `zones <net>` returns layer, net, name, priority, outline
   bounding box, clearance and connect-pad settings, and whether saved fill
   polygons exist, with fill state marked `NOT_VERIFIED`.
 
-- [ ] **5. Add a `nets` command and board totals in `summary`.**
+- [x] **5. Add a `nets` command and board totals in `summary`.**
   There is no way to list or search net names, so the agent must already
   know the exact name, including the sheet path prefix such as
   `/Top/Power Supplies/+5VUSB`.
@@ -74,18 +75,18 @@ Task 1 is a confirmed defect and comes first. The rest are ordered by value.
   counts, and `summary` adds net, track, via and zone counts and the
   `Edge.Cuts` bounding box.
 
-- [ ] **6. Add `--layer` and `--radius` filters to `nearby`.**
+- [x] **6. Add `--layer` and `--radius` filters to `nearby`.**
   `nearby` ranks every footprint on both sides by origin distance.
   Done when: both filters work, and the output says which were applied.
 
-- [ ] **7. Make version and output conventions consistent.**
+- [x] **7. Make version and output conventions consistent.**
   `SKILL.md` says "v1.0, Stable (Scoped)" and the script docstring says
   "v0.4" (`scripts/query_pcb.py:2`). Errors go to stdout here and to stderr
   in `query_sch.py`.
   Done when: one version string is used in both files, and both scripts
   send error JSON to the same stream.
 
-- [ ] **8. Make the golden tests configurable per project.**
+- [x] **8. Make the golden tests configurable per project.**
   `tests/test_query_pcb_golden.py` and
   `references/2phase-synchbuck-golden-evidence.md` belong to one project.
   Do this together with M1 task 8, with the same JSON format.
