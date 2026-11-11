@@ -40,7 +40,9 @@ and board paths first.
 `--limit` is 1-1000. For `tracks` and `vias`, an empty quoted target (`""`)
 requests unconnected items. States such as `AMBIGUOUS_REFERENCE`, `AMBIGUOUS`,
 `MISSING`, `UNCONNECTED`, `ASSIGNED_WITHOUT_DECLARATION`, `NOT_FOUND` and
-`NOT_VERIFIED` are distinct results, not passes. Read
+`NOT_VERIFIED` are distinct results, not passes. A KiCad 10 board has no net
+table, so its nets report `ASSIGNED`; `ASSIGNED_WITHOUT_DECLARATION` means a
+net table exists and lacks that name. Read
 [references/cli.md](references/cli.md) for exact semantics when interpreting
 output.
 
