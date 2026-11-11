@@ -112,11 +112,21 @@ use `WARNING`, `FAIL`, or `NOT_VERIFIED`. Distinguish observed from suspected.
   `TARGET_NOT_FOUND_OR_UNRESOLVED` / `AMBIGUOUS_TARGET_NETS`. Report either
   unresolved status as `NOT_VERIFIED`; it does not show a connection is absent.
   `project_net_verified` is always false: it is not KiCad netlist parity.
-- `verification` varies by command: `STRUCTURAL_DISCOVERY_ONLY`,
-  `LOCAL_GEOMETRY_EVIDENCE_ONLY`, `INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY`, or
-  `NOT_VERIFIED`; none of them means the design was verified. A generic
-  limitation line in `project-net` output does not override its instance-aware
-  evidence, but report both.
+- `verification` is set by the command. None of these values means the design
+  was verified:
+
+  | Command | `verification` |
+  |---|---|
+  | `summary`, `component`, `sheet` | `STRUCTURAL_DISCOVERY_ONLY` |
+  | `pins` | `LOCAL_GEOMETRY_EVIDENCE_ONLY` |
+  | `local-net` | `SHEET_LOCAL_ONLY` |
+  | `hier-net` | `HIERARCHICAL_INTERFACE_EVIDENCE_ONLY` |
+  | `connected-pins` | `PARENT_CONNECTED_PINS_GEOMETRY_ONLY` |
+  | `project-net` | `INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY` |
+  | `instances` | `HIERARCHICAL_INSTANCE_DISCOVERY_ONLY` |
+  | any error | `NOT_VERIFIED` |
+
+- `limitations` is also set by the command; report the lines it prints.
 - Errors (invalid input, unreadable files, bad bounds, traversal failure) exit
   nonzero with `verification: NOT_VERIFIED`; infer nothing from them.
 - Honour `truncated`, `pins_truncated`, `connected_pins_truncated`, and
@@ -128,7 +138,13 @@ use `WARNING`, `FAIL`, or `NOT_VERIFIED`. Distinguish observed from suspected.
   bounded parent/interface geometry evidence.
 - `project-net`: conservative, instance-aware evidence through supported wires,
   labels, hierarchy, global labels, and power symbols; not netlist parity.
-- Global labels and power symbols may connect nets across sheet instances.
+- Global labels and power symbols may connect nets across sheet instances. A
+  global label and a power symbol with the same name are one net. A power
+  symbol is any symbol whose library symbol has the `(power)` flag; all of
+  them are treated as global, including KiCad's local power symbols.
+- Pin positions of a symbol with `mirror y` at 90 or 270 degrees follow the
+  same rule as `mirror x` but were not checked against KiCad: treat pin-net
+  results for such a symbol as `NOT_VERIFIED`.
 - Buses, complex symbol inheritance, and hidden connectivity may stay unresolved.
 - If a trustworthy parser is unavailable, limit work to transparent observations
   from the target sheet and mark pin-to-net and cross-sheet claims `NOT_VERIFIED`.
