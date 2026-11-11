@@ -161,7 +161,32 @@ python -m unittest discover -s .claude/skills/sch-inspect/tests -p 'test_query_s
 python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_pcb.py' -v
 ```
 
-**Golden tests** use real KiCad designs kept outside Git under `hardware/`. They are opt-in. With no project set, they **SKIP** instead of claiming a pass. A project path that is set but wrong makes them **FAIL**. See each test module for its environment variable and command. For schematic golden tests, set `KICAD_GOLDEN_PROJECT` to the root `.kicad_sch` file.
+**Golden tests** use real KiCad designs kept outside Git under `hardware/`. They are opt-in. With no project set, they **SKIP** instead of claiming a pass. A project path that is set but wrong makes them **FAIL**. See each test module for its environment variable and command.
+
+Schematic golden tests need two variables. With either one unset, they skip.
+
+- `KICAD_GOLDEN_PROJECT`: absolute path of the project's root `.kicad_sch` file.
+- `KICAD_GOLDEN_EXPECT`: absolute path of a JSON file with the expected values for that project.
+
+```sh
+KICAD_GOLDEN_PROJECT=/abs/path/Top.kicad_sch \
+KICAD_GOLDEN_EXPECT=/abs/path/golden.json \
+python .claude/skills/sch-inspect/tests/run_tests.py --pattern test_query_sch_golden.py --label golden
+```
+
+The JSON file holds a list of `cases`. Each case runs one `query_sch.py` command and checks its result. Start from [golden.example.json](.claude/skills/sch-inspect/tests/golden.example.json), which holds the values of one real project, and replace them with values you checked in KiCad.
+
+| Key | Meaning |
+| --- | --- |
+| `name` | Label shown when the case fails. |
+| `command` | Command and arguments, for example `["project-net", "U103", "--pin", "8"]`. `--project` is added by the test. |
+| `status` | Expected `status` of the single result. |
+| `has_pins`, `lacks_pins` | `[reference, pin]` pairs that must, or must not, be in `connected_component_pins`. |
+| `has_power`, `lacks_power` | Names that must, or must not, be in `power_net_names`. |
+| `has_global`, `lacks_global` | Names that must, or must not, be in `global_labels`. |
+| `has_sheet_names` | Sheet names that `instances` must list. |
+
+An unknown key fails the case. A pin or name check on a truncated result also fails, because a truncated list cannot show that an item is absent.
 
 GitHub Actions runs the checks on every push and PR. Before you treat a green run as a real-project check, look at each job and see whether the golden tests ran or skipped.
 
