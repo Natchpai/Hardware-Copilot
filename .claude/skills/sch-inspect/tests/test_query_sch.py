@@ -5,6 +5,7 @@ Run: python .claude/skills/sch-inspect/tests/run_tests.py --pattern test_query_s
 No third-party packages. Uses temporary synthetic .kicad_sch fixtures.
 """
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -40,6 +41,14 @@ def lib_symbols():
          (symbol "GND_1_1"
            (pin power_in line (at 0 0 0) (length 0)
              (name "GND") (number "1"))))
+       (symbol "0_Power:GND" (power)
+         (symbol "GND_1_1"
+           (pin power_in line (at 0 0 0) (length 0)
+             (name "GND") (number "1"))))
+       (symbol "power:VBUS" (power)
+         (symbol "VBUS_1_1"
+           (pin power_in line (at 0 0 0) (length 0)
+             (name "VBUS") (number "1"))))
        (symbol "power:PWR_FLAG" (power)
          (symbol "PWR_FLAG_1_1"
            (pin power_out line (at 0 0 0) (length 0)
@@ -309,6 +318,131 @@ class QuerySchRegression(unittest.TestCase):
         result = r['results'][0]
         self.assertTrue(result['connected_pins_truncated'])
         self.assertLess(len(result['connected_component_pins']), result['total_connected_component_pins'])
+
+    def test_22_each_mode_prints_its_own_verification_and_limitations(self):
+        expected = {
+            'summary': ((), 'STRUCTURAL_DISCOVERY_ONLY'),
+            'component': (('U1',), 'STRUCTURAL_DISCOVERY_ONLY'),
+            'sheet': (('MCU IOs',), 'STRUCTURAL_DISCOVERY_ONLY'),
+            'pins': (('U1',), 'LOCAL_GEOMETRY_EVIDENCE_ONLY'),
+            'local-net': (('U1',), 'SHEET_LOCAL_ONLY'),
+            'hier-net': (('U1',), 'HIERARCHICAL_INTERFACE_EVIDENCE_ONLY'),
+            'connected-pins': (('U1',), 'PARENT_CONNECTED_PINS_GEOMETRY_ONLY'),
+            'project-net': (('U1', '--pin', '1'), 'INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY'),
+            'instances': ((), 'HIERARCHICAL_INSTANCE_DISCOVERY_ONLY'),
+        }
+        for mode, (args, verification) in expected.items():
+            with self.subTest(mode=mode):
+                r = self.call(mode, *args)
+                self.assertEqual(r['verification'], verification)
+                self.assertTrue(r['limitations'])
+        # project-net and instances are instance-aware: the structural
+        # discovery limitations must not be printed for them.
+        for mode, args in (('project-net', ('U1', '--pin', '1')), ('instances', ())):
+            with self.subTest(limitations=mode):
+                text = ' '.join(self.call(mode, *args)['limitations'])
+                self.assertNotIn('No electrical connectivity or pin-net verification', text)
+                self.assertNotIn('not expanded into unique hierarchical instances', text)
+        project = self.call('project-net', 'U1', '--pin', '1')
+        self.assertIn('not KiCad netlist parity', ' '.join(project['limitations']))
+        self.assertEqual(project['limitations'], project['results'][0]['limitations'])
+
+    def test_23_skill_md_lists_every_verification_value(self):
+        # Fails when the script gains a verification value or a command that
+        # the JSON contract in SKILL.md does not name.
+        spec = importlib.util.spec_from_file_location('_query_sch_under_test', SCRIPT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        skill = (SCRIPT.parents[1] / 'SKILL.md').read_text(encoding='utf-8')
+        start = skill.index('## JSON contract')
+        contract = skill[start:skill.index('\n## ', start + 1)]
+        for mode, info in module.MODES.items():
+            with self.subTest(mode=mode):
+                self.assertIn(f'`{info["verification"]}`', contract)
+                self.assertIn(f'`{mode}`', contract)
+        self.assertIn('`NOT_VERIFIED`', contract)
+
+    def test_24_power_symbol_outside_power_library_is_not_a_component(self):
+        # Power symbols are found by the (power) flag of the library symbol,
+        # not by the "power:" library name.
+        root = self.dir / 'project power lib.kicad_sch'
+        root.write_text(content(ROOT_ID,
+            component('U1', 10, 10, 'u1', f'/{ROOT_ID}'),
+            wire(10, 10, 20, 10),
+            component('#PWR01', 20, 10, 'gnd1', f'/{ROOT_ID}', 'GND', '0_Power:GND'),
+            component('U2', 40, 10, 'u2', f'/{ROOT_ID}'),
+            wire(40, 10, 50, 10),
+            component('#PWR02', 50, 10, 'gnd2', f'/{ROOT_ID}', 'GND', '0_Power:GND')), encoding='utf-8')
+        self.files.append(root)
+        self.before[root] = sha(root)
+        one = self.call('project-net', 'U1', '--pin', '1', project=root)['results'][0]
+        refs = {p['reference'] for p in one['connected_component_pins']}
+        self.assertEqual(refs, {'U1', 'U2'})
+        self.assertEqual(one['power_net_names'], ['GND'])
+
+    def test_25_global_label_and_power_symbol_with_one_name_are_one_net(self):
+        first = '11111111-1111-1111-1111-111111111111'
+        second = '22222222-2222-2222-2222-222222222222'
+        root = self.dir / 'vbus root.kicad_sch'
+        a = self.dir / 'vbus label.kicad_sch'
+        b = self.dir / 'vbus power.kicad_sch'
+        root.write_text(content(ROOT_ID,
+            sheet('Label side', a.name, first, 'UNUSED_A', 10, 10),
+            sheet('Power side', b.name, second, 'UNUSED_B', 60, 10)), encoding='utf-8')
+        a.write_text(content('dddddddd-dddd-dddd-dddd-dddddddddddd',
+            component('U1', 10, 10, 'u1', f'/{ROOT_ID}/{first}'),
+            wire(10, 10, 20, 10),
+            '(global_label "VBUS" (at 20 10 0))'), encoding='utf-8')
+        b.write_text(content('eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+            component('U2', 10, 10, 'u2', f'/{ROOT_ID}/{second}'),
+            wire(10, 10, 20, 10),
+            component('#PWR01', 20, 10, 'vbus1', f'/{ROOT_ID}/{second}', 'VBUS', 'power:VBUS'),
+            component('U3', 10, 30, 'u3', f'/{ROOT_ID}/{second}'),
+            wire(10, 30, 20, 30),
+            '(label "VBUS" (at 20 30 0))'), encoding='utf-8')
+        self.files.extend([root, a, b])
+        self.before.update({x: sha(x) for x in (root, a, b)})
+        for start, other in (('U1', 'U2'), ('U2', 'U1')):
+            with self.subTest(start=start):
+                one = self.call('project-net', start, '--pin', '1', project=root)['results'][0]
+                refs = {p['reference'] for p in one['connected_component_pins']}
+                self.assertEqual(refs, {'U1', 'U2'})
+                self.assertEqual(one['global_labels'], ['VBUS'])
+                self.assertEqual(one['power_net_names'], ['VBUS'])
+        # A local label with the same text stays local to its sheet.
+        local = self.call('project-net', 'U3', '--pin', '1', project=root)['results'][0]
+        self.assertEqual({p['reference'] for p in local['connected_component_pins']}, {'U3'})
+
+    def test_26_mirror_is_applied_after_rotation(self):
+        # KiCad rotates the symbol, then mirrors it on the canvas axis.
+        # Checked against a KiCad 10.0.8 netlist of a real project for
+        # mirror x at 90 and 270 degrees. Mirror y at 90 and 270 uses the same
+        # rule but has no real-project evidence yet (NOT_VERIFIED).
+        lib = '''(lib_symbols
+          (symbol "TEST:Tri"
+            (symbol "Tri_1_1"
+              (pin input line (at -5.08 2.54 0) (length 2.54) (name "A") (number "1"))
+              (pin input line (at 5.08 2.54 180) (length 2.54) (name "B") (number "2"))
+              (pin input line (at 0 -5.08 90) (length 2.54) (name "C") (number "3")))))'''
+        expected = {
+            ('x', 0): {'1': [94.92, 52.54], '2': [105.08, 52.54], '3': [100.0, 44.92]},
+            ('x', 90): {'1': [97.46, 44.92], '2': [97.46, 55.08], '3': [105.08, 50.0]},
+            ('x', 270): {'1': [102.54, 55.08], '2': [102.54, 44.92], '3': [94.92, 50.0]},
+            ('y', 90): {'1': [102.54, 55.08], '2': [102.54, 44.92], '3': [94.92, 50.0]},
+            ('y', 270): {'1': [97.46, 44.92], '2': [97.46, 55.08], '3': [105.08, 50.0]},
+        }
+        for (axis, angle), pins in expected.items():
+            with self.subTest(mirror=axis, angle=angle):
+                root = self.dir / f'mirror {axis} {angle}.kicad_sch'
+                placed = component('U9', 100, 50, 'u9', f'/{ROOT_ID}', lib='TEST:Tri')
+                placed = placed.replace('(at 100 50 0)', f'(at 100 50 {angle}) (mirror {axis})')
+                root.write_text('(kicad_sch (version 20250114) (generator "test") (uuid "' + ROOT_ID + '")\n'
+                                + lib + '\n' + placed + '\n)', encoding='utf-8')
+                self.files.append(root)
+                self.before[root] = sha(root)
+                got = {x['number']: x['position_mm']
+                       for x in self.call('pins', 'U9', project=root)['results'][0]['pins']}
+                self.assertEqual(got, pins)
 
 
 if __name__ == '__main__':

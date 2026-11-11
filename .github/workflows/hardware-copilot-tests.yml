@@ -9,6 +9,10 @@ on:
         description: "Optional root .kicad_sch path for project-specific golden tests"
         required: false
         type: string
+      kicad_golden_expect:
+        description: "Optional JSON file with the expected values for the golden project"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -32,6 +36,7 @@ jobs:
     timeout-minutes: 10
     env:
       KICAD_GOLDEN_PROJECT: ${{ inputs.kicad_golden_project || vars.KICAD_GOLDEN_PROJECT }}
+      KICAD_GOLDEN_EXPECT: ${{ inputs.kicad_golden_expect || vars.KICAD_GOLDEN_EXPECT }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

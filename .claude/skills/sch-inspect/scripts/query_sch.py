@@ -16,6 +16,43 @@ class QueryError(Exception):
     pass
 
 
+_STRUCTURAL_LIMITS = [
+    'No electrical connectivity or pin-net verification',
+    'Shared sheet files are not expanded into unique hierarchical instances',
+    'Symbol reference properties can differ from instance references']
+_INTERFACE_LIMITS = [
+    'Parent sheet pins, other connected sheet pins, and wire/label paths are geometric/interface evidence only',
+    'Destination child pins and labels are sheet-local evidence only; global labels, cross-sheet power nets, reused instances, buses and inherited symbols are not fully resolved',
+    'Not a KiCad-equivalent full-project net resolver']
+PROJECT_NET_LIMITS = [
+    'Conservative geometry and declared labels only; not KiCad netlist parity',
+    'Complex symbol inheritance, buses, hidden connectivity, and ambiguous unit instances may be unresolved',
+    'Starting reference with pins on multiple separate nets needs a pin-specific query']
+
+# One entry per command: the top-level `verification` value and `limitations`
+# it prints. SKILL.md documents these values; a test keeps the two in sync.
+MODES = {
+    'summary': {'verification': 'STRUCTURAL_DISCOVERY_ONLY', 'limitations': _STRUCTURAL_LIMITS},
+    'component': {'verification': 'STRUCTURAL_DISCOVERY_ONLY', 'limitations': _STRUCTURAL_LIMITS},
+    'sheet': {'verification': 'STRUCTURAL_DISCOVERY_ONLY', 'limitations': _STRUCTURAL_LIMITS},
+    'pins': {'verification': 'LOCAL_GEOMETRY_EVIDENCE_ONLY', 'limitations': [
+        'Pin positions and direct wires are geometric evidence, not resolved electrical nets',
+        'Labels on connected multi-segment paths may not be reported',
+        'Hierarchical, global and power connectivity are not resolved']},
+    'local-net': {'verification': 'SHEET_LOCAL_ONLY', 'limitations': [
+        'Local wire paths and local-label names do not prove entire project connectivity',
+        'Cross-sheet/global power-net connectivity, buses, inherited symbols and reused sheet instances are not resolved',
+        'Geometric connectivity may differ from KiCad in complex edge cases']},
+    'hier-net': {'verification': 'HIERARCHICAL_INTERFACE_EVIDENCE_ONLY', 'limitations': _INTERFACE_LIMITS},
+    'connected-pins': {'verification': 'PARENT_CONNECTED_PINS_GEOMETRY_ONLY', 'limitations': _INTERFACE_LIMITS},
+    'project-net': {'verification': 'INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY', 'limitations': PROJECT_NET_LIMITS},
+    'instances': {'verification': 'HIERARCHICAL_INSTANCE_DISCOVERY_ONLY', 'limitations': [
+        'Hierarchical sheet instance discovery only; no electrical connectivity or pin-net verification',
+        'Lists sheet instances, not the components or references inside each instance',
+        'Sheets that are missing or outside the project directory are not expanded']},
+}
+
+
 def forms(source: str):
     """Yield (form_name, source_slice) for direct children of an S-expression root.
 
@@ -284,14 +321,18 @@ def pins_from_symbol(symbol, lib):
                 if not atpin:
                     continue
                 px,py = atpin
-                if mirrored == 'x':
-                    py=-py
-                elif mirrored == 'y':
-                    px=-px
                 angle = math.radians(rotation)
-                x = origins[0]+px*math.cos(angle)-py*math.sin(angle)
+                dx = px*math.cos(angle)-py*math.sin(angle)
                 # Local Y positive up; schematic canvas Y positive down.
-                y = origins[1]-(px*math.sin(angle)+py*math.cos(angle))
+                dy = -(px*math.sin(angle)+py*math.cos(angle))
+                # KiCad rotates first, then mirrors on the canvas axis. The
+                # two orders only agree at 0 and 180 degrees.
+                if mirrored == 'x':
+                    dy=-dy
+                elif mirrored == 'y':
+                    dx=-dx
+                x = origins[0]+dx
+                y = origins[1]+dy
                 num=first(pin, 'number')
                 name=first(pin, 'name')
                 pins.append({'number':num[1] if num and len(num)>1 else None,
@@ -773,10 +814,14 @@ def project_connections(root, data, reference, limit, max_instances, pin_filter=
                 expr = parse(frag)
                 info = symbol_info(expr, file)
                 pins, warnings = pins_from_symbol(expr, lib)
+                # Same test as power_symbol_anchors: the (power) flag of the
+                # embedded library symbol, not the library name.
+                definition = lib.get(info['lib_id'])
+                is_power = definition is not None and first(definition, 'power') is not None
                 for pin in pins:
                     component_pins.append({**pin, 'reference': info['reference_property'],
                                            'instances': info['instances'], 'symbol_uuid': info['uuid'],
-                                           'lib_id': info['lib_id']})
+                                           'lib_id': info['lib_id'], 'is_power': is_power})
             elif tag == 'sheet':
                 expr = parse(frag)
                 for pin in children(expr, 'pin'):
@@ -814,13 +859,15 @@ def project_connections(root, data, reference, limit, max_instances, pin_filter=
 
     graph = defaultdict(set)
     details = defaultdict(lambda: {'components': [], 'global': set(), 'power': set(), 'hier': [], 'labels': set()})
-    global_nodes, power_nodes = defaultdict(list), defaultdict(list)
+    # Group keys per global name. KiCad joins a global label and a power
+    # symbol that share a name, so both kinds go into one table.
+    named_nodes = defaultdict(list)
     for i, node in enumerate(instances):
         file = Path(node['file'])
         d = cached[file]
         def key(g): return (i, g)
         for p in d['components']:
-            if p['_group'] is not None and p['lib_id'] and not p['lib_id'].startswith('power:'):
+            if p['_group'] is not None and p['lib_id'] and not p['is_power']:
                 matches = [x for x in p['instances'] if x.get('path') == node['path']]
                 ref = matches[0]['reference'] if len(matches) == 1 else p['reference']
                 details[key(p['_group'])]['components'].append({
@@ -834,7 +881,7 @@ def project_connections(root, data, reference, limit, max_instances, pin_filter=
             item = details[key(group)]
             if l['kind'] == 'global_label':
                 item['global'].add(l['name'])
-                global_nodes[l['name']].append(key(group))
+                named_nodes[l['name']].append(key(group))
             elif l['kind'] == 'hierarchical_label':
                 item['hier'].append(l['name'])
             else: item['labels'].add(l['name'])
@@ -845,7 +892,7 @@ def project_connections(root, data, reference, limit, max_instances, pin_filter=
                 # net name. Unioning it globally bridges otherwise unrelated
                 # nets that merely contain a PWR_FLAG symbol.
                 if p['name'] != 'PWR_FLAG':
-                    power_nodes[p['name']].append(key(p['_group']))
+                    named_nodes[p['name']].append(key(p['_group']))
         if node['parent'] is None: continue
         parent_idx = node['parent']
         parent_file = Path(instances[parent_idx]['file'])
@@ -865,13 +912,11 @@ def project_connections(root, data, reference, limit, max_instances, pin_filter=
                     graph[origin].add(target)
                     graph[target].add(origin)
     # Global labels and power symbols are global *by KiCad semantics*.
-    for collection in (global_nodes, power_nodes):
-        for _, keys in collection.items():
-            if keys:
-                first_key = keys[0]
-                for other in keys[1:]:
-                    graph[first_key].add(other)
-                    graph[other].add(first_key)
+    for keys in named_nodes.values():
+        first_key = keys[0]
+        for other in keys[1:]:
+            graph[first_key].add(other)
+            graph[other].add(first_key)
 
     starts = []
     for i, node in enumerate(instances):
@@ -912,9 +957,7 @@ def project_connections(root, data, reference, limit, max_instances, pin_filter=
             'names_truncated': len(globals_found)>limit or len(power_found)>limit,
             'groups_visited': len(reached), 'instance_count': len(instances),
             'project_net_verified': False,
-            'limitations': ['Conservative geometry and declared labels only; not KiCad netlist parity',
-                            'Complex symbol inheritance, buses, hidden connectivity, and ambiguous unit instances may be unresolved',
-                            'Starting reference with pins on multiple separate nets needs a pin-specific query']}
+            'limitations': list(PROJECT_NET_LIMITS)}
 
 
 def root_file(raw: str):
@@ -968,7 +1011,7 @@ def discover(root: Path, max_files: int):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument('mode', choices=['summary', 'component', 'sheet', 'pins', 'local-net', 'hier-net', 'connected-pins', 'project-net', 'instances'])
+    ap.add_argument('mode', choices=list(MODES))
     ap.add_argument('target', nargs='?', help='reference (component/pins) or sheet filename/name (sheet)')
     ap.add_argument('--project', required=True, help='root .kicad_sch (preferred) or its directory')
     ap.add_argument('--limit', type=int, default=20)
@@ -1013,16 +1056,8 @@ def main(argv=None):
                'results': records[:args.limit], 'total_matches': len(records),
                'truncated': len(records)>args.limit, 'missing_sheets': missing,
                'skipped_outside_project': outside,
-               'verification': 'INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY' if args.mode == 'project-net' else 'HIERARCHICAL_INSTANCE_DISCOVERY_ONLY' if args.mode == 'instances' else 'PARENT_CONNECTED_PINS_GEOMETRY_ONLY' if args.mode == 'connected-pins' else 'HIERARCHICAL_INTERFACE_EVIDENCE_ONLY' if args.mode == 'hier-net' else 'SHEET_LOCAL_ONLY' if args.mode == 'local-net' else 'LOCAL_GEOMETRY_EVIDENCE_ONLY' if args.mode == 'pins' else 'STRUCTURAL_DISCOVERY_ONLY',
-               'limitations': (['Parent sheet pins, other connected sheet pins, and wire/label paths are geometric/interface evidence only',
-                               'Destination child pins and labels are sheet-local evidence only; global labels, cross-sheet power nets, reused instances, buses and inherited symbols are not fully resolved',
-                               'Not a KiCad-equivalent full-project net resolver'] if args.mode in ('hier-net', 'connected-pins') else ['Local wire paths and local-label names do not prove entire project connectivity',
-                               'Cross-sheet/global power-net connectivity, buses, inherited symbols and reused sheet instances are not resolved',
-                               'Geometric connectivity may differ from KiCad in complex edge cases'] if args.mode == 'local-net' else ['Pin positions and direct wires are geometric evidence, not resolved electrical nets',
-                               'Labels on connected multi-segment paths may not be reported',
-                               'Hierarchical, global and power connectivity are not resolved'] if args.mode == 'pins' else ['No electrical connectivity or pin-net verification',
-                               'Shared sheet files are not expanded into unique hierarchical instances',
-                               'Symbol reference properties can differ from instance references']),
+               'verification': MODES[args.mode]['verification'],
+               'limitations': list(MODES[args.mode]['limitations']),
                'warnings': pin_issues if args.mode in ('pins','local-net','hier-net','connected-pins') else []}
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0
