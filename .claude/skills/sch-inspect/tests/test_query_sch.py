@@ -568,6 +568,21 @@ class QuerySchRegression(unittest.TestCase):
                 self.assertEqual(len(reads), 3, reads)
                 self.assertEqual(len(set(reads)), 3, reads)
 
+    def test_33_output_is_utf8_whatever_the_console_encoding(self):
+        # A Windows console or pipe often uses a legacy code page. A project
+        # path with non-ASCII characters must still give valid UTF-8 JSON.
+        env = {**os.environ, 'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONIOENCODING': 'cp1252'}
+        for args, stream in ((['summary'], 'stdout'), (['pins'], 'stderr')):
+            with self.subTest(stream=stream):
+                done = subprocess.run([sys.executable, str(SCRIPT), *args, '--project', str(self.root)],
+                                      capture_output=True, cwd=self.dir, timeout=25, env=env)
+                self.assertEqual(done.returncode, 0 if stream == 'stdout' else 2, done.stderr)
+                obj = json.loads(getattr(done, stream).decode('utf-8'))
+                if stream == 'stdout':
+                    self.assertIn('ไทย', obj['root'])
+                else:
+                    self.assertEqual(obj['verification'], 'NOT_VERIFIED')
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

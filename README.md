@@ -194,7 +194,7 @@ Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). For v3.2.0 t
 
 | Suite | Last result |
 | --- | --- |
-| Schematic synthetic | 32/32 passed (v3.2.0, macOS) |
+| Schematic synthetic | 33/33 passed (v3.2.0, macOS) |
 | PCB synthetic | 31/31 passed (v3.1.0) |
 | PCB golden (real project) | 2/2 passed (earlier run) |
 | Schematic golden (real project) | 12/12 cases passed (v3.2.0, one local project) |

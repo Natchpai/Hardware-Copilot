@@ -115,6 +115,7 @@ below `LOCAL`.
 Report the scope actually reached, not the one requested, if expansion failed.
 
 ## JSON contract
+- Output is UTF-8 JSON on stdout; errors are UTF-8 JSON on stderr.
 - Every successful command returns `mode`, `target`, `root`, `results`,
   `total_matches`, `truncated`, `missing_sheets`, `skipped_outside_project`,
   `verification`, `limitations`, and `warnings`.

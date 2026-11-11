@@ -1138,6 +1138,13 @@ def main(argv=None):
     ap.add_argument('--prefix', help='components only: keep references with this letter prefix, for example U')
     args = ap.parse_args(argv)
     _FILES.clear()
+    # Print UTF-8 JSON whatever the console code page is. A legacy code page
+    # (common on Windows) cannot encode some paths and names.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding='utf-8')
+        except (AttributeError, ValueError):
+            pass  # not a text console stream (for example a test buffer)
     try:
         if not (1 <= args.limit <= 200 and 1 <= args.max_files <= 1000):
             raise QueryError('limit and max-files must be positive and within supported bounds')
