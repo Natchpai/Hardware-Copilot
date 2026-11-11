@@ -5,8 +5,10 @@ task when its change is merged, and move finished milestones to the bottom.
 
 ## M4: sch-inspect and pcb-inspect bug fixes (symbol lookup, body style, via type)
 
-Status: tasks done on `fix/inspect-symbol-lookup-and-via-type` on 2026-11-11
-as sch-inspect 1.1.1, pcb-inspect 1.1.1 and plugin v3.3.1. Not merged.
+Status: done in v3.3.1 (PR #27 and the M4 close-out PR), as sch-inspect
+1.1.1 and pcb-inspect 1.1.1. Tasks 1, 2 and 7 and the non-through via types
+of task 6 are covered by synthetic tests only; the test project has no such
+case.
 Scope: `.claude/skills/sch-inspect/` and `.claude/skills/pcb-inspect/`
 Source: read-through of `query_sch.py` v1.1.0 and `query_pcb.py` v1.1 on
 2026-11-11. Each bug was reproduced with a synthetic fixture. File-format
@@ -78,6 +80,20 @@ Tasks 1, 2, 6 and 7 gave wrong engineering data. The rest are smaller.
 - [x] **11. pcb: count `PASS` correctly when a subTest fails.**
   `tests/run_tests.py` now uses the same count as the sch-inspect runner.
 
+- [x] **12. Close M1 task 5: `mirror y` at 90 and 270 degrees.**
+  KiCad does not save this form, so no saved file can hold it. `mirror y`
+  at 90 is the same placement as `mirror x` at 270, and `mirror y` at 270
+  the same as `mirror x` at 90. `SCH_SYMBOL::GetOrientation()` tries the
+  `mirror x` forms first and the writer saves what it returns (KiCad
+  source, `master`). On KiCad 10.0 the engineer placed R907, rotated it and
+  mirrored it about Y: the file holds `(at ... 90) (mirror x)`. The 19
+  mirrored symbols in the project are `mirror x` at 0, 90 or 270, or
+  `mirror y` at 0.
+  Done: `mirror x` at 90 and 270 is checked against a KiCad 10.0.8 netlist
+  in the golden tests, and test 26 asserts that the script gives the same
+  pins for the equivalent `mirror y` form. `SKILL.md` no longer marks it
+  `NOT_VERIFIED`.
+
 ### Check on a real project
 
 Run on 2026-11-11 against the 2-phase buck project (KiCad 10.0, 14 sheet
@@ -97,8 +113,6 @@ Python 3.15.
 
 ### Still open
 
-- **`mirror y` at 90 and 270 degrees** (from M1 task 5). The project has
-  `mirror y` at 0 degrees only (13 symbols), so it stays `NOT_VERIFIED`.
 - Seen and left alone, because they are design choices: a wire end that
   lands mid-wire with no junction counts as connected; same-name
   hierarchical labels in one sheet join only through a wired parent pin;
@@ -109,8 +123,8 @@ Python 3.15.
 - All tasks ticked or moved to a later milestone with a reason. Met.
 - A synthetic test was added before each parser fix (see
   `CONTRIBUTING.md`). Met: each new test failed on the old script.
-- Unit tests pass on Windows and macOS in CI. Not met yet: run on macOS
-  locally only; CI runs when the branch is pushed.
+- Unit tests pass on Windows and macOS in CI. Met: PR #27, on Linux,
+  Windows and macOS.
 - `version` in `.claude-plugin/plugin.json`, `VERSION` in `query_pcb.py`
   and the version in the `query_sch.py` docstring are bumped. Met: 3.3.1,
   1.1.1 and 1.1.1.
@@ -223,7 +237,7 @@ Task 1 is a confirmed defect and comes first. The rest are ordered by value.
 
 ## M3: sch-review 1.1 (requirements, pin coverage, rule conflicts)
 
-Status: tasks and exit criteria done on `feat/sch-review-1.1`, not merged.
+Status: done, merged into `dev` in PR #23.
 The real block review was the `MCU_power` sheet of the 2-phase buck project
 on 2026-11-11, read by the engineer. It found that pin status comes from
 `local-net`, not `pins`; step 3 was fixed.
@@ -432,6 +446,7 @@ Ordered by value. Tasks 1 and 2 change daily use the most.
   `NOT_VERIFIED`. Needs a KiCad 10 saved file with a `mirror y` symbol at 90
   and at 270 degrees. `SKILL.md` tells the agent to treat those pin-net
   results as `NOT_VERIFIED` until then.
+  Closed in M4 task 12: KiCad never saves that form.
 
 ### Exit criteria
 
