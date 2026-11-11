@@ -110,7 +110,8 @@ Task 1 is a confirmed defect and comes first. The rest are ordered by value.
 
 ## M3: sch-review 1.1 (requirements, pin coverage, rule conflicts)
 
-Status: not started
+Status: tasks done, not merged. Exit criterion 3 (one real block review
+read by the engineer) is still open.
 Scope: `.claude/skills/sch-review/SKILL.md` (the skill has no script)
 Source: read-through on 2026-11-10 against `.claude/rules/engineering.md`,
 `.claude/rules/pdf.md` and `sch-inspect`. The skill was not run on a real
@@ -122,7 +123,7 @@ rules.
 
 ### Tasks
 
-- [ ] **1. Check against the project's requirements.**
+- [x] **1. Check against the project's requirements.**
   Workflow step 1 takes function and operating range from the user or from
   assumptions. It never says to read the project's specification, so a
   review can miss "does this meet the requirement".
@@ -131,7 +132,7 @@ rules.
   requirement, decision or open-item ID in each finding it relates to. With
   no such record, the operating range is `ASSUMED` and stated.
 
-- [ ] **2. Add a pin coverage step.**
+- [x] **2. Add a pin coverage step.**
   "Floating pins" is one word in a list in step 4. Accounting for every pin
   of each IC in scope is the most mechanical check in a schematic review,
   and `sch-inspect pins` gives the data.
@@ -140,7 +141,7 @@ rules.
   no-connect and strap pins with the datasheet. Unresolved pins go to the
   `NOT_VERIFIED` section.
 
-- [ ] **3. Fix the NotebookLM and PDF wording.**
+- [x] **3. Fix the NotebookLM and PDF wording.**
   Lines 44 to 47 say "Never open or read a PDF" and that NotebookLM answers
   are "used only after the user approves uploading the file". `pdf.md`
   allows reading project report PDFs, and lets an existing notebook be
@@ -150,7 +151,7 @@ rules.
   an existing notebook is queried without asking, and adding a source needs
   approval.
 
-- [ ] **4. Use one finding format.**
+- [x] **4. Use one finding format.**
   `engineering.md` defines five fields. The skill's row has eight, and it
   adds a status whose value `NOT_VERIFIED` is also an evidence label, so a
   row can read `NOT_VERIFIED | NOT_VERIFIED`. The example row shows
@@ -160,27 +161,27 @@ rules.
   one sentence says the evidence label rates the observation and the status
   rates the conclusion.
 
-- [ ] **5. Remove the repeated read-only rule.**
+- [x] **5. Remove the repeated read-only rule.**
   "KiCad files are read-only, propose changes, do not apply" is stated in
   Boundaries (line 20) and again in Evidence baseline (line 48).
   Done when: it is stated once. Keep the evidence labels and severity
   definitions, because the skill must work when copied alone.
 
-- [ ] **6. Say what to do for a sheet-level target.**
+- [x] **6. Say what to do for a sheet-level target.**
   The argument hint offers `sheet`, but `sch-inspect` cannot list the
   components on a sheet, so the agent has no stated way to start.
-  Depends on M1 task 2. Until then the skill should say to ask for the
-  references or to read the sheet's symbol list directly.
+  M1 task 2 added `components --sheet`. Asking for the references or
+  reading the sheet's symbol list stays as the fallback without `sch-inspect`.
   Done when: step 2 names the command for each target type (sheet,
   subsystem, reference, concern).
 
-- [ ] **7. Add the saved-file note.**
+- [x] **7. Add the saved-file note.**
   `pcb-inspect` says the saved file may differ from the open editor. This
   skill does not.
   Done when: Boundaries says the review covers the saved files, and that a
   `.lck` file means the editor may hold unsaved changes.
 
-- [ ] **8. Add three evaluation prompts.**
+- [x] **8. Add three evaluation prompts.**
   There is no test for a prompt-only skill.
   Done when: the repo has three short cases with expected behaviour: a
   block with a known defect, a block with missing constraints (should give
