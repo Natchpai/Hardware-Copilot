@@ -330,6 +330,8 @@ class QuerySchRegression(unittest.TestCase):
             'connected-pins': (('U1',), 'PARENT_CONNECTED_PINS_GEOMETRY_ONLY'),
             'project-net': (('U1', '--pin', '1'), 'INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY'),
             'instances': ((), 'HIERARCHICAL_INSTANCE_DISCOVERY_ONLY'),
+            'net': (('TEST_GLOBAL',), 'INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY'),
+            'components': ((), 'STRUCTURAL_DISCOVERY_ONLY'),
         }
         for mode, (args, verification) in expected.items():
             with self.subTest(mode=mode):
@@ -443,6 +445,105 @@ class QuerySchRegression(unittest.TestCase):
                 got = {x['number']: x['position_mm']
                        for x in self.call('pins', 'U9', project=root)['results'][0]['pins']}
                 self.assertEqual(got, pins)
+
+    def net_pins(self, result):
+        return {(p['reference'], p['pin_number']) for p in result['connected_component_pins']}
+
+    def test_27_net_starts_from_each_kind_of_name(self):
+        cases = {
+            'TEST_GLOBAL': ('global_label', {('U1', '1'), ('R1', '1')}),
+            'PWM_LI_CH2': ('hierarchical_label', {('U1', '1'), ('R1', '1')}),
+            'GND': ('power_symbol', {('U104', '1')}),
+            'LOCAL_TEST': ('label', {('U104', '1')}),
+        }
+        for name, (kind, pins) in cases.items():
+            with self.subTest(net=name):
+                r = self.call('net', name)
+                self.assertEqual(r['verification'], 'INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY')
+                self.assertEqual(r['total_matches'], 1)
+                one = r['results'][0]
+                self.assertEqual(one['status'], 'PROJECT_CONNECTIVITY_EVIDENCE')
+                self.assertEqual(one['net_name'], name)
+                self.assertIn(kind, [m['kind'] for m in one['matched_by']])
+                self.assertEqual(self.net_pins(one), pins)
+                self.assertFalse(one['project_net_verified'])
+                self.assertFalse(one['connected_pins_truncated'])
+        # Same evidence as project-net from a pin on that net.
+        by_pin = self.call('project-net', 'U1', '--pin', '1')['results'][0]
+        by_name = self.call('net', 'TEST_GLOBAL')['results'][0]
+        for field in ('connected_component_pins', 'global_labels', 'power_net_names', 'groups_visited'):
+            self.assertEqual(by_name[field], by_pin[field])
+
+    def test_28_net_unknown_name_truncation_and_arguments(self):
+        r = self.call('net', 'NO_SUCH_NET')
+        self.assertEqual(r['results'][0]['status'], 'NET_NAME_NOT_FOUND')
+        self.assertFalse(r['results'][0]['project_net_verified'])
+        self.assertEqual(self.call('net', 'test_global')['results'][0]['status'], 'NET_NAME_NOT_FOUND')
+        one = self.call('net', 'TEST_GLOBAL', '--limit', '1')['results'][0]
+        self.assertTrue(one['connected_pins_truncated'])
+        self.assertEqual(one['total_connected_component_pins'], 2)
+        self.call('net', ok=False)
+        self.call('net', 'GND', '--pin', '1', ok=False)
+        self.call('net', 'GND', '--prefix', 'U', ok=False)
+
+    def reused_project(self):
+        child = self.dir / 'shared.kicad_sch'
+        root = self.dir / 'reused.kicad_sch'
+        first = '11111111-1111-1111-1111-111111111111'
+        second = '22222222-2222-2222-2222-222222222222'
+        root.write_text(content(ROOT_ID,
+            sheet('First', child.name, first, 'UNUSED', 10, 10),
+            sheet('Second', child.name, second, 'UNUSED', 60, 10)), encoding='utf-8')
+        placed = component('U1', 10, 10, 'u1', f'/{ROOT_ID}/{first}').replace(
+            '(unit 1))))', f'(unit 1)) (path "/{ROOT_ID}/{second}" (reference "U2") (unit 1))))')
+        child.write_text(content('dddddddd-dddd-dddd-dddd-dddddddddddd',
+            placed, wire(10, 10, 20, 10), '(label "SIG" (at 20 10 0))'), encoding='utf-8')
+        self.files.extend([root, child])
+        self.before.update({root: sha(root), child: sha(child)})
+        return root, first, second
+
+    def test_29_net_local_label_in_reused_sheet_gives_one_result_per_instance(self):
+        root, first, second = self.reused_project()
+        r = self.call('net', 'SIG', project=root)
+        self.assertEqual(r['total_matches'], 2)
+        found = {r2['matched_by'][0]['instance_path']: self.net_pins(r2) for r2 in r['results']}
+        self.assertEqual(found, {f'/{ROOT_ID}/{first}': {('U1', '1')},
+                                 f'/{ROOT_ID}/{second}': {('U2', '1')}})
+
+    def test_30_components_lists_and_filters(self):
+        r = self.call('components')
+        self.assertEqual(r['verification'], 'STRUCTURAL_DISCOVERY_ONLY')
+        refs = [x['reference'] for x in r['results']]
+        self.assertEqual(sorted(refs), ['PWR_FLAG1', 'PWR_FLAG2', 'R1', 'U1', 'U104', 'U105'])
+        self.assertNotIn('#PWR01', refs)
+        r = self.call('components', '--prefix', 'U')
+        self.assertEqual([x['reference'] for x in r['results']], ['U1', 'U104', 'U105'])
+        r = self.call('components', '--sheet', 'MCU IOs')
+        self.assertEqual(r['total_matches'], 1)
+        self.assertEqual(r['results'][0], {
+            'reference': 'R1', 'value': 'Generic', 'lib_id': 'TEST:OnePin',
+            'sheet_name': 'MCU IOs', 'instance_path': f'/{ROOT_ID}/{MCU_SHEET_ID}',
+            'file': str((self.dir / 'MCU IOs.kicad_sch').resolve()), 'units': ['1']})
+        r = self.call('components', '--sheet', 'Power State', '--prefix', 'U', '--limit', '1')
+        self.assertEqual([x['reference'] for x in r['results']], ['U1'])
+        self.assertEqual(r['total_matches'], 3)
+        self.assertTrue(r['truncated'])
+        r = self.call('components', '--prefix', '#PWR')
+        self.assertEqual([x['reference'] for x in r['results']], ['#PWR01'])
+        r = self.call('components', '--sheet', 'No Such Sheet')
+        self.assertEqual(r['total_matches'], 0)
+        self.assertIn('No Such Sheet', ' '.join(r['warnings']))
+        self.call('components', 'U1', ok=False)
+        self.call('summary', '--sheet', 'MCU IOs', ok=False)
+
+    def test_31_components_resolve_references_per_sheet_instance(self):
+        root, first, second = self.reused_project()
+        r = self.call('components', project=root)
+        self.assertEqual([(x['reference'], x['sheet_name'], x['instance_path']) for x in r['results']],
+                         [('U1', 'First', f'/{ROOT_ID}/{first}'),
+                          ('U2', 'Second', f'/{ROOT_ID}/{second}')])
+        r = self.call('components', '--sheet', 'Second', project=root)
+        self.assertEqual([x['reference'] for x in r['results']], ['U2'])
 
 
 if __name__ == '__main__':

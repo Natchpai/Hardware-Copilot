@@ -69,6 +69,20 @@
       "status": "PROJECT_CONNECTIVITY_EVIDENCE",
       "has_pins": [["B902", "1"], ["B902", "2"], ["D902", "1"]],
       "lacks_pins": [["U401", "7"], ["C902", "1"]]
+    },
+    {
+      "name": "net BT1_USER starts from a label name (KiCad 10.0.8 netlist)",
+      "command": ["net", "BT1_USER"],
+      "status": "PROJECT_CONNECTIVITY_EVIDENCE",
+      "has_pins": [["U401", "52"], ["R903", "2"], ["C901", "1"]],
+      "lacks_pins": [["R901", "2"]]
+    },
+    {
+      "name": "net +3V3 starts from a power symbol name",
+      "command": ["net", "+3V3"],
+      "status": "PROJECT_CONNECTIVITY_EVIDENCE",
+      "has_power": ["+3V3"],
+      "lacks_power": ["GND", "+9V"]
     }
   ]
 }
