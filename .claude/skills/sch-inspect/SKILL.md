@@ -21,8 +21,10 @@ argument-hint: "[summary | components [--sheet <name>] [--prefix <p>] | componen
   failure instead of guessing.
 - Text search, matching net labels, nearby wires, or an empty result is not
   proof of connectivity (or of its absence).
-- Never claim `PASS` for an incomplete check; use `NOT_VERIFIED` with the missing
-  evidence. Never infer electrical correctness from structure or geometry.
+- `PASS` needs validated evidence for that specific check. For an incomplete
+  check use `NOT_VERIFIED` and name the missing evidence. Structure and
+  geometry do not show electrical correctness. Keep observed and suspected
+  apart.
 - If no mode is given, ask for a target or offer the commands below.
 
 ## Commands
@@ -36,8 +38,8 @@ Resolve the script and project paths first; do not assume the working directory.
   links and other instances can be lost.
 - `--pin <n>` works with `project-net` only (required when the component has
   several nets); other commands reject it.
-- `--limit` also truncates pins and connected pins; check the `*_truncated`
-  flags before concluding.
+- `--limit` bounds every list in the output, nested ones too (see JSON
+  contract, truncation).
 - `--sheet <name>` and `--prefix <p>` work with `components` only. `--sheet`
   takes a sheet name, file name or file stem. `--prefix U` keeps `U1` and
   `U104`, not `USB1`. References that start with `#` are listed only when
@@ -91,8 +93,8 @@ circuit correctness.
    inferred or unresolved ones. Count power symbols and global connectivity only
    if the tool resolved them.
 5. **Expand only as needed** through sheet pins, hierarchical or global labels,
-   and power nets. A repeated local label in separate sheet instances is not
-   globally connected.
+   and power nets, and say why the wider scope was needed. A repeated local
+   label in separate sheet instances is not one net.
 6. **Validate** with calculations, datasheet evidence (from the user, official
    web pages or cited NotebookLM answers; never a direct PDF read), or
    targeted checks relevant to the question.
@@ -106,15 +108,14 @@ circuit correctness.
 
 The tool does not print a scope level; assign it from the command used:
 `pins` and `local-net` give `LOCAL`; `hier-net` and `connected-pins` give
-`HIERARCHICAL`; `project-net` and `net` give `GLOBAL`-level evidence only
-(still not netlist parity). `summary`, `components`, `component`, `sheet`,
-and `instances` are structural discovery below `LOCAL`.
+`HIERARCHICAL`; `project-net` and `net` give `GLOBAL`. `summary`,
+`components`, `component`, `sheet`, and `instances` are structural discovery
+below `LOCAL`.
 
-Report the scope actually verified, not the one requested, if expansion failed.
-`PASS` needs sufficient validated evidence for that specific check; otherwise
-use `WARNING`, `FAIL`, or `NOT_VERIFIED`. Distinguish observed from suspected.
+Report the scope actually reached, not the one requested, if expansion failed.
 
 ## JSON contract
+- Output is UTF-8 JSON on stdout; errors are UTF-8 JSON on stderr.
 - Every successful command returns `mode`, `target`, `root`, `results`,
   `total_matches`, `truncated`, `missing_sheets`, `skipped_outside_project`,
   `verification`, `limitations`, and `warnings`.
@@ -127,11 +128,11 @@ use `WARNING`, `FAIL`, or `NOT_VERIFIED`. Distinguish observed from suspected.
   `matched_by` (label kind, instance path, file) and the same evidence
   fields as `project-net`. A local label repeated in several sheet instances
   gives several results: report them as separate nets. No match returns
-  `NET_NAME_NOT_FOUND`; report it as `NOT_VERIFIED`, not as "no such net".
+  `NET_NAME_NOT_FOUND`; report it as `NOT_VERIFIED`.
 - `components` returns one row per component and sheet instance. A
   `warnings` entry says when `--sheet` matched no sheet instance.
-- `verification` is set by the command. None of these values means the design
-  was verified:
+- `verification` is set by the command. No value means the design was
+  verified:
 
   | Command | `verification` |
   |---|---|
@@ -147,16 +148,12 @@ use `WARNING`, `FAIL`, or `NOT_VERIFIED`. Distinguish observed from suspected.
 - `limitations` is also set by the command; report the lines it prints.
 - Errors (invalid input, unreadable files, bad bounds, traversal failure) exit
   nonzero with `verification: NOT_VERIFIED`; infer nothing from them.
-- Honour `truncated`, `pins_truncated`, `connected_pins_truncated`,
-  `matched_by_truncated`, and `names_truncated`: a truncated result is not a complete enumeration.
+- Truncation: check `truncated`, `pins_truncated`, `connected_pins_truncated`,
+  `matched_by_truncated`, and `names_truncated` before concluding. A truncated
+  list cannot show that an item is absent; raise `--limit` (maximum 200).
 
 ## Limitations
-- `summary`, `components`, `component`, `sheet`: structural discovery only.
-- `pins`, `local-net`: local geometry evidence. `hier-net`, `connected-pins`:
-  bounded parent/interface geometry evidence.
-- `project-net`, `net`: conservative, instance-aware evidence through supported wires,
-  labels, hierarchy, global labels, and power symbols; not netlist parity.
-- Global labels and power symbols may connect nets across sheet instances. A
+- Global labels and power symbols connect nets across sheet instances. A
   global label and a power symbol with the same name are one net. A power
   symbol is any symbol whose library symbol has the `(power)` flag; all of
   them are treated as global, including KiCad's local power symbols.
@@ -175,5 +172,6 @@ use `WARNING`, `FAIL`, or `NOT_VERIFIED`. Distinguish observed from suspected.
 - **Not verified:** unresolved connectivity, missing data, tool limits.
 - **Next action:** a focused check or human visual check, only if needed.
 
-For native file structure and evidence rules, read
-[Schematic Data Reference](references/schematic-data.md) only when needed.
+For the native `.kicad_sch` file structure, read
+[Schematic Data Reference](references/schematic-data.md) only when a query
+result has to be checked against the file itself.

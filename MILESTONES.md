@@ -3,120 +3,6 @@
 Planned work for the skills in this repo. One section per milestone. Tick a
 task when its change is merged, and move finished milestones to the bottom.
 
-## M1: sch-inspect 1.1 (net queries and contract cleanup)
-
-Status: not started
-Scope: `.claude/skills/sch-inspect/` only
-Source: review of `query_sch.py` v1.0.1 on 2026-11-10, run against a real
-KiCad 10 project (5 sheets, 78 symbols). All 21 unit tests passed before this
-work.
-
-Goal: let a user start from a net name or a sheet, not only from a reference
-and pin, and make `SKILL.md` match what the script prints.
-
-### Tasks
-
-Ordered by value. Tasks 1 and 2 change daily use the most.
-
-- [ ] **1. Add a `net <name>` command.**
-  Today a query can only start from a reference and pin, so "what is on
-  `+5V`?" needs a known pin on that net. `CLAUDE.md` tells users to query by
-  "sheet, ref, net", and the skill cannot do the last one.
-  Done when: `net <name>` returns the component pins reached from every local
-  label, global label, hierarchical label and power symbol with that name,
-  with the same instance-aware evidence and truncation flags as `project-net`.
-  A local label name that exists in several sheet instances returns one result
-  per instance, not one merged net.
-
-- [ ] **2. Add a `components` command with `--sheet` and `--prefix` filters.**
-  `SKILL.md` says there is no way to list or search components, so the agent
-  has to ask or guess designators.
-  Done when: `components --sheet <name> --prefix U` lists reference, value,
-  `lib_id` and instance path, bounded by `--limit`, and the "no command to
-  list" paragraph is removed from `SKILL.md`.
-
-- [ ] **3. Fix the top-level `limitations` for `project-net` and `instances`.**
-  Both fall into the `summary` branch (`scripts/query_sch.py:1023`) and print
-  "No electrical connectivity or pin-net verification" and "Shared sheet files
-  are not expanded into unique hierarchical instances". That is wrong for
-  both. `SKILL.md` works around it with "A generic limitation line in
-  `project-net` output does not override its instance-aware evidence".
-  Done when: each mode prints its own limitations, a test checks them, and the
-  workaround sentence is deleted.
-
-- [ ] **4. Make the `verification` values in `SKILL.md` match the script.**
-  The script also emits `SHEET_LOCAL_ONLY`,
-  `HIERARCHICAL_INTERFACE_EVIDENCE_ONLY`,
-  `PARENT_CONNECTED_PINS_GEOMETRY_ONLY` and
-  `HIERARCHICAL_INSTANCE_DISCOVERY_ONLY` (`scripts/query_sch.py:1016`). The
-  JSON contract section lists none of them.
-  Done when: the contract lists every value the script can print, one per
-  command, and a test fails if a new value is added without a doc update.
-
-- [ ] **5. Test mirror combined with 90 and 270 degree rotation.**
-  `pins_from_symbol` applies the mirror before the rotation
-  (`scripts/query_sch.py:287`). The two only commute at 0 and 180 degrees, and
-  the tests contain no mirrored symbol. A wrong order gives silently missing
-  connections. Status today: `NOT_VERIFIED`.
-  Done when: fixtures cover `mirror x` and `mirror y` at 90 and 270 degrees,
-  with expected pin positions taken from a file saved by KiCad 10, not from
-  the script's own output.
-
-- [ ] **6. Join a global label and a power symbol that share a name.**
-  `global_nodes` and `power_nodes` are joined separately
-  (`scripts/query_sch.py:868`). KiCad joins them by name.
-  Done when: a fixture with global label `VBUS` on one sheet and power symbol
-  `VBUS` on another reports one net, and `PWR_FLAG` still joins nothing.
-
-- [ ] **7. Detect power symbols the same way everywhere.**
-  `power_symbol_anchors` uses the `(power)` flag of the library symbol, but
-  `project_connections` hides power pins by the `power:` library prefix
-  (`scripts/query_sch.py:823`). A power symbol kept in a project library, for
-  example `0_Power:GND`, shows up as a component pin.
-  Done when: both places use the `(power)` flag, with a fixture for a power
-  symbol outside the `power` library.
-
-- [ ] **8. Make the golden tests configurable per project.**
-  `tests/test_query_sch_golden.py` hard-codes one project's values
-  (`U103`, `R506`, `+9V`, sheet names "Power State" and "MCU IOs"). In any
-  other project they skip, or fail if `KICAD_GOLDEN_PROJECT` is set.
-  Done when: expected values come from a small JSON file named by an
-  environment variable, the README section "Tests and CI" explains the format,
-  and the tests skip cleanly when the file is not set.
-
-- [ ] **9. Trim `SKILL.md` and `references/schematic-data.md`.**
-  "Not netlist parity" and "use `NOT_VERIFIED`" are stated in Rules, Scope
-  levels, JSON contract and Limitations, and the reference file repeats the
-  scope levels and the contract.
-  Done when: each rule is stated once, the reference file keeps only the
-  native file structure notes, and no behaviour rule is lost. Use the
-  `writing-for-agents` skill for the pass. Do this after tasks 1 to 4, since
-  they change the same text.
-
-- [ ] **10. Parse each file once per query.**
-  A file is read and parsed again in `read_sheet`, `local_geometry`,
-  `power_symbol_anchors`, `inspect_pins` and `connected_parent_pins`, and
-  `resolve_local_networks` compares every anchor with every wire. A 78-symbol
-  sheet takes about 0.1 s, so this is not urgent. It will matter on sheets
-  with large MCUs.
-  Done when: one parse per file per run, output is byte-identical on the
-  existing fixtures, and the time on a large sheet is recorded in the PR.
-
-### Out of scope
-
-- KiCad netlist parity. `project_net_verified` stays false.
-- Bus expansion and bus entries.
-- Hidden power pins and other implicit connections.
-- Any write to a KiCad file.
-
-### Exit criteria
-
-- All tasks ticked or moved to a later milestone with a reason.
-- Unit tests pass on Windows and macOS in CI.
-- A synthetic test was added before each parser fix (see `CONTRIBUTING.md`).
-- `version` in `.claude-plugin/plugin.json` and the version in the
-  `query_sch.py` docstring are bumped.
-
 ## M2: pcb-inspect 1.1 (back-side fix, KiCad 10 nets, net totals)
 
 Status: not started
@@ -312,3 +198,129 @@ rules.
 - All tasks ticked or moved to a later milestone with a reason.
 - The skill still works when copied alone, without `.claude/rules/`.
 - One real block review was run with the new text and read by the engineer.
+
+## M1: sch-inspect 1.1 (net queries and contract cleanup)
+
+Status: done in v3.2.0 (PRs #20, #21 and the 1.1 release PR). One part of
+task 5 moved to a later milestone, see below.
+Scope: `.claude/skills/sch-inspect/` only
+Source: review of `query_sch.py` v1.0.1 on 2026-11-10, run against a real
+KiCad 10 project (5 sheets, 78 symbols). All 21 unit tests passed before this
+work.
+
+Goal: let a user start from a net name or a sheet, not only from a reference
+and pin, and make `SKILL.md` match what the script prints.
+
+### Tasks
+
+Ordered by value. Tasks 1 and 2 change daily use the most.
+
+- [x] **1. Add a `net <name>` command.**
+  Today a query can only start from a reference and pin, so "what is on
+  `+5V`?" needs a known pin on that net. `CLAUDE.md` tells users to query by
+  "sheet, ref, net", and the skill cannot do the last one.
+  Done when: `net <name>` returns the component pins reached from every local
+  label, global label, hierarchical label and power symbol with that name,
+  with the same instance-aware evidence and truncation flags as `project-net`.
+  A local label name that exists in several sheet instances returns one result
+  per instance, not one merged net.
+
+- [x] **2. Add a `components` command with `--sheet` and `--prefix` filters.**
+  `SKILL.md` says there is no way to list or search components, so the agent
+  has to ask or guess designators.
+  Done when: `components --sheet <name> --prefix U` lists reference, value,
+  `lib_id` and instance path, bounded by `--limit`, and the "no command to
+  list" paragraph is removed from `SKILL.md`.
+
+- [x] **3. Fix the top-level `limitations` for `project-net` and `instances`.**
+  Both fall into the `summary` branch (`scripts/query_sch.py:1023`) and print
+  "No electrical connectivity or pin-net verification" and "Shared sheet files
+  are not expanded into unique hierarchical instances". That is wrong for
+  both. `SKILL.md` works around it with "A generic limitation line in
+  `project-net` output does not override its instance-aware evidence".
+  Done when: each mode prints its own limitations, a test checks them, and the
+  workaround sentence is deleted.
+
+- [x] **4. Make the `verification` values in `SKILL.md` match the script.**
+  The script also emits `SHEET_LOCAL_ONLY`,
+  `HIERARCHICAL_INTERFACE_EVIDENCE_ONLY`,
+  `PARENT_CONNECTED_PINS_GEOMETRY_ONLY` and
+  `HIERARCHICAL_INSTANCE_DISCOVERY_ONLY` (`scripts/query_sch.py:1016`). The
+  JSON contract section lists none of them.
+  Done when: the contract lists every value the script can print, one per
+  command, and a test fails if a new value is added without a doc update.
+
+- [x] **5. Test mirror combined with 90 and 270 degree rotation.**
+  `pins_from_symbol` applies the mirror before the rotation
+  (`scripts/query_sch.py:287`). The two only commute at 0 and 180 degrees, and
+  the tests contain no mirrored symbol. A wrong order gives silently missing
+  connections. Status today: `NOT_VERIFIED`.
+  Done when: fixtures cover `mirror x` and `mirror y` at 90 and 270 degrees,
+  with expected pin positions taken from a file saved by KiCad 10, not from
+  the script's own output.
+  Result: confirmed defect, fixed. `mirror x` at 90 and 270 degrees swapped
+  pins 1 and 2. Checked on a real project against a netlist exported by
+  kicad-cli 10.0.8, through the golden tests. No repo fixture was added.
+
+- [x] **6. Join a global label and a power symbol that share a name.**
+  `global_nodes` and `power_nodes` are joined separately
+  (`scripts/query_sch.py:868`). KiCad joins them by name.
+  Done when: a fixture with global label `VBUS` on one sheet and power symbol
+  `VBUS` on another reports one net, and `PWR_FLAG` still joins nothing.
+
+- [x] **7. Detect power symbols the same way everywhere.**
+  `power_symbol_anchors` uses the `(power)` flag of the library symbol, but
+  `project_connections` hides power pins by the `power:` library prefix
+  (`scripts/query_sch.py:823`). A power symbol kept in a project library, for
+  example `0_Power:GND`, shows up as a component pin.
+  Done when: both places use the `(power)` flag, with a fixture for a power
+  symbol outside the `power` library.
+
+- [x] **8. Make the golden tests configurable per project.**
+  `tests/test_query_sch_golden.py` hard-codes one project's values
+  (`U103`, `R506`, `+9V`, sheet names "Power State" and "MCU IOs"). In any
+  other project they skip, or fail if `KICAD_GOLDEN_PROJECT` is set.
+  Done when: expected values come from a small JSON file named by an
+  environment variable, the README section "Tests and CI" explains the format,
+  and the tests skip cleanly when the file is not set.
+
+- [x] **9. Trim `SKILL.md` and `references/schematic-data.md`.**
+  "Not netlist parity" and "use `NOT_VERIFIED`" are stated in Rules, Scope
+  levels, JSON contract and Limitations, and the reference file repeats the
+  scope levels and the contract.
+  Done when: each rule is stated once, the reference file keeps only the
+  native file structure notes, and no behaviour rule is lost. Use the
+  `writing-for-agents` skill for the pass. Do this after tasks 1 to 4, since
+  they change the same text.
+
+- [x] **10. Parse each file once per query.**
+  A file is read and parsed again in `read_sheet`, `local_geometry`,
+  `power_symbol_anchors`, `inspect_pins` and `connected_parent_pins`, and
+  `resolve_local_networks` compares every anchor with every wire. A 78-symbol
+  sheet takes about 0.1 s, so this is not urgent. It will matter on sheets
+  with large MCUs.
+  Done when: one parse per file per run, output is byte-identical on the
+  existing fixtures, and the time on a large sheet is recorded in the PR.
+
+### Out of scope
+
+- KiCad netlist parity. `project_net_verified` stays false.
+- Bus expansion and bus entries.
+- Hidden power pins and other implicit connections.
+- Any write to a KiCad file.
+
+### Moved to a later milestone
+
+- **Task 5, `mirror y` at 90 and 270 degrees.** The fix applies the same
+  rule to `mirror y`, but the test project has no such part, so it is
+  `NOT_VERIFIED`. Needs a KiCad 10 saved file with a `mirror y` symbol at 90
+  and at 270 degrees. `SKILL.md` tells the agent to treat those pin-net
+  results as `NOT_VERIFIED` until then.
+
+### Exit criteria
+
+- All tasks ticked or moved to a later milestone with a reason.
+- Unit tests pass on Windows and macOS in CI.
+- A synthetic test was added before each parser fix (see `CONTRIBUTING.md`).
+- `version` in `.claude-plugin/plugin.json` and the version in the
+  `query_sch.py` docstring are bumped.

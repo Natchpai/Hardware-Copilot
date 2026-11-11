@@ -4,8 +4,10 @@
 Run: python .claude/skills/sch-inspect/tests/run_tests.py --pattern test_query_sch.py --label synthetic
 No third-party packages. Uses temporary synthetic .kicad_sch fixtures.
 """
+import contextlib
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -13,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'scripts' / 'query_sch.py'
 ROOT_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
@@ -544,6 +547,41 @@ class QuerySchRegression(unittest.TestCase):
                           ('U2', 'Second', f'/{ROOT_ID}/{second}')])
         r = self.call('components', '--sheet', 'Second', project=root)
         self.assertEqual([x['reference'] for x in r['results']], ['U2'])
+
+    def test_32_each_file_is_read_once_per_query(self):
+        spec = importlib.util.spec_from_file_location('_query_sch_read_count', SCRIPT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        original = Path.read_text
+        for args in (['connected-pins', 'U1'], ['project-net', 'U1', '--pin', '1'],
+                     ['net', 'GND'], ['local-net', 'U104'], ['components']):
+            with self.subTest(command=args[0]):
+                reads = []
+
+                def counting(path, *a, **k):
+                    reads.append(str(path))
+                    return original(path, *a, **k)
+
+                with mock.patch.object(Path, 'read_text', counting), \
+                        contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(module.main([*args, '--project', str(self.root)]), 0)
+                self.assertEqual(len(reads), 3, reads)
+                self.assertEqual(len(set(reads)), 3, reads)
+
+    def test_33_output_is_utf8_whatever_the_console_encoding(self):
+        # A Windows console or pipe often uses a legacy code page. A project
+        # path with non-ASCII characters must still give valid UTF-8 JSON.
+        env = {**os.environ, 'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONIOENCODING': 'cp1252'}
+        for args, stream in ((['summary'], 'stdout'), (['pins'], 'stderr')):
+            with self.subTest(stream=stream):
+                done = subprocess.run([sys.executable, str(SCRIPT), *args, '--project', str(self.root)],
+                                      capture_output=True, cwd=self.dir, timeout=25, env=env)
+                self.assertEqual(done.returncode, 0 if stream == 'stdout' else 2, done.stderr)
+                obj = json.loads(getattr(done, stream).decode('utf-8'))
+                if stream == 'stdout':
+                    self.assertIn('ไทย', obj['root'])
+                else:
+                    self.assertEqual(obj['verification'], 'NOT_VERIFIED')
 
 
 if __name__ == '__main__':
