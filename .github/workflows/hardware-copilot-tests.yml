@@ -13,6 +13,14 @@ on:
         description: "Optional JSON file with the expected values for the golden project"
         required: false
         type: string
+      kicad_pcb_golden_board:
+        description: "Optional .kicad_pcb path for board-specific golden tests"
+        required: false
+        type: string
+      kicad_pcb_golden_expect:
+        description: "Optional JSON file with the expected values for the golden board"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -50,14 +58,32 @@ jobs:
           --pattern test_query_sch_golden.py --label golden
 
   pcb-synthetic:
-    name: PCB synthetic regression
-    runs-on: ubuntu-latest
+    name: PCB synthetic regression (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
       - name: Run self-contained PCB synthetic tests
         run: >-
-          python -m unittest discover
-          -s .claude/skills/pcb-inspect/tests
-          -p test_query_pcb.py -v
+          python .claude/skills/pcb-inspect/tests/run_tests.py
+          --pattern test_query_pcb.py --label synthetic
+
+  pcb-golden:
+    name: PCB golden tests (opt-in)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      KICAD_PCB_GOLDEN_BOARD: ${{ inputs.kicad_pcb_golden_board || vars.KICAD_PCB_GOLDEN_BOARD }}
+      KICAD_PCB_GOLDEN_EXPECT: ${{ inputs.kicad_pcb_golden_expect || vars.KICAD_PCB_GOLDEN_EXPECT }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run opt-in PCB golden tests
+        run: >-
+          python .claude/skills/pcb-inspect/tests/run_tests.py
+          --pattern test_query_pcb_golden.py --label golden

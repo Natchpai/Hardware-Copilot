@@ -148,7 +148,7 @@ Nothing installs or updates itself, and nothing is written back to your design o
 The inspect scripts use only the Python standard library and print JSON with a size limit. See each skill's `SKILL.md` and the script's `--help` for the **current syntax and options**.
 
 - **Schematic:** `summary`, `component`, `sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `instances`, `project-net`.
-- **PCB:** `summary`, `footprint`, `pads`, `net`, `tracks`, `vias`, `nearby`, `pad-distance`.
+- **PCB:** `summary`, `footprint`, `pads`, `nets`, `net`, `tracks`, `vias`, `zones`, `nearby`, `pad-distance`.
 
 Queries read the **saved** `.kicad_sch` and `.kicad_pcb` files, not unsaved edits in the KiCad editor. Shared nets, pad-center distances and track or via geometry do not prove copper is connected, clearances are met, or the board is correct. Anything unsupported or unclear is reported as `NOT_VERIFIED`, not guessed.
 
@@ -188,15 +188,28 @@ The JSON file holds a list of `cases`. Each case runs one `query_sch.py` command
 
 An unknown key fails the case. A pin or name check on a truncated result also fails, because a truncated list cannot show that an item is absent.
 
+PCB golden tests work the same way, with their own two variables.
+
+- `KICAD_PCB_GOLDEN_BOARD`: absolute path of the `.kicad_pcb` file.
+- `KICAD_PCB_GOLDEN_EXPECT`: absolute path of a JSON file with the expected values for that board.
+
+```sh
+KICAD_PCB_GOLDEN_BOARD=/abs/path/board.kicad_pcb \
+KICAD_PCB_GOLDEN_EXPECT=/abs/path/golden.json \
+python .claude/skills/pcb-inspect/tests/run_tests.py --pattern test_query_pcb_golden.py --label golden
+```
+
+Each case has `name`, `command`, an optional `status`, and `fields`, a map from a field path to its expected value, for example `"pads[number=1].position"` or `"tracks[0].length_mm"`. Start from [golden.example.json](.claude/skills/pcb-inspect/tests/golden.example.json); the format is described in [testing.md](.claude/skills/pcb-inspect/references/testing.md).
+
 GitHub Actions runs the checks on every push and PR. Before you treat a green run as a real-project check, look at each job and see whether the golden tests ran or skipped.
 
-Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). For v3.2.0 the schematic synthetic and golden tests were run on macOS (Python 3.15); CI runs the schematic synthetic tests on Linux, Windows and macOS.
+Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). For v3.2.0 the schematic synthetic and golden tests were run on macOS (Python 3.15). For v3.3.0 the PCB synthetic and golden tests were run on macOS (Python 3.15). CI runs the schematic and PCB synthetic tests on Linux, Windows and macOS.
 
 | Suite | Last result |
 | --- | --- |
 | Schematic synthetic | 33/33 passed (v3.2.0, macOS) |
-| PCB synthetic | 31/31 passed (v3.1.0) |
-| PCB golden (real project) | 2/2 passed (earlier run) |
+| PCB synthetic | 44/44 passed (v3.3.0, macOS) |
+| PCB golden (real project) | 6/6 cases passed (v3.3.0, one local project) |
 | Schematic golden (real project) | 12/12 cases passed (v3.2.0, one local project) |
 
 These are **reported test results**. They do not show that the scripts match KiCad's own netlist, ERC or DRC everywhere. Running natively on macOS and OS-level read-only sandboxing have not been checked.

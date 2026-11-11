@@ -1,4 +1,4 @@
-"""Standalone PCB v0.1 through v0.4 synthetic regression tests."""
+"""Standalone PCB synthetic regression tests (v0.1 through v1.1)."""
 import json
 import subprocess
 import sys
@@ -201,8 +201,9 @@ class PCBTests(unittest.TestCase):
         )
 
     def run_cli(self, *args):
+        # Results are JSON on stdout; errors are JSON on stderr.
         proc = self.run_cli_raw(*args)
-        return proc.returncode, json.loads(proc.stdout)
+        return proc.returncode, json.loads(proc.stdout if proc.returncode == 0 else proc.stderr)
 
     def write_v02_board(self):
         self.board.write_text(V02_BOARD, encoding="utf-8")
@@ -709,6 +710,37 @@ class PCBTests(unittest.TestCase):
         for args in (("zones", "GND"), ("nets",), ("summary",), ("nearby", "U1", "--radius", "5")):
             self.run_cli(*args)
         self.assertEqual(self.board.read_bytes(), before)
+
+    def test_errors_are_json_on_stderr_with_empty_stdout(self):
+        for args in (("pads",), ("summary", "--limit", "0"), ("nets", "GND")):
+            proc = self.run_cli_raw(*args)
+            self.assertEqual(proc.returncode, 2)
+            self.assertEqual(proc.stdout, "")
+            error = json.loads(proc.stderr)
+            self.assertEqual(error["status"], "NOT_VERIFIED")
+            self.assertEqual(error["verification"], "NOT_VERIFIED")
+            self.assertTrue(error["error"])
+        ok = self.run_cli_raw("summary")
+        self.assertEqual(ok.returncode, 0)
+        self.assertEqual(ok.stderr, "")
+
+    def test_version_is_the_same_in_script_and_skill(self):
+        source = SCRIPT.read_text(encoding="utf-8")
+        skill = (SCRIPT.parents[1] / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn('VERSION = "1.1"', source)
+        self.assertIn("(v1.1)", source.split("\n", 2)[1])
+        self.assertIn("## Commands (v1.1", skill)
+        self.assertNotIn("v0.4", source)
+        self.assertNotIn("v1.0", skill)
+
+    def test_output_is_utf8_json_for_non_ascii_names(self):
+        self.board.write_text(NAME_ONLY_NET_BOARD.replace("NAME_ONLY", "Ω_SENSE_µ"), encoding="utf-8")
+        proc = subprocess.run(
+            [sys.executable, str(SCRIPT), "net", "Ω_SENSE_µ", "--board", str(self.board)],
+            capture_output=True, env={**__import__("os").environ, "PYTHONIOENCODING": "ascii"},
+        )
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(json.loads(proc.stdout.decode("utf-8"))["net"], "Ω_SENSE_µ")
 
     def test_empty_sexpression_returns_structured_not_verified(self):
         self.board.write_text(EMPTY_FORM_BOARD, encoding="utf-8")

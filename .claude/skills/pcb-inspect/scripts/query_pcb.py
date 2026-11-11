@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Targeted, read-only KiCad PCB inspection (v0.4). Python 3.10+ stdlib."""
+"""Targeted, read-only KiCad PCB inspection (v1.1). Python 3.10+ stdlib."""
 from __future__ import annotations
 
 import argparse
@@ -8,6 +8,9 @@ import math
 import re
 import sys
 from pathlib import Path
+
+
+VERSION = "1.1"  # keep the docstring above and SKILL.md in step
 
 
 class QueryError(Exception):
@@ -1248,6 +1251,13 @@ def main(argv=None):
     parser.add_argument("--layer", help="nearby only: keep footprints on this layer, for example F.Cu")
     parser.add_argument("--radius", type=float, help="nearby only: keep footprints within this origin distance in mm")
     args = parser.parse_args(argv)
+    # Print UTF-8 JSON whatever the console code page is. A legacy code page
+    # (common on Windows) cannot encode some paths and names.
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding="utf-8")
+        except (AttributeError, ValueError):
+            pass  # not a text console stream (for example a test buffer)
     try:
         if args.limit < 1 or args.limit > 1000:
             raise QueryError("--limit must be from 1 to 1000")
@@ -1295,7 +1305,8 @@ def main(argv=None):
         print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
         return 0
     except (QueryError, OSError, UnicodeError, RecursionError, IndexError, KeyError, TypeError, ValueError) as exc:
-        print(json.dumps({"status": "NOT_VERIFIED", "verification": "NOT_VERIFIED", "error": str(exc)}, ensure_ascii=False, sort_keys=True))
+        # Errors are JSON on stderr, as in query_sch.py; stdout stays empty.
+        print(json.dumps({"status": "NOT_VERIFIED", "verification": "NOT_VERIFIED", "error": str(exc)}, ensure_ascii=False, sort_keys=True), file=sys.stderr)
         return 2
 
 
