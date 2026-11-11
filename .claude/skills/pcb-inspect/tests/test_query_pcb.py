@@ -195,10 +195,13 @@ class PCBTests(unittest.TestCase):
         self.before = self.board.read_bytes()
 
     def run_cli_raw(self, *args):
+        # The script always prints UTF-8. Without an explicit encoding the
+        # output is decoded with the console code page on Windows.
         return subprocess.run(
             [sys.executable, str(SCRIPT), *args, "--board", str(self.board)],
             capture_output=True,
             text=True,
+            encoding="utf-8",
         )
 
     def run_cli(self, *args):
