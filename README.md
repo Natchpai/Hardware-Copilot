@@ -203,14 +203,14 @@ Each case has `name`, `command`, an optional `status`, and `fields`, a map from 
 
 GitHub Actions runs the checks on every push and PR. Before you treat a green run as a real-project check, look at each job and see whether the golden tests ran or skipped.
 
-Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). For v3.2.0 the schematic synthetic and golden tests were run on macOS (Python 3.15). For v3.3.0 the PCB synthetic and golden tests were run on macOS (Python 3.15). CI runs the schematic and PCB synthetic tests on Linux, Windows and macOS.
+Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). For v3.2.0 the schematic synthetic and golden tests were run on macOS (Python 3.15). For v3.3.0 the PCB synthetic and golden tests were run on macOS (Python 3.15). For v3.3.1 all four suites were run on macOS (Python 3.15). CI runs the schematic and PCB synthetic tests on Linux, Windows and macOS.
 
 | Suite | Last result |
 | --- | --- |
-| Schematic synthetic | 33/33 passed (v3.2.0, macOS) |
-| PCB synthetic | 44/44 passed (v3.3.0, macOS) |
-| PCB golden (real project) | 6/6 cases passed (v3.3.0, one local project) |
-| Schematic golden (real project) | 12/12 cases passed (v3.2.0, one local project) |
+| Schematic synthetic | 38/38 passed (v3.3.1, macOS) |
+| PCB synthetic | 48/48 passed (v3.3.1, macOS) |
+| PCB golden (real project) | 6/6 cases passed (v3.3.1, one local project) |
+| Schematic golden (real project) | 12/12 cases passed (v3.3.1, one local project) |
 
 These are **reported test results**. They do not show that the scripts match KiCad's own netlist, ERC or DRC everywhere. Running natively on macOS and OS-level read-only sandboxing have not been checked.
 
