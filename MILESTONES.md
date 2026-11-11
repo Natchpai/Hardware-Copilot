@@ -5,8 +5,10 @@ task when its change is merged, and move finished milestones to the bottom.
 
 ## M4: sch-inspect and pcb-inspect bug fixes (symbol lookup, body style, via type)
 
-Status: tasks done on `fix/inspect-symbol-lookup-and-via-type` on 2026-11-11
-as sch-inspect 1.1.1, pcb-inspect 1.1.1 and plugin v3.3.1. Not merged.
+Status: done in v3.3.1 (PR #27 and the M4 close-out PR), as sch-inspect
+1.1.1 and pcb-inspect 1.1.1. Tasks 1, 2 and 7 and the non-through via types
+of task 6 are covered by synthetic tests only; the test project has no such
+case.
 Scope: `.claude/skills/sch-inspect/` and `.claude/skills/pcb-inspect/`
 Source: read-through of `query_sch.py` v1.1.0 and `query_pcb.py` v1.1 on
 2026-11-11. Each bug was reproduced with a synthetic fixture. File-format
