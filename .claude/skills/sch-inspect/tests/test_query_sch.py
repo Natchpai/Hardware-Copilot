@@ -421,8 +421,9 @@ class QuerySchRegression(unittest.TestCase):
     def test_26_mirror_is_applied_after_rotation(self):
         # KiCad rotates the symbol, then mirrors it on the canvas axis.
         # Checked against a KiCad 10.0.8 netlist of a real project for
-        # mirror x at 90 and 270 degrees. Mirror y at 90 and 270 uses the same
-        # rule but has no real-project evidence yet (NOT_VERIFIED).
+        # mirror x at 90 and 270 degrees. KiCad 10 never saves mirror y at 90
+        # or 270: it is the same placement as mirror x at 270 or 90 and is
+        # saved in that form. A file that holds it must give the same pins.
         lib = '''(lib_symbols
           (symbol "TEST:Tri"
             (symbol "Tri_1_1"
@@ -436,6 +437,8 @@ class QuerySchRegression(unittest.TestCase):
             ('y', 90): {'1': [102.54, 55.08], '2': [102.54, 44.92], '3': [94.92, 50.0]},
             ('y', 270): {'1': [97.46, 44.92], '2': [97.46, 55.08], '3': [105.08, 50.0]},
         }
+        self.assertEqual(expected[('y', 90)], expected[('x', 270)])
+        self.assertEqual(expected[('y', 270)], expected[('x', 90)])
         for (axis, angle), pins in expected.items():
             with self.subTest(mirror=axis, angle=angle):
                 root = self.dir / f'mirror {axis} {angle}.kicad_sch'
