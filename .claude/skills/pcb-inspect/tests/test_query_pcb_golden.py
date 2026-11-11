@@ -95,10 +95,20 @@ class KiCadPcbGoldenTests(unittest.TestCase):
         self.assertEqual(distance.get('distance_mm'), 1.65)
         self.assertEqual(distance.get('distance_status'), 'STRUCTURAL_EVIDENCE')
 
+    def test_u304_back_side_pad_centre_matches_native_track_end(self):
+        pads = self.query('pads', 'U304')
+        self.assertEqual(pads.get('status'), 'FOUND')
+        self.assertEqual(pads['footprint']['layer'], 'B.Cu')
+        actual = {pad['number']: pad for pad in pads['pads']}
+        self.assertEqual(actual['1']['position'], {'x_mm': 159.0625, 'y_mm': 87.45})
+        self.assertEqual(actual['1']['net_name'], '+5V')
+        self.assertEqual(actual['1']['net_status'], 'ASSIGNED')
+
     def test_usb_routing_matches_native_segment_and_via_evidence(self):
         tracks = self.query('tracks', USB_NET)
         self.assertEqual(tracks.get('status'), 'FOUND')
-        self.assertEqual(tracks.get('net_status'), 'ASSIGNED_WITHOUT_DECLARATION')
+        self.assertEqual(tracks.get('net_status'), 'ASSIGNED')
+        self.assertEqual(tracks.get('net_declaration_status'), 'NOT_APPLICABLE')
         self.assertEqual(tracks.get('track_count'), 18)
         self.assertFalse(tracks.get('tracks_truncated'))
         first = tracks['tracks'][0]

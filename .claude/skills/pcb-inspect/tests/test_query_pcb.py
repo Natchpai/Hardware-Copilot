@@ -37,6 +37,32 @@ NAME_ONLY_NET_BOARD = '''(kicad_pcb (version 20260206) (generator "pcbnew")
   (property "Reference" "J1") (property "Value" "test")
   (pad "1" smd rect (at 0 0) (size 1 1) (layers "F.Cu") (net "NAME_ONLY"))))'''
 
+# Back-side footprints as saved by KiCad 10 (file version 20260206), from a
+# real routed board: one at 0 degrees and one at 90 degrees. The expected pad
+# centres in the tests are the ends of the saved B.Cu tracks on the same net
+# (+5V), not values computed by query_pcb.py.
+KICAD10_BACK_SIDE_BOARD = '''(kicad_pcb (version 20260206) (generator "pcbnew")
+ (layers (0 "F.Cu" signal) (2 "B.Cu" signal))
+ (footprint "0_net_tie:NetTie-2_SMD_Pad0.15mm" (layer "B.Cu") (at 156.2 87.45)
+  (property "Reference" "NT304") (property "Value" "EN")
+  (pad "1" smd circle (at -0.2 0) (size 0.15 0.15) (layers "B.Cu") (net "+5V"))
+  (pad "2" smd circle (at 0.2 0) (size 0.15 0.15) (layers "B.Cu") (net "EN_3V3_S")))
+ (footprint "0_SOT:SOT-23-5" (layer "B.Cu") (at 158.1125 86.2 90)
+  (property "Reference" "U304") (property "Value" "SPX3819M5-L-3-3/TR")
+  (pad "1" smd roundrect (at -1.25 0.95 90) (size 1.1 0.55) (layers "B.Cu" "B.Mask" "B.Paste") (net "+5V"))
+  (pad "2" smd roundrect (at -1.25 0 90) (size 1.1 0.55) (layers "B.Cu" "B.Mask" "B.Paste") (net "GND")))
+ (segment (start 156 87.45) (end 159.0625 87.45) (width 0.3) (layer "B.Cu") (net "+5V")))'''
+
+NET_TABLE_MISSING_ENTRY_BOARD = '''(kicad_pcb (version 20241229) (generator "pcbnew")
+ (layers (0 "F.Cu" signal))
+ (nets (net 0 "") (net 1 "GND"))
+ (footprint "Test:One" (layer "F.Cu") (at 1 2)
+  (property "Reference" "J1") (property "Value" "test")
+  (pad "1" smd rect (at 0 0) (size 1 1) (layers "F.Cu") (net 1 "GND"))
+  (pad "2" smd rect (at 1 0) (size 1 1) (layers "F.Cu") (net "NOT_IN_TABLE"))
+  (pad "3" smd rect (at 2 0) (size 1 1) (layers "F.Cu") (net "")))
+ (segment (start 0 0) (end 1 0) (width 0.2) (layer "F.Cu") (net "NOT_IN_TABLE")))'''
+
 V03_BOARD = '''(kicad_pcb (version 20260206) (generator "pcbnew")
  (layers (0 "F.Cu" signal) (2 "In1.Cu" power) (31 "B.Cu" signal))
  (nets (net 0 "") (net 1 "GND") (net 2 "ISO"))
@@ -207,13 +233,24 @@ class PCBTests(unittest.TestCase):
         self.assertIsNone(pads["2"]["net_name"])
         self.assertEqual(pads["3"]["geometry_status"], "NOT_VERIFIED")
 
-    def test_pads_applies_back_layer_mirror_and_rotation(self):
-        self.write_v02_board()
-        rc, data = self.run_cli("pads", "C1")
+    def test_pads_back_layer_centres_match_kicad10_saved_track_ends(self):
+        # The saved file already stores flipped local coordinates for a
+        # back-side footprint, so no extra B.Cu mirror is applied.
+        self.board.write_text(KICAD10_BACK_SIDE_BOARD, encoding="utf-8")
+        rc, zero = self.run_cli("pads", "NT304")
         self.assertEqual(rc, 0)
-        pad = data["pads"][0]
-        self.assertEqual(pad["layers"], ["B.Cu", "B.Paste", "B.Mask"])
-        self.assertEqual(pad["position"], {"x_mm": 53.0, "y_mm": 62.0})
+        pads = {pad["number"]: pad for pad in zero["pads"]}
+        self.assertEqual(pads["1"]["layers"], ["B.Cu"])
+        self.assertEqual(pads["1"]["position"], {"x_mm": 156.0, "y_mm": 87.45})
+        self.assertEqual(pads["2"]["position"], {"x_mm": 156.4, "y_mm": 87.45})
+        rc, ninety = self.run_cli("pads", "U304")
+        self.assertEqual(rc, 0)
+        pads = {pad["number"]: pad for pad in ninety["pads"]}
+        self.assertEqual(pads["1"]["position"], {"x_mm": 159.0625, "y_mm": 87.45})
+        rc, tracks = self.run_cli("tracks", "+5V")
+        self.assertEqual(rc, 0)
+        self.assertEqual(tracks["tracks"][0]["start"], {"x_mm": 156.0, "y_mm": 87.45})
+        self.assertEqual(tracks["tracks"][0]["end"], {"x_mm": 159.0625, "y_mm": 87.45})
 
     def test_net_reports_declared_assignments_without_connectivity_claim(self):
         self.write_v02_board()
@@ -235,17 +272,47 @@ class PCBTests(unittest.TestCase):
         self.assertEqual(data["net_status"], "MISSING")
         self.assertEqual(data["pad_count"], 0)
 
-    def test_name_only_net_assignment_is_reported_with_unverified_declaration(self):
+    def test_name_only_net_is_assigned_on_a_board_without_a_net_table(self):
+        # KiCad 10 boards have no net table and store (net "name") per item.
         self.write_name_only_net_board()
         rc, pad_data = self.run_cli("pads", "J1")
         self.assertEqual(rc, 0)
         self.assertEqual(pad_data["pads"][0]["net_name"], "NAME_ONLY")
-        self.assertEqual(pad_data["pads"][0]["net_status"], "ASSIGNED_WITHOUT_DECLARATION")
+        self.assertEqual(pad_data["pads"][0]["net_status"], "ASSIGNED")
         rc, net_data = self.run_cli("net", "NAME_ONLY")
         self.assertEqual(rc, 0)
         self.assertEqual(net_data["status"], "FOUND")
+        self.assertEqual(net_data["net_status"], "ASSIGNED")
+        self.assertEqual(net_data["net_declaration_status"], "NOT_APPLICABLE")
+        rc, missing = self.run_cli("net", "MISSING")
+        self.assertEqual(rc, 0)
+        self.assertEqual(missing["status"], "NOT_FOUND")
+        self.assertEqual(missing["net_status"], "MISSING")
+        self.assertEqual(missing["net_declaration_status"], "NOT_APPLICABLE")
+        self.board.write_text(KICAD10_BACK_SIDE_BOARD, encoding="utf-8")
+        rc, tracks = self.run_cli("tracks", "+5V")
+        self.assertEqual(rc, 0)
+        self.assertEqual(tracks["net_status"], "ASSIGNED")
+        self.assertEqual(tracks["net_declaration_status"], "NOT_APPLICABLE")
+        self.assertEqual(tracks["tracks"][0]["net_status"], "ASSIGNED")
+
+    def test_net_missing_from_an_existing_net_table_stays_without_declaration(self):
+        self.board.write_text(NET_TABLE_MISSING_ENTRY_BOARD, encoding="utf-8")
+        rc, pad_data = self.run_cli("pads", "J1")
+        self.assertEqual(rc, 0)
+        pads = {pad["number"]: pad for pad in pad_data["pads"]}
+        self.assertEqual(pads["1"]["net_status"], "ASSIGNED")
+        self.assertEqual(pads["2"]["net_status"], "ASSIGNED_WITHOUT_DECLARATION")
+        self.assertEqual(pads["3"]["net_status"], "UNCONNECTED")
+        self.assertIsNone(pads["3"]["net_name"])
+        rc, net_data = self.run_cli("net", "NOT_IN_TABLE")
+        self.assertEqual(rc, 0)
         self.assertEqual(net_data["net_status"], "ASSIGNED_WITHOUT_DECLARATION")
         self.assertEqual(net_data["net_declaration_status"], "NOT_VERIFIED")
+        rc, tracks = self.run_cli("tracks", "NOT_IN_TABLE")
+        self.assertEqual(rc, 0)
+        self.assertEqual(tracks["net_status"], "ASSIGNED_WITHOUT_DECLARATION")
+        self.assertEqual(tracks["net_declaration_status"], "NOT_VERIFIED")
 
     def test_v02_limits_and_json_order_are_deterministic(self):
         self.write_v02_board()
@@ -370,14 +437,21 @@ class PCBTests(unittest.TestCase):
         self.assertEqual(invalid["status"], "NOT_VERIFIED")
         self.assertIn("origin", invalid["error"])
 
-    def test_pad_distance_uses_rotated_back_layer_and_unusual_reference_transforms(self):
+    def test_pad_distance_uses_rotation_back_layer_and_unusual_references(self):
+        self.board.write_text(KICAD10_BACK_SIDE_BOARD, encoding="utf-8")
+        rc, back = self.run_cli("pad-distance", "NT304.1", "U304.1")
+        self.assertEqual(rc, 0)
+        self.assertEqual(back["status"], "FOUND")
+        self.assertEqual(back["first"]["position"], {"x_mm": 156.0, "y_mm": 87.45})
+        self.assertEqual(back["second"]["position"], {"x_mm": 159.0625, "y_mm": 87.45})
+        self.assertEqual(back["distance_mm"], 3.0625)
         self.write_v04_board()
-        rc, data = self.run_cli("pad-distance", "R.1.A.1", "C@2.2")
+        rc, data = self.run_cli("pad-distance", "R.1.A.1", "J[1].A.P.1")
         self.assertEqual(rc, 0)
         self.assertEqual(data["status"], "FOUND")
         self.assertEqual(data["first"]["position"], {"x_mm": 12.0, "y_mm": 19.0})
-        self.assertEqual(data["second"]["position"], {"x_mm": 53.0, "y_mm": 62.0})
-        self.assertAlmostEqual(data["distance_mm"], 59.413803, places=6)
+        self.assertEqual(data["second"]["position"], {"x_mm": 16.0, "y_mm": 20.0})
+        self.assertAlmostEqual(data["distance_mm"], 4.123106, places=6)
         rc, unusual = self.run_cli("pad-distance", "J[1].A.P.1", "J[1].A.P.1")
         self.assertEqual(rc, 0)
         self.assertEqual(unusual["status"], "FOUND")

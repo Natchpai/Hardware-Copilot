@@ -7,12 +7,14 @@ Read this when interpreting a command's output. Output is JSON, bounded and dete
 rotation, and UUID. If a reference has multiple matches, report `AMBIGUOUS_REFERENCE`.
 `pads` reports saved pad numbers, types, shapes, declared layers, nominal sizes, saved
 net assignment, and board-space pad centres. It supports SMD and through-hole pads,
-including footprint translation, rotation, and B.Cu mirroring. Unconnected pads are
+including footprint translation and rotation. A back-side footprint's local pad
+coordinates are used as saved; the file already stores them flipped. Unconnected pads are
 reported as `UNCONNECTED`; a custom or unsupported pad outline is `NOT_VERIFIED`.
-`net` reports a declared net's assigned footprint/pad records. A net absent from the
-saved assignments is `MISSING`. KiCad files that store a name-only pad assignment without
-a declared net table are reported as `ASSIGNED_WITHOUT_DECLARATION` with declaration
-semantics `NOT_VERIFIED`. Matching saved net names are an assignment lookup only, not
+`net` reports a net's assigned footprint/pad records. A net absent from the
+saved assignments is `MISSING`. KiCad 10 boards have no net table and store
+`(net "name")` on each item: such a net is `ASSIGNED`, with
+`net_declaration_status: NOT_APPLICABLE`. `ASSIGNED_WITHOUT_DECLARATION` (declaration
+`NOT_VERIFIED`) is used only when the board has a net table that lacks the name. Matching saved net names are an assignment lookup only, not
 evidence of copper connectivity.
 `tracks` reports saved straight segments and arcs assigned to one exact net, including
 layer, width, start/end coordinates, and geometric length in millimeters. Arc records
@@ -27,7 +29,7 @@ requested footprint's saved origin, in board coordinates. The queried footprint 
 included as its own neighbor. `origin`, each neighbor origin, and `distance_mm` explicitly
 identify the measurement points; no package outline or copper geometry is used.
 `pad-distance` reports the Euclidean distance between two uniquely resolved saved pad
-centres after the existing footprint rotation and B.Cu mirror transforms. Pad identifiers
+centres after the saved footprint translation and rotation. Pad identifiers
 are matched against complete saved references before their exact pad numbers, so references
 and pad numbers may themselves contain dots or other unusual characters. A requested
 identifier that resolves to multiple saved pads returns `AMBIGUOUS`; missing or unresolvable
@@ -38,7 +40,7 @@ guessed geometry. Duplicate references retain `AMBIGUOUS_REFERENCE`; a pad ident
 matches more than one saved pad returns `AMBIGUOUS` with a bounded candidate list.
 
 For `tracks` and `vias`, an empty quoted target (`""`) requests explicitly unconnected
-items. `MISSING`, `UNCONNECTED`, and `ASSIGNED_WITHOUT_DECLARATION` are distinct saved
+items. `MISSING`, `UNCONNECTED`, `ASSIGNED` and `ASSIGNED_WITHOUT_DECLARATION` are distinct saved
 assignment states. A declared net with no matching routing items returns `NOT_FOUND` with
 `net_status: DECLARED`.
 

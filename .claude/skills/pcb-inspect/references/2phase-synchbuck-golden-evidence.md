@@ -25,6 +25,14 @@ pad records near lines 393 and 402 specify:
 
 The Euclidean distance between those two saved centres is `1.65 mm`.
 
+## U304 back-side pad centre
+
+U304 is saved on `B.Cu` with `(at 158.1125 86.2 90)`. Its pad `1` has the
+local centre `(-1.25, 0.95)` and net `+5V`. A saved `B.Cu` segment on `+5V`
+starts at `(159.0625, 87.45)` mm, which is the board centre of that pad when
+the saved local coordinates are rotated without an extra mirror. A mirrored
+local X would give `(159.0625, 84.95)` mm, where no `+5V` track ends.
+
 ## `/Top/Power Supplies/+5VUSB` routing geometry
 
 The direct saved routing sequence begins near line 100884. It contains 17

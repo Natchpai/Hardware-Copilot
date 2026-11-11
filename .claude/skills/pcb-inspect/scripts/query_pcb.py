@@ -175,7 +175,12 @@ def net_value(expr, declared_nets):
     if len(node) == 2 and declared_name is None:
         if code == "0":
             return {"net_code": code, "net_name": None, "net_status": "UNCONNECTED"}
-        return {"net_code": None, "net_name": code, "net_status": "ASSIGNED_WITHOUT_DECLARATION"}
+        if code == "":
+            return {"net_code": None, "net_name": None, "net_status": "UNCONNECTED"}
+        # KiCad 10 boards have no net table and store (net "name") on each
+        # item. That is the normal format, not a missing declaration.
+        status = "ASSIGNED_WITHOUT_DECLARATION" if declared_nets else "ASSIGNED"
+        return {"net_code": None, "net_name": code, "net_status": status}
     name = str(node[2]) if len(node) > 2 else declared_name
     if code == "0" or name == "":
         return {"net_code": code, "net_name": None, "net_status": "UNCONNECTED"}
@@ -318,16 +323,15 @@ def via_data(expr, declared_nets, source_index):
 def board_position(footprint_at, pad_at, footprint_layer):
     """Transform a footprint-local pad centre into board coordinates.
 
-    KiCad PCB coordinates use a downward-positive Y axis. On B.Cu, the
-    footprint local X axis is mirrored before the parent rotation is applied.
+    KiCad PCB coordinates use a downward-positive Y axis. The saved file
+    already stores flipped local coordinates for a footprint on B.Cu, so the
+    same rotation applies on both sides and no extra mirror is added.
     This reports only the pad centre; it does not construct pad outlines.
     """
     if footprint_at is None or pad_at is None:
         return None
     local_x = pad_at["x_mm"]
     local_y = pad_at["y_mm"]
-    if footprint_layer == "B.Cu":
-        local_x = -local_x
     radians = math.radians(footprint_at["rotation_deg"])
     cosine = math.cos(radians)
     sine = math.sin(radians)
@@ -547,7 +551,7 @@ def inspect_pads(file, reference, limit):
         "pads_truncated": len(pads) > limit,
         "limitations": [
             "Net assignment is saved PCB structural data and does not prove copper connectivity.",
-            "Pad centres include the saved footprint translation, rotation, and B.Cu mirror transform.",
+            "Pad centres include the saved footprint translation and rotation. Back-side local coordinates are used as saved.",
             "Custom or unsupported pad outlines are NOT_VERIFIED; reported size is only the saved nominal pad size.",
             "Saved PCB may differ from unsaved editor state.",
         ] + (["One or more pad geometries are NOT_VERIFIED."] if unresolved_geometry else []),
@@ -580,6 +584,7 @@ def inspect_net(file, net_name, limit):
             "status": "NOT_FOUND",
             "net": net_name,
             "net_status": "MISSING",
+            "net_declaration_status": "NOT_VERIFIED" if declared_nets else "NOT_APPLICABLE",
             "footprint_count": 0,
             "pad_count": 0,
             "footprints": [],
@@ -593,7 +598,7 @@ def inspect_net(file, net_name, limit):
             "status": "NOT_VERIFIED",
             "net": net_name,
             "net_status": "NOT_VERIFIED",
-            "net_code": matching_codes[0],
+            "net_code": matching_codes[0] if matching_codes else None,
             "limitations": ["At least one pad has an inconsistent or unresolved saved net assignment."],
         }
     assignments.sort(key=lambda item: (natural_key(item[0]["reference"] or ""), pad_sort_key(item[1])))
@@ -609,9 +614,9 @@ def inspect_net(file, net_name, limit):
         **data,
         "status": "FOUND",
         "net": net_name,
-        "net_status": "DECLARED" if matching_codes else "ASSIGNED_WITHOUT_DECLARATION",
+        "net_status": "DECLARED" if matching_codes else "ASSIGNED_WITHOUT_DECLARATION" if declared_nets else "ASSIGNED",
         "net_code": matching_codes[0] if matching_codes else None,
-        "net_declaration_status": "STRUCTURAL_EVIDENCE" if matching_codes else "NOT_VERIFIED",
+        "net_declaration_status": "STRUCTURAL_EVIDENCE" if matching_codes else "NOT_VERIFIED" if declared_nets else "NOT_APPLICABLE",
         "footprint_count": len(ordered_footprints),
         "pad_count": len(pads),
         "footprints": ordered_footprints[:limit],
@@ -621,7 +626,7 @@ def inspect_net(file, net_name, limit):
         "limitations": [
             "Shared saved net names do not prove copper connectivity, routing, zone fill, or electrical intent.",
             "Unconnected pads are excluded because they have no assigned net.",
-            "A name-only net assignment without a declared net table has NOT_VERIFIED net declaration semantics.",
+            "A board with no net table (KiCad 10) stores net names on each item; ASSIGNED_WITHOUT_DECLARATION is used only when a net table exists and lacks the name.",
             "Saved PCB may differ from unsaved editor state.",
         ],
     }
@@ -674,8 +679,12 @@ def inspect_routing(file, net_name, limit, kind):
         declaration_status = "STRUCTURAL_EVIDENCE"
     else:
         matching = [record for record in records if record["net_name"] == net_name]
-        reported_net_status = "ASSIGNED_WITHOUT_DECLARATION" if matching else "MISSING"
-        declaration_status = "NOT_VERIFIED"
+        if declared_nets:
+            reported_net_status = "ASSIGNED_WITHOUT_DECLARATION" if matching else "MISSING"
+            declaration_status = "NOT_VERIFIED"
+        else:
+            reported_net_status = "ASSIGNED" if matching else "MISSING"
+            declaration_status = "NOT_APPLICABLE"
 
     if matching and any(record["net_status"] not in {"ASSIGNED", "ASSIGNED_WITHOUT_DECLARATION", "UNCONNECTED"} for record in matching):
         return {
@@ -914,7 +923,7 @@ def inspect_pad_distance(file, first_identifier, second_identifier, limit):
             "second_identifier": second_identifier,
             "first": first_pad,
             "second": second_pad,
-            "measurement_point": "saved pad centres in board coordinates after saved footprint rotation and B.Cu mirror transforms",
+            "measurement_point": "saved pad centres in board coordinates after the saved footprint translation and rotation",
             "limitations": ["No distance is calculated until both requested pad identifiers resolve to exactly one saved pad centre."],
         }
     return {
@@ -924,7 +933,7 @@ def inspect_pad_distance(file, first_identifier, second_identifier, limit):
         "second": second_pad,
         "distance_mm": point_distance(first_pad["position"], second_pad["position"]),
         "distance_status": "STRUCTURAL_EVIDENCE",
-        "measurement_point": "Euclidean distance between saved pad centres in board coordinates after saved footprint rotation and B.Cu mirror transforms, in millimeters.",
+        "measurement_point": "Euclidean distance between saved pad centres in board coordinates after the saved footprint translation and rotation, in millimeters.",
         "limitations": [
             "Pad-centre distance does not prove copper clearance, physical clearance, connectivity, routing quality, or electrical correctness.",
             "Saved PCB may differ from unsaved editor state.",
