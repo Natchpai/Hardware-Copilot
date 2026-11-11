@@ -4,8 +4,10 @@
 Run: python .claude/skills/sch-inspect/tests/run_tests.py --pattern test_query_sch.py --label synthetic
 No third-party packages. Uses temporary synthetic .kicad_sch fixtures.
 """
+import contextlib
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -13,6 +15,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 
 SCRIPT = Path(__file__).resolve().parents[1] / 'scripts' / 'query_sch.py'
 ROOT_ID = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
@@ -544,6 +547,26 @@ class QuerySchRegression(unittest.TestCase):
                           ('U2', 'Second', f'/{ROOT_ID}/{second}')])
         r = self.call('components', '--sheet', 'Second', project=root)
         self.assertEqual([x['reference'] for x in r['results']], ['U2'])
+
+    def test_32_each_file_is_read_once_per_query(self):
+        spec = importlib.util.spec_from_file_location('_query_sch_read_count', SCRIPT)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        original = Path.read_text
+        for args in (['connected-pins', 'U1'], ['project-net', 'U1', '--pin', '1'],
+                     ['net', 'GND'], ['local-net', 'U104'], ['components']):
+            with self.subTest(command=args[0]):
+                reads = []
+
+                def counting(path, *a, **k):
+                    reads.append(str(path))
+                    return original(path, *a, **k)
+
+                with mock.patch.object(Path, 'read_text', counting), \
+                        contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(module.main([*args, '--project', str(self.root)]), 0)
+                self.assertEqual(len(reads), 3, reads)
+                self.assertEqual(len(set(reads)), 3, reads)
 
 
 if __name__ == '__main__':
