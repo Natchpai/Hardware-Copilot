@@ -6,7 +6,7 @@ description: >-
   Use when the user asks to inspect, trace, or explain schematic circuits,
   connections, or functional blocks. Targeted, read-only; it extracts evidence
   and does not judge the design.
-argument-hint: "[summary | component <ref> | pins <ref> | local-net <ref> | hier-net <ref> | connected-pins <ref> | project-net <ref> --pin <n> | instances | sheet <name>]"
+argument-hint: "[summary | components [--sheet <name>] [--prefix <p>] | component <ref> | pins <ref> | local-net <ref> | hier-net <ref> | connected-pins <ref> | project-net <ref> --pin <n> | net <name> | instances | sheet <name>]"
 ---
 
 # Schematic Inspection (KiCad 10)
@@ -38,14 +38,20 @@ Resolve the script and project paths first; do not assume the working directory.
   several nets); other commands reject it.
 - `--limit` also truncates pins and connected pins; check the `*_truncated`
   flags before concluding.
-- There is no command to list or search components by prefix. When the user
-  describes a part ("the first IC") instead of giving a reference, use
-  `summary` and ask which reference or sheet they mean; do not guess
-  designators one by one.
+- `--sheet <name>` and `--prefix <p>` work with `components` only. `--sheet`
+  takes a sheet name, file name or file stem. `--prefix U` keeps `U1` and
+  `U104`, not `USB1`. References that start with `#` are listed only when
+  the prefix starts with `#`.
+- When the user describes a part ("the first IC") instead of giving a
+  reference, list candidates with `components`; do not guess designators.
+- `net <name>` matches the label or power symbol text exactly (case
+  sensitive), for example `+5V` or `SPI_CLK`, not a KiCad net path such as
+  `/Power/+5V`.
 
 | Command | Purpose |
 |---|---|
 | `summary` | Sheets and component counts. |
+| `components [--sheet <name>] [--prefix <p>]` | List reference, value, `lib_id` and instance path. |
 | `component <ref>` | Locate a component; its properties. |
 | `sheet <name>` | Locate a hierarchical sheet. |
 | `pins <ref>` | Symbol pins with local wire/label geometry. |
@@ -54,14 +60,19 @@ Resolve the script and project paths first; do not assume the working directory.
 | `connected-pins <ref>` | Connected component and sheet pins across supported hierarchy. |
 | `instances` | Hierarchical sheet instances and reused sheet files. |
 | `project-net <ref> --pin <n>` | Connectivity evidence across instances, global labels, power nets. |
+| `net <name>` | The same evidence, started from a label or power symbol name. |
 
 Examples (root file `Top.kicad_sch`):
 - `component U103 --project Top.kicad_sch`
 - `project-net U103 --pin 8 --project Top.kicad_sch`
+- `net +5V --project Top.kicad_sch`
+- `components --sheet "Power State" --prefix U --project Top.kicad_sch`
 
 Policy: prefer `component`, `pins`, or `local-net`; use `hier-net` or
 `connected-pins` when hierarchy matters; use `project-net` only when
 project-level evidence is required, with a specific pin for multi-net parts.
+Use `net` when the question starts from a net name, and `components` when it
+starts from a sheet or a part type.
 Read JSON selectively. Structural checks have no separate command: build them
 from these queries. ERC is a separate step, run only when requested or clearly
 necessary; label its exact scope and output, and never equate ERC success with
@@ -95,9 +106,9 @@ circuit correctness.
 
 The tool does not print a scope level; assign it from the command used:
 `pins` and `local-net` give `LOCAL`; `hier-net` and `connected-pins` give
-`HIERARCHICAL`; `project-net` gives `GLOBAL`-level evidence only (still not
-netlist parity). `summary`, `component`, `sheet`, and `instances` are
-structural discovery below `LOCAL`.
+`HIERARCHICAL`; `project-net` and `net` give `GLOBAL`-level evidence only
+(still not netlist parity). `summary`, `components`, `component`, `sheet`,
+and `instances` are structural discovery below `LOCAL`.
 
 Report the scope actually verified, not the one requested, if expansion failed.
 `PASS` needs sufficient validated evidence for that specific check; otherwise
@@ -112,31 +123,38 @@ use `WARNING`, `FAIL`, or `NOT_VERIFIED`. Distinguish observed from suspected.
   `TARGET_NOT_FOUND_OR_UNRESOLVED` / `AMBIGUOUS_TARGET_NETS`. Report either
   unresolved status as `NOT_VERIFIED`; it does not show a connection is absent.
   `project_net_verified` is always false: it is not KiCad netlist parity.
+- `net` returns one result per separate net that carries the name, with
+  `matched_by` (label kind, instance path, file) and the same evidence
+  fields as `project-net`. A local label repeated in several sheet instances
+  gives several results: report them as separate nets. No match returns
+  `NET_NAME_NOT_FOUND`; report it as `NOT_VERIFIED`, not as "no such net".
+- `components` returns one row per component and sheet instance. A
+  `warnings` entry says when `--sheet` matched no sheet instance.
 - `verification` is set by the command. None of these values means the design
   was verified:
 
   | Command | `verification` |
   |---|---|
-  | `summary`, `component`, `sheet` | `STRUCTURAL_DISCOVERY_ONLY` |
+  | `summary`, `components`, `component`, `sheet` | `STRUCTURAL_DISCOVERY_ONLY` |
   | `pins` | `LOCAL_GEOMETRY_EVIDENCE_ONLY` |
   | `local-net` | `SHEET_LOCAL_ONLY` |
   | `hier-net` | `HIERARCHICAL_INTERFACE_EVIDENCE_ONLY` |
   | `connected-pins` | `PARENT_CONNECTED_PINS_GEOMETRY_ONLY` |
-  | `project-net` | `INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY` |
+  | `project-net`, `net` | `INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY` |
   | `instances` | `HIERARCHICAL_INSTANCE_DISCOVERY_ONLY` |
   | any error | `NOT_VERIFIED` |
 
 - `limitations` is also set by the command; report the lines it prints.
 - Errors (invalid input, unreadable files, bad bounds, traversal failure) exit
   nonzero with `verification: NOT_VERIFIED`; infer nothing from them.
-- Honour `truncated`, `pins_truncated`, `connected_pins_truncated`, and
-  `names_truncated`: a truncated result is not a complete enumeration.
+- Honour `truncated`, `pins_truncated`, `connected_pins_truncated`,
+  `matched_by_truncated`, and `names_truncated`: a truncated result is not a complete enumeration.
 
 ## Limitations
-- `summary`, `component`, `sheet`: structural discovery only.
+- `summary`, `components`, `component`, `sheet`: structural discovery only.
 - `pins`, `local-net`: local geometry evidence. `hier-net`, `connected-pins`:
   bounded parent/interface geometry evidence.
-- `project-net`: conservative, instance-aware evidence through supported wires,
+- `project-net`, `net`: conservative, instance-aware evidence through supported wires,
   labels, hierarchy, global labels, and power symbols; not netlist parity.
 - Global labels and power symbols may connect nets across sheet instances. A
   global label and a power symbol with the same name are one net. A power

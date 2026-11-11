@@ -63,8 +63,9 @@ The example is a **format illustration**, not an actual inspection result. Prefe
 ## Current query-tool contract
 
 `scripts/query_sch.py` accepts a resolved root schematic through `--project`
-and supports exactly these commands: `summary`, `component`, `sheet`, `pins`,
-`local-net`, `hier-net`, `connected-pins`, `project-net`, and `instances`.
+and supports exactly these commands: `summary`, `components`, `component`,
+`sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `project-net`,
+`net`, and `instances`.
 Use absolute or otherwise correctly quoted paths; this is required for Windows
 and macOS paths containing spaces.
 

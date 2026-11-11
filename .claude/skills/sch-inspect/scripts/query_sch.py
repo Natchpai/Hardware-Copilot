@@ -46,6 +46,13 @@ MODES = {
     'hier-net': {'verification': 'HIERARCHICAL_INTERFACE_EVIDENCE_ONLY', 'limitations': _INTERFACE_LIMITS},
     'connected-pins': {'verification': 'PARENT_CONNECTED_PINS_GEOMETRY_ONLY', 'limitations': _INTERFACE_LIMITS},
     'project-net': {'verification': 'INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY', 'limitations': PROJECT_NET_LIMITS},
+    'net': {'verification': 'INSTANCE_AWARE_PROJECT_EVIDENCE_ONLY', 'limitations': PROJECT_NET_LIMITS[:2] + [
+        'The name is matched exactly against label and power symbol text, not against KiCad full net paths',
+        'A local label repeated in several sheet instances gives one result per separate net']},
+    'components': {'verification': 'STRUCTURAL_DISCOVERY_ONLY', 'limitations': [
+        'Structural list only; no electrical connectivity or pin-net verification',
+        'A reference is resolved per sheet instance only when the symbol has exactly one matching instance path; otherwise the Reference property is shown',
+        'References that start with # (power symbols, flags) are left out unless --prefix starts with #']},
     'instances': {'verification': 'HIERARCHICAL_INSTANCE_DISCOVERY_ONLY', 'limitations': [
         'Hierarchical sheet instance discovery only; no electrical connectivity or pin-net verification',
         'Lists sheet instances, not the components or references inside each instance',
@@ -791,14 +798,17 @@ def build_instance_tree(root, data, max_instances=1000):
     return nodes
 
 
-def project_connections(root, data, reference, limit, max_instances, pin_filter=None):
-    """Conservative instance-aware traversal of schematic net evidence.
+def build_project_graph(root, data, max_instances):
+    """Build the instance-aware graph of schematic net evidence.
 
     Local paths are grouped by wire geometry/labels. An edge is added only
     for an explicitly matched hierarchical interface or equal global/power
     names. This is NOT a KiCad-equivalent ERC/netlist computation.
+
+    Returns (instances, cached, graph, details). A graph node is
+    (instance index, local group).
     """
-    from collections import defaultdict, deque
+    from collections import defaultdict
     instances = build_instance_tree(root, data, max_instances)
     cached = {}
     for node in instances:
@@ -918,6 +928,41 @@ def project_connections(root, data, reference, limit, max_instances, pin_filter=
             graph[first_key].add(other)
             graph[other].add(first_key)
 
+    return instances, cached, graph, details
+
+
+def reach(graph, start):
+    """All graph nodes connected to `start`."""
+    reached = {start}
+    queue = [start]
+    while queue:
+        current = queue.pop()
+        for other in graph[current]:
+            if other not in reached:
+                reached.add(other)
+                queue.append(other)
+    return reached
+
+
+def net_evidence(instances, details, reached, limit):
+    """Result fields shared by project-net and net for one set of groups."""
+    pins = sorted([p for group in reached for p in details[group]['components']],
+                  key=lambda p: (p['instance_path'], p['reference'] or '', p['pin_number'] or ''))
+    globals_found = sorted({x for group in reached for x in details[group]['global']})
+    power_found = sorted({x for group in reached for x in details[group]['power']})
+    return {'connected_component_pins': pins[:limit],
+            'total_connected_component_pins': len(pins),
+            'connected_pins_truncated': len(pins) > limit,
+            'global_labels': globals_found[:limit], 'power_net_names': power_found[:limit],
+            'names_truncated': len(globals_found)>limit or len(power_found)>limit,
+            'groups_visited': len(reached), 'instance_count': len(instances),
+            'project_net_verified': False,
+            'limitations': list(PROJECT_NET_LIMITS)}
+
+
+def project_connections(root, data, reference, limit, max_instances, pin_filter=None):
+    """Connectivity evidence for the net on one component pin."""
+    instances, cached, graph, details = build_project_graph(root, data, max_instances)
     starts = []
     for i, node in enumerate(instances):
         for p in cached[Path(node['file'])]['components']:
@@ -934,30 +979,94 @@ def project_connections(root, data, reference, limit, max_instances, pin_filter=
                 'starting_pins': [{'instance_path': instances[i]['path'], 'pin': n}
                                   for i,g,n in starts][:limit],
                 'project_net_verified': False, 'instance_count': len(instances)}
-    start = (starts[0][0], starts[0][1])
-    reached = {start}
-    q = deque([start])
-    while q:
-        current = q.popleft()
-        for other in graph[current]:
-            if other not in reached:
-                reached.add(other)
-                q.append(other)
-    pins = sorted([p for group in reached for p in details[group]['components']],
-                  key=lambda p: (p['instance_path'], p['reference'] or '', p['pin_number'] or ''))
-    globals_found = sorted({x for group in reached for x in details[group]['global']})
-    power_found = sorted({x for group in reached for x in details[group]['power']})
+    reached = reach(graph, (starts[0][0], starts[0][1]))
     return {'status': 'PROJECT_CONNECTIVITY_EVIDENCE', 'reference': reference,
             'source_instance_path': instances[starts[0][0]]['path'],
             'source_pin_number': starts[0][2],
-            'connected_component_pins': pins[:limit],
-            'total_connected_component_pins': len(pins),
-            'connected_pins_truncated': len(pins) > limit,
-            'global_labels': globals_found[:limit], 'power_net_names': power_found[:limit],
-            'names_truncated': len(globals_found)>limit or len(power_found)>limit,
-            'groups_visited': len(reached), 'instance_count': len(instances),
-            'project_net_verified': False,
-            'limitations': list(PROJECT_NET_LIMITS)}
+            **net_evidence(instances, details, reached, limit)}
+
+
+def net_connections(root, data, name, limit, max_instances):
+    """Connectivity evidence for every net that carries `name`.
+
+    A start is any group holding a local label, global label, hierarchical
+    label or power symbol with that exact name. Starts that reach each other
+    are one result; a local label repeated in separate sheet instances gives
+    one result per instance.
+    """
+    instances, _, graph, details = build_project_graph(root, data, max_instances)
+    kinds = (('label', 'labels'), ('global_label', 'global'),
+             ('hierarchical_label', 'hier'), ('power_symbol', 'power'))
+    starts = {}
+    for key, item in details.items():
+        matched = [kind for kind, field in kinds if name in item[field]]
+        if matched:
+            starts[key] = matched
+    if not starts:
+        return [{'status': 'NET_NAME_NOT_FOUND', 'net_name': name,
+                 'project_net_verified': False, 'instance_count': len(instances)}]
+    results, seen = [], set()
+    for key in sorted(starts, key=lambda k: (instances[k[0]]['path'], k[1])):
+        if key in seen:
+            continue
+        reached = reach(graph, key)
+        seen |= reached
+        matched_by = sorted(
+            ({'kind': kind, 'instance_path': instances[k[0]]['path'], 'file': instances[k[0]]['file']}
+             for k in reached if k in starts for kind in starts[k]),
+            key=lambda m: (m['instance_path'], m['kind']))
+        unique = [m for n, m in enumerate(matched_by) if m not in matched_by[:n]]
+        results.append({'status': 'PROJECT_CONNECTIVITY_EVIDENCE', 'net_name': name,
+                        'matched_by': unique[:limit],
+                        'matched_by_truncated': len(unique) > limit,
+                        **net_evidence(instances, details, reached, limit)})
+    return results
+
+
+def reference_parts(reference):
+    """Split 'R506' into ('R', 506); the number is -1 when there is none."""
+    text = reference or ''
+    letters = text.rstrip('0123456789?')
+    digits = text[len(letters):].strip('?')
+    return letters, int(digits) if digits.isdigit() else -1
+
+
+def list_components(root, data, max_instances, sheet=None, prefix=None):
+    """List components per hierarchical sheet instance (structure only)."""
+    instances = build_instance_tree(root, data, max_instances)
+    indexed = {Path(d['file']).resolve(): d for d in data}
+    rows, sheet_found = {}, sheet is None
+    for node in instances:
+        file = Path(node['file'])
+        if sheet is not None:
+            names = ((root.name, root.stem) if node['parent'] is None
+                     else (node['parent_sheet_name'], file.name, file.stem))
+            if sheet not in names:
+                continue
+            sheet_found = True
+        for sym in indexed[file]['symbols']:
+            matches = [x for x in sym['instances'] if x.get('path') == node['path']]
+            one = matches[0] if len(matches) == 1 else None
+            reference = one['reference'] if one else sym['reference_property']
+            if not reference:
+                continue
+            hidden = reference.startswith('#')
+            if prefix is None:
+                if hidden:
+                    continue
+            elif reference_parts(reference)[0] != prefix:
+                continue
+            row = rows.setdefault((node['path'], reference), {
+                'reference': reference, 'value': sym['value'], 'lib_id': sym['lib_id'],
+                'sheet_name': node['parent_sheet_name'], 'instance_path': node['path'],
+                'file': str(file), 'units': []})
+            unit = (one['unit'] if one else None) or sym['unit']
+            if unit is not None and unit not in row['units']:
+                row['units'].append(unit)
+    ordered = sorted(rows.values(), key=lambda r: (r['instance_path'], *reference_parts(r['reference']), r['reference']))
+    for row in ordered:
+        row['units'].sort()
+    return ordered, sheet_found
 
 
 def root_file(raw: str):
@@ -1012,23 +1121,36 @@ def discover(root: Path, max_files: int):
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('mode', choices=list(MODES))
-    ap.add_argument('target', nargs='?', help='reference (component/pins) or sheet filename/name (sheet)')
+    ap.add_argument('target', nargs='?', help='reference, sheet filename/name (sheet) or net name (net)')
     ap.add_argument('--project', required=True, help='root .kicad_sch (preferred) or its directory')
     ap.add_argument('--limit', type=int, default=20)
     ap.add_argument('--max-files', type=int, default=100)
     ap.add_argument('--pin', help='pin number for project-net; necessary when a component has multiple nets')
+    ap.add_argument('--sheet', help='components only: keep one sheet (name, file name or file stem)')
+    ap.add_argument('--prefix', help='components only: keep references with this letter prefix, for example U')
     args = ap.parse_args(argv)
     try:
         if not (1 <= args.limit <= 200 and 1 <= args.max_files <= 1000):
             raise QueryError('limit and max-files must be positive and within supported bounds')
         if args.pin and args.mode != 'project-net':
             raise QueryError('--pin is only supported with project-net')
-        if args.mode not in ('summary', 'instances') and not args.target:
+        if (args.sheet is not None or args.prefix is not None) and args.mode != 'components':
+            raise QueryError('--sheet and --prefix are only supported with components')
+        if args.mode == 'components' and args.target:
+            raise QueryError('components takes --sheet and --prefix, not a target')
+        if args.mode not in ('summary', 'instances', 'components') and not args.target:
             raise QueryError(f'{args.mode} requires a target')
         root = root_file(args.project)
         data, missing, outside = discover(root, args.max_files)
         records = []
-        if args.mode == 'project-net':
+        warnings = []
+        if args.mode == 'net':
+            records = net_connections(root, data, args.target, args.limit, args.max_files)
+        elif args.mode == 'components':
+            records, sheet_found = list_components(root, data, args.max_files, args.sheet, args.prefix)
+            if not sheet_found:
+                warnings.append(f'no sheet instance matches --sheet {args.sheet}')
+        elif args.mode == 'project-net':
             records = [project_connections(root, data, args.target, args.limit, args.max_files, args.pin)]
         elif args.mode == 'instances':
             records = build_instance_tree(root, data, args.max_files)
@@ -1058,7 +1180,7 @@ def main(argv=None):
                'skipped_outside_project': outside,
                'verification': MODES[args.mode]['verification'],
                'limitations': list(MODES[args.mode]['limitations']),
-               'warnings': pin_issues if args.mode in ('pins','local-net','hier-net','connected-pins') else []}
+               'warnings': pin_issues if args.mode in ('pins','local-net','hier-net','connected-pins') else warnings}
         print(json.dumps(out, ensure_ascii=False, indent=2))
         return 0
     except (QueryError, OSError, UnicodeError, ValueError) as exc:
