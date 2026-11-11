@@ -78,6 +78,57 @@ V03_BOARD = '''(kicad_pcb (version 20260206) (generator "pcbnew")
  (via (at 5 6) (size 0.7) (drill 0.35) (layers "In1.Cu" "B.Cu") (type buried) (net 2))
  (via (at 7 8) (size 0.6) (drill 0.3) (layers "F.Cu" "B.Cu") (net 0 "")))'''
 
+# KiCad 10 style board (no net table) with zones and a board outline.
+V11_BOARD = '''(kicad_pcb (version 20260206) (generator "pcbnew")
+ (layers (0 "F.Cu" signal) (2 "B.Cu" signal))
+ (footprint "Test:One" (layer "F.Cu") (at 10 10)
+  (property "Reference" "U1") (property "Value" "ic")
+  (pad "1" smd rect (at -1 0) (size 1 1) (layers "F.Cu") (net "GND"))
+  (pad "2" smd rect (at 1 0) (size 1 1) (layers "F.Cu") (net "/Top/Power/+5VUSB"))
+  (pad "3" smd rect (at 0 1) (size 1 1) (layers "F.Cu")))
+ (footprint "Test:Two" (layer "F.Cu") (at 13 14)
+  (property "Reference" "C1") (property "Value" "100n")
+  (pad "1" smd rect (at 0 0) (size 1 1) (layers "F.Cu") (net "GND")))
+ (footprint "Test:Two" (layer "B.Cu") (at 10 12)
+  (property "Reference" "C2") (property "Value" "100n")
+  (pad "1" smd rect (at 0 0) (size 1 1) (layers "B.Cu") (net "GND")))
+ (footprint "Test:Two" (layer "F.Cu") (at 40 10)
+  (property "Reference" "C3") (property "Value" "far")
+  (pad "1" smd rect (at 0 0) (size 1 1) (layers "F.Cu") (net "GND")))
+ (gr_line (start 0 0) (end 50 0) (stroke (width 0.1) (type default)) (layer "Edge.Cuts"))
+ (gr_rect (start 0 0) (end 50 30) (stroke (width 0.1) (type default)) (fill no) (layer "Edge.Cuts"))
+ (gr_line (start 0 0) (end 99 99) (stroke (width 0.1) (type default)) (layer "F.SilkS"))
+ (segment (start 0 0) (end 3 4) (width 0.25) (layer "F.Cu") (net "GND"))
+ (segment (start 3 4) (end 3 6) (width 0.25) (layer "F.Cu") (net "GND"))
+ (segment (start 3 6) (end 6 10) (width 0.4) (layer "B.Cu") (net "GND"))
+ (arc (start 0 0) (mid 1 1) (end 2 0) (width 0.2) (layer "B.Cu") (net "GND"))
+ (segment (start 9 9) (width 0.4) (layer "F.Cu") (net "GND"))
+ (segment (start 20 0) (end 21 0) (width 0.3) (layer "F.Cu") (net "/Top/Power/+5VUSB"))
+ (via (at 3 6) (size 0.6) (drill 0.3) (layers "F.Cu" "B.Cu") (net "GND"))
+ (via (at 4 6) (size 0.6) (drill 0.3) (layers "F.Cu" "B.Cu") (net "GND"))
+ (via (at 5 6) (size 0.8) (drill 0.4) (layers "F.Cu" "B.Cu") (net "GND"))
+ (zone (net "GND") (layer "F.Cu") (uuid "z1") (name "GND pour") (hatch edge 0.5) (priority 2)
+  (connect_pads yes (clearance 0.2)) (min_thickness 0.25)
+  (fill yes (thermal_gap 0.5) (thermal_bridge_width 0.5))
+  (polygon (pts (xy 1 2) (xy 11 2) (xy 11 8) (xy 1 8)))
+  (filled_polygon (layer "F.Cu") (pts (xy 1 2) (xy 11 2) (xy 11 8))))
+ (zone (net "GND") (layers "F.Cu" "B.Cu") (uuid "z2") (hatch edge 0.5)
+  (connect_pads (clearance 0.5)) (min_thickness 0.25) (fill (thermal_gap 0.5) (thermal_bridge_width 0.5))
+  (polygon (pts (xy 0 0) (xy 50 0) (xy 50 30) (xy 0 30))))
+ (zone (net "GND") (layer "F.Cu") (hatch none 0.1) (priority 30000) (attr (teardrop (type padvia)))
+  (connect_pads yes (clearance 0)) (min_thickness 0.0254) (fill yes)
+  (polygon (pts (xy 1 1) (xy 2 1) (xy 2 2)))
+  (filled_polygon (layer "F.Cu") (pts (xy 1 1) (xy 2 1) (xy 2 2))))
+ (zone (layer "F.Cu") (uuid "z4") (hatch edge 0.5) (connect_pads (clearance 0)) (min_thickness 0.25)
+  (keepout (tracks not_allowed) (vias not_allowed) (pads allowed) (copperpour not_allowed) (footprints allowed))
+  (fill (thermal_gap 0.5) (thermal_bridge_width 0.5))
+  (polygon (pts (xy 20 20) (xy 22 20) (xy 22 22)))))'''
+
+V11_ARC_OUTLINE_BOARD = '''(kicad_pcb (version 20260206) (generator "pcbnew")
+ (layers (0 "F.Cu" signal))
+ (gr_line (start 0 0) (end 10 0) (stroke (width 0.1) (type default)) (layer "Edge.Cuts"))
+ (gr_arc (start 10 0) (mid 12 2) (end 10 4) (stroke (width 0.1) (type default)) (layer "Edge.Cuts")))'''
+
 V04_BOARD = '''(kicad_pcb (version 20260206) (generator "pcbnew")
  (layers (0 "F.Cu" signal) (31 "B.Cu" signal))
  (footprint "Test:One" (layer "F.Cu") (at 10 20 90)
@@ -493,6 +544,172 @@ class PCBTests(unittest.TestCase):
         self.assertEqual(self.board.read_bytes(), before)
 
     # v1.0 hardening coverage: malformed forms, ambiguity, declarations, and bounds.
+    # --- v1.1: totals, zones, nets, summary counts, nearby filters
+
+    def write_v11_board(self):
+        self.board.write_text(V11_BOARD, encoding="utf-8")
+
+    def test_tracks_totals_cover_all_matches_beyond_the_limit(self):
+        self.write_v11_board()
+        rc, data = self.run_cli("tracks", "GND", "--limit", "1")
+        self.assertEqual(rc, 0)
+        self.assertEqual(data["track_count"], 5)
+        self.assertEqual(len(data["tracks"]), 1)
+        self.assertTrue(data["tracks_truncated"])
+        totals = data["totals"]
+        self.assertEqual(totals["segment_count"], 4)
+        self.assertEqual(totals["arc_count"], 1)
+        self.assertEqual(totals["length_not_verified_count"], 1)
+        # 5 + 2 on F.Cu, 5 + a half circle of radius 1 on B.Cu.
+        self.assertEqual(totals["length_by_layer_mm"]["F.Cu"], 7.0)
+        self.assertAlmostEqual(totals["length_by_layer_mm"]["B.Cu"], 5 + 3.141593, places=5)
+        self.assertAlmostEqual(totals["total_length_mm"], 12 + 3.141593, places=5)
+        self.assertEqual(totals["widths"], [
+            {"width_mm": 0.2, "count": 1},
+            {"width_mm": 0.25, "count": 2},
+            {"width_mm": 0.4, "count": 2},
+        ])
+        self.assertTrue(any("path length" in line or "signal-path" in line for line in data["limitations"]))
+
+    def test_vias_totals_group_by_size_drill_span_and_type(self):
+        self.write_v11_board()
+        rc, data = self.run_cli("vias", "GND", "--limit", "1")
+        self.assertEqual(rc, 0)
+        self.assertEqual(data["via_count"], 3)
+        self.assertEqual(len(data["vias"]), 1)
+        self.assertEqual(data["totals"]["groups"], [
+            {"size_mm": 0.6, "drill_mm": 0.3, "layer_span": ["F.Cu", "B.Cu"], "via_type": None, "count": 2},
+            {"size_mm": 0.8, "drill_mm": 0.4, "layer_span": ["F.Cu", "B.Cu"], "via_type": None, "count": 1},
+        ])
+
+    def test_zones_report_settings_outline_and_unverified_fill(self):
+        self.write_v11_board()
+        rc, data = self.run_cli("zones", "GND")
+        self.assertEqual(rc, 0)
+        self.assertEqual(data["status"], "FOUND")
+        self.assertEqual(data["zone_count"], 3)
+        self.assertEqual(data["board_zone_count"], 4)
+        pour, multi, teardrop = data["zones"]
+        self.assertEqual(pour["name"], "GND pour")
+        self.assertEqual(pour["layers"], ["F.Cu"])
+        self.assertEqual(pour["priority"], 2)
+        self.assertEqual(pour["net_name"], "GND")
+        self.assertEqual(pour["outline_bbox"]["min"], {"x_mm": 1.0, "y_mm": 2.0})
+        self.assertEqual(pour["outline_bbox"]["max"], {"x_mm": 11.0, "y_mm": 8.0})
+        self.assertEqual(pour["outline_point_count"], 4)
+        self.assertEqual(pour["connect_pads"], {"mode": "yes", "clearance_mm": 0.2})
+        self.assertTrue(pour["saved_fill_present"])
+        self.assertEqual(pour["fill_status"], "NOT_VERIFIED")
+        self.assertEqual(multi["layers"], ["F.Cu", "B.Cu"])
+        self.assertIsNone(multi["priority"])
+        self.assertIsNone(multi["name"])
+        self.assertEqual(multi["connect_pads"], {"mode": None, "clearance_mm": 0.5})
+        self.assertFalse(multi["saved_fill_present"])
+        self.assertEqual(multi["fill_status"], "NOT_VERIFIED")
+        self.assertTrue(teardrop["teardrop"])
+        self.assertEqual(data["totals"]["zones_by_layer"], {"B.Cu": 1, "F.Cu": 3})
+        self.assertEqual(data["totals"]["teardrop_count"], 1)
+        self.assertEqual(data["totals"]["with_saved_fill_count"], 2)
+
+    def test_zones_limit_missing_net_and_rule_areas(self):
+        self.write_v11_board()
+        rc, limited = self.run_cli("zones", "GND", "--limit", "1")
+        self.assertEqual(rc, 0)
+        self.assertEqual(limited["zone_count"], 3)
+        self.assertEqual(len(limited["zones"]), 1)
+        self.assertTrue(limited["zones_truncated"])
+        rc, missing = self.run_cli("zones", "MISSING")
+        self.assertEqual(rc, 0)
+        self.assertEqual(missing["status"], "NOT_FOUND")
+        self.assertEqual(missing["zone_count"], 0)
+        rc, no_net = self.run_cli("zones", "")
+        self.assertEqual(rc, 0)
+        self.assertEqual(no_net["zone_count"], 1)
+        self.assertTrue(no_net["zones"][0]["rule_area"])
+        self.assertEqual(no_net["zones"][0]["net_status"], "UNCONNECTED")
+        proc = self.run_cli_raw("zones")
+        self.assertEqual(proc.returncode, 2)
+
+    def test_nets_lists_names_with_counts_and_substring_match(self):
+        self.write_v11_board()
+        rc, data = self.run_cli("nets")
+        self.assertEqual(rc, 0)
+        self.assertEqual(data["status"], "FOUND")
+        self.assertEqual(data["net_count"], 2)
+        self.assertFalse(data["has_net_table"])
+        self.assertEqual(data["nets"], [
+            {"name": "/Top/Power/+5VUSB", "pad_count": 1, "track_count": 1, "via_count": 0, "zone_count": 0},
+            {"name": "GND", "pad_count": 4, "track_count": 5, "via_count": 3, "zone_count": 3},
+        ])
+        rc, matched = self.run_cli("nets", "--match", "5vusb")
+        self.assertEqual(rc, 0)
+        self.assertEqual(matched["net_count"], 1)
+        self.assertEqual(matched["board_net_count"], 2)
+        self.assertEqual(matched["nets"][0]["name"], "/Top/Power/+5VUSB")
+        rc, none = self.run_cli("nets", "--match", "nothing")
+        self.assertEqual(rc, 0)
+        self.assertEqual(none["status"], "NOT_FOUND")
+        self.assertEqual(none["nets"], [])
+        rc, limited = self.run_cli("nets", "--limit", "1")
+        self.assertTrue(limited["nets_truncated"])
+        self.assertEqual(self.run_cli_raw("nets", "GND").returncode, 2)
+        self.assertEqual(self.run_cli_raw("net", "GND", "--match", "G").returncode, 2)
+
+    def test_summary_reports_board_totals_and_outline_box(self):
+        self.write_v11_board()
+        rc, data = self.run_cli("summary")
+        self.assertEqual(rc, 0)
+        self.assertEqual(data["net_count"], 2)
+        self.assertEqual(data["track_count"], 6)
+        self.assertEqual(data["via_count"], 3)
+        self.assertEqual(data["zone_count"], 4)
+        self.assertEqual(data["edge_cuts_bbox"]["min"], {"x_mm": 0.0, "y_mm": 0.0})
+        self.assertEqual(data["edge_cuts_bbox"]["max"], {"x_mm": 50.0, "y_mm": 30.0})
+        self.assertEqual(data["edge_cuts_bbox"]["width_mm"], 50.0)
+        self.assertEqual(data["edge_cuts_bbox_status"], "STRUCTURAL_EVIDENCE")
+        self.assertEqual(data["edge_cuts_primitives"], {"gr_line": 1, "gr_rect": 1})
+
+    def test_summary_outline_box_is_not_verified_with_arcs_or_no_outline(self):
+        self.board.write_text(V11_ARC_OUTLINE_BOARD, encoding="utf-8")
+        rc, arcs = self.run_cli("summary")
+        self.assertEqual(rc, 0)
+        self.assertEqual(arcs["edge_cuts_bbox_status"], "NOT_VERIFIED")
+        self.assertIsNotNone(arcs["edge_cuts_bbox"])
+        self.board.write_text(BOARD, encoding="utf-8")
+        rc, none = self.run_cli("summary")
+        self.assertEqual(rc, 0)
+        self.assertIsNone(none["edge_cuts_bbox"])
+        self.assertEqual(none["edge_cuts_bbox_status"], "NOT_VERIFIED")
+        self.assertEqual(none["zone_count"], 0)
+
+    def test_nearby_layer_and_radius_filters_are_reported(self):
+        self.write_v11_board()
+        rc, plain = self.run_cli("nearby", "U1")
+        self.assertEqual(rc, 0)
+        self.assertEqual(plain["neighbor_count"], 3)
+        self.assertEqual(plain["filters_applied"], {"layer": None, "radius_mm": None})
+        rc, layer = self.run_cli("nearby", "U1", "--layer", "F.Cu")
+        self.assertEqual(rc, 0)
+        self.assertEqual([row["reference"] for row in layer["neighbors"]], ["C1", "C3"])
+        self.assertEqual(layer["filters_applied"], {"layer": "F.Cu", "radius_mm": None})
+        self.assertEqual(layer["unfiltered_neighbor_count"], 3)
+        rc, radius = self.run_cli("nearby", "U1", "--radius", "5")
+        self.assertEqual(rc, 0)
+        self.assertEqual([row["reference"] for row in radius["neighbors"]], ["C2", "C1"])
+        rc, both = self.run_cli("nearby", "U1", "--layer", "B.Cu", "--radius", "5")
+        self.assertEqual(rc, 0)
+        self.assertEqual([row["reference"] for row in both["neighbors"]], ["C2"])
+        self.assertEqual(both["filters_applied"], {"layer": "B.Cu", "radius_mm": 5.0})
+        self.assertEqual(self.run_cli_raw("nearby", "U1", "--radius", "0").returncode, 2)
+        self.assertEqual(self.run_cli_raw("pads", "U1", "--layer", "F.Cu").returncode, 2)
+
+    def test_v11_read_only(self):
+        self.write_v11_board()
+        before = self.board.read_bytes()
+        for args in (("zones", "GND"), ("nets",), ("summary",), ("nearby", "U1", "--radius", "5")):
+            self.run_cli(*args)
+        self.assertEqual(self.board.read_bytes(), before)
+
     def test_empty_sexpression_returns_structured_not_verified(self):
         self.board.write_text(EMPTY_FORM_BOARD, encoding="utf-8")
         rc, data = self.run_cli("summary")
