@@ -20,11 +20,14 @@ argument-hint: "[summary | footprint <ref> | pads <ref> | nets [--match <text>] 
 - Do not assume a parser, IPC connection, or local DRC capability exists; verify
   tools before using them. Never present an unimplemented mode as available.
 
-## Commands (v1.0, Stable (Scoped))
+## Commands (v1.1, Stable (Scoped))
 Run `scripts/query_pcb.py` (Python 3.10+, standard library). Resolve the script
 and board paths first.
 
 `python <skill dir>/scripts/query_pcb.py <command> [targets] --board <file.kicad_pcb> [--limit 20]`
+
+Output is UTF-8 JSON on stdout. Errors are UTF-8 JSON on stderr with a nonzero
+exit code and `verification: NOT_VERIFIED`; infer nothing from them.
 
 | Command | Purpose |
 |---|---|
@@ -89,5 +92,4 @@ Not implemented (do not offer as commands): extended `component`, `area`, `check
 - Output: **Target / Scope**, **Findings**, **Evidence**, **Limitations / NOT_VERIFIED**,
   **Recommended next checks**.
 - Create no reports, temporary exports, caches, or other files unless authorized.
-- Test commands for maintainers are in [references/testing.md](references/testing.md);
-  golden evidence is in `references/2phase-synchbuck-golden-evidence.md`.
+- Test commands for maintainers are in [references/testing.md](references/testing.md).
