@@ -147,7 +147,7 @@ Nothing installs or updates itself, and nothing is written back to your design o
 
 The inspect scripts use only the Python standard library and print JSON with a size limit. See each skill's `SKILL.md` and the script's `--help` for the **current syntax and options**.
 
-- **Schematic:** `summary`, `component`, `sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `instances`, `project-net`.
+- **Schematic:** `summary`, `components`, `component`, `sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `instances`, `project-net`, `net`, `bus`.
 - **PCB:** `summary`, `footprint`, `pads`, `nets`, `net`, `tracks`, `vias`, `zones`, `nearby`, `pad-distance`.
 
 Queries read the **saved** `.kicad_sch` and `.kicad_pcb` files, not unsaved edits in the KiCad editor. Shared nets, pad-center distances and track or via geometry do not prove copper is connected, clearances are met, or the board is correct. Anything unsupported or unclear is reported as `NOT_VERIFIED`, not guessed.
