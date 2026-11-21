@@ -76,7 +76,9 @@ every checklist task and gate status, and the summary lists against the
 spec, checklist, README and saved schematic fields (`review:*` findings, see
 step 4). Use it for steps 1, 2, the sheet and library parts of 3, the
 listed checks in 4, and 7. Read the JSON, not the KiCad files, for anything it
-covers. Options:
+covers. The spec and checklist tables are read by `scripts/register.py`:
+columns by header name first, then by position, so a table with extra or
+renamed columns still reads. Options:
 - `--project <file.kicad_pro or folder>` when the repo has several projects
   (run from inside a project folder also picks it).
 - `--spec <md>` and `--checklist <md>` when the names do not contain `SPEC`
@@ -84,8 +86,9 @@ covers. Options:
   "Specification").
 - `--id-prefixes DEC,OPEN,...` when the spec's ID prefixes are not found right
   (default: short or zero-padded IDs in the first column of table rows).
-  `--open-prefix` (default `OPEN`) and `--tracker-prefix` (default `OI`) set
-  the open-item and checklist tracker IDs. With no tracker rows in the
+  `--open-prefix` (default `OPEN`), `--dec-prefix` (default `DEC`) and
+  `--tracker-prefix` (default `OI`) set the open-item, decision and checklist
+  tracker IDs. With no tracker rows in the
   checklist, the spec's open-item table is the register, and preflight checks
   that each open row names an active checklist task (`open_without_task`).
 - `--pin-text SYMBOL=<fulltext.txt>` (for example a NotebookLM
@@ -148,6 +151,17 @@ unannotated references, single-use local labels, no `PWR_FLAG`, board parts
 with no footprint, unresolved symbol or footprint links, pin and pad
 mismatches and missing 3D models. Read its `limitations` list: without the
 global KiCad library tables, stock links are not checked.
+
+It also covers the table structure (`register.py lint`, also runnable alone:
+`python -I register.py lint --spec <md> --checklist <md>`):
+
+| Check | Means |
+|---|---|
+| `duplicate_id` | A DEC, OPEN, REF, task or gate ID is defined twice (INFO). |
+| `bad_status` | A task status is not `OPEN`, `IN_PROGRESS`, `BLOCKED BY <ID>`, `DEFERRED`, `DONE` or `N/A`. |
+| `closed_no_date` | A closed open item does not start with `Closed <YYYY-MM-DD>:` (INFO). |
+| `rev_order` | Change-note revisions out of order, or the spec header is not the newest row. |
+| `long_task` | Task text over 600 characters; keep the statement, `Left:` and the current state, and move history to the spec change-note (INFO). |
 Copy those rows; each is `[severity, check, item, detail]` and its evidence
 is the saved file, so label it `VERIFIED` with "preflight" as the source.
 
@@ -163,10 +177,10 @@ Check by hand, because they need connectivity or a datasheet:
 | Check | Means |
 |---|---|
 | `review:tasks_closed` | Every task an open item names is `DONE` or `N/A`. |
-| `review:newer_dec` | A DEC on or after the row's newest date cites the item (or the open item a task waits on), and the row does not cite that DEC. |
+| `review:newer_dec` | A DEC on or after the row's newest date cites the item (or the open item a task waits on), and the row does not cite that DEC. A cite that names items (`OPEN-031 item 5`) counts only for rows that name one of those items. |
 | `review:field_filled` | The text waits for MFR, MFR.P/N, LCSC or a footprint field that is filled on every part it names (or every BOM part). |
 | `review:ref_missing` | The still-open text names a reference that is not in the saved schematic, or an unannotated one. |
-| `review:rev_drift` | A cited record revision (or the README spec revision) differs from the record's header. |
+| `review:rev_drift` | A cited record revision (a task, the checklist header, a spec REF row, or the README spec revision) differs from the record's header. |
 | `review:status_mismatch` | A task is `DONE` with no evidence, or a gate status does not match its tasks. |
 | `review:summary_cites_closed` | The spec "Current verdict", the checklist "Current next action" or the README "Open Items" calls a closed item open. |
 
@@ -246,7 +260,8 @@ design record that owns an affected value is updated.
 ### 7. Check
 Run preflight again with `--findings-only` and the same `--since`. It reads
 the working tree, so it sees your edits. No `em_dash`, `undefined_id`,
-`no_tracker_row`, `open_without_task` or `broken_link` row may be new, and
+`no_tracker_row`, `open_without_task`, `broken_link`, `bad_status`,
+`rev_order` or `duplicate_id` row may be new, and
 `review:*` rows may remain only for items the human chose to keep. Then:
 ```bash
 git diff --stat
