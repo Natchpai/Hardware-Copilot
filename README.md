@@ -4,7 +4,14 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 
 **Hardware-Copilot helps you make engineering decisions. It does not approve designs, and it does not replace you, KiCad ERC/DRC, datasheets, simulation, or testing on real hardware.**
 
-## What's new in v3.1.0
+## What's new in v3.4.0
+
+- **`progress-update` reviews open items and task status** on every normal run. The preflight compares each open spec item, each checklist task and gate status, and the summary lists (spec verdict, checklist next action, README open items) with the decision records, the record revisions and the saved schematic fields. It reports `review:*` findings such as an item whose tasks are all done, a later decision the row does not cite, part fields the text still waits for, or a summary that calls a closed item open. Claude asks you about each one; nothing is closed or changed without your answer.
+- `progress-update` has `light` and `sync` modes: `light` records decisions in the spec and checklist as they happen in DRAFT or PRELIMINARY, and `sync` catches up the design records, README and CHANGELOG before a commit. Each commit gets one spec revision.
+- `hardware-checklist` uses the specification's open-item table as the only register. The checklist keeps no second register, and each open item names the active task that closes it. Merged tasks keep their ID as an `N/A` row.
+- New tests: `.claude/skills/progress-update/tests/test_review_items.py`.
+
+## Changes in v3.1.0
 
 - **New PDF rule** in `.claude/rules/pdf.md`, the one place for PDF handling. Claude may read the project's own report PDFs and build report PDFs when you ask. It does not read schematic, PCB or datasheet PDFs directly. NotebookLM is the default datasheet source; if it has a problem, Claude asks you what to do.
 - The NotebookLM procedure moved to `.claude/rules/notebooklm.md`, which loads only for PDF and `documents/` paths.
@@ -88,7 +95,7 @@ These are global skills. They run from `~/.claude/skills/` in every project. The
 | `hw-git-changelog` | Keeps a changelog from confirmed project changes | Untested |
 | `hw-git-session-log` | Optional notes on engineering decisions; run by name only | Untested |
 | `hw-phase-record` | Records a project phase that you declare in an existing README | Untested |
-| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions; run by name only | Used |
+| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions, and reviews open items, task status and summary lists for stale entries; closes nothing without your answer; run by name only | Used |
 
 An inspect skill **collects evidence**. A review skill **explains what the evidence means**. Inspect output alone does not mean a design is correct.
 
@@ -147,8 +154,8 @@ Nothing installs or updates itself, and nothing is written back to your design o
 
 The inspect scripts use only the Python standard library and print JSON with a size limit. See each skill's `SKILL.md` and the script's `--help` for the **current syntax and options**.
 
-- **Schematic:** `summary`, `component`, `sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `instances`, `project-net`.
-- **PCB:** `summary`, `footprint`, `pads`, `net`, `tracks`, `vias`, `nearby`, `pad-distance`.
+- **Schematic:** `summary`, `components`, `component`, `sheet`, `pins`, `local-net`, `hier-net`, `connected-pins`, `instances`, `project-net`, `net`, `bus`.
+- **PCB:** `summary`, `footprint`, `pads`, `nets`, `net`, `tracks`, `vias`, `zones`, `nearby`, `pad-distance`.
 
 Queries read the **saved** `.kicad_sch` and `.kicad_pcb` files, not unsaved edits in the KiCad editor. Shared nets, pad-center distances and track or via geometry do not prove copper is connected, clearances are met, or the board is correct. Anything unsupported or unclear is reported as `NOT_VERIFIED`, not guessed.
 
@@ -159,20 +166,62 @@ Run the synthetic tests from the repository root:
 ```sh
 python -m unittest discover -s .claude/skills/sch-inspect/tests -p 'test_query_sch.py' -v
 python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_pcb.py' -v
+python .claude/skills/progress-update/tests/test_review_items.py
 ```
 
-**Golden tests** use real KiCad designs kept outside Git under `hardware/`. They are opt-in. With no project set, they **SKIP** instead of claiming a pass. A project path that is set but wrong makes them **FAIL**. See each test module for its environment variable and command. For schematic golden tests, set `KICAD_GOLDEN_PROJECT` to the root `.kicad_sch` file.
+The `progress-update` regression cases read the history of the project the review was built on; in any other repository they **SKIP**.
+
+**Golden tests** use real KiCad designs kept outside Git under `hardware/`. They are opt-in. With no project set, they **SKIP** instead of claiming a pass. A project path that is set but wrong makes them **FAIL**. See each test module for its environment variable and command.
+
+Schematic golden tests need two variables. With either one unset, they skip.
+
+- `KICAD_GOLDEN_PROJECT`: absolute path of the project's root `.kicad_sch` file.
+- `KICAD_GOLDEN_EXPECT`: absolute path of a JSON file with the expected values for that project.
+
+```sh
+KICAD_GOLDEN_PROJECT=/abs/path/Top.kicad_sch \
+KICAD_GOLDEN_EXPECT=/abs/path/golden.json \
+python .claude/skills/sch-inspect/tests/run_tests.py --pattern test_query_sch_golden.py --label golden
+```
+
+The JSON file holds a list of `cases`. Each case runs one `query_sch.py` command and checks its result. Start from [golden.example.json](.claude/skills/sch-inspect/tests/golden.example.json), which holds the values of one real project, and replace them with values you checked in KiCad.
+
+| Key | Meaning |
+| --- | --- |
+| `name` | Label shown when the case fails. |
+| `command` | Command and arguments, for example `["project-net", "U103", "--pin", "8"]`. `--project` is added by the test. |
+| `status` | Expected `status` of the single result. |
+| `has_pins`, `lacks_pins` | `[reference, pin]` pairs that must, or must not, be in `connected_component_pins`. |
+| `has_power`, `lacks_power` | Names that must, or must not, be in `power_net_names`. |
+| `has_global`, `lacks_global` | Names that must, or must not, be in `global_labels`. |
+| `has_sheet_names` | Sheet names that `instances` must list. |
+
+An unknown key fails the case. A pin or name check on a truncated result also fails, because a truncated list cannot show that an item is absent.
+
+PCB golden tests work the same way, with their own two variables.
+
+- `KICAD_PCB_GOLDEN_BOARD`: absolute path of the `.kicad_pcb` file.
+- `KICAD_PCB_GOLDEN_EXPECT`: absolute path of a JSON file with the expected values for that board.
+
+```sh
+KICAD_PCB_GOLDEN_BOARD=/abs/path/board.kicad_pcb \
+KICAD_PCB_GOLDEN_EXPECT=/abs/path/golden.json \
+python .claude/skills/pcb-inspect/tests/run_tests.py --pattern test_query_pcb_golden.py --label golden
+```
+
+Each case has `name`, `command`, an optional `status`, and `fields`, a map from a field path to its expected value, for example `"pads[number=1].position"` or `"tracks[0].length_mm"`. Start from [golden.example.json](.claude/skills/pcb-inspect/tests/golden.example.json); the format is described in [testing.md](.claude/skills/pcb-inspect/references/testing.md).
 
 GitHub Actions runs the checks on every push and PR. Before you treat a green run as a real-project check, look at each job and see whether the golden tests ran or skipped.
 
-Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). Golden tests were not.
+Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). For v3.2.0 the schematic synthetic and golden tests were run on macOS (Python 3.15). For v3.3.0 the PCB synthetic and golden tests were run on macOS (Python 3.15). For v3.3.1 all four suites were run on macOS (Python 3.15). CI runs the schematic and PCB synthetic tests on Linux, Windows and macOS.
 
 | Suite | Last result |
 | --- | --- |
-| Schematic synthetic | 21/21 passed (v3.1.0) |
-| PCB synthetic | 31/31 passed (v3.1.0) |
-| PCB golden (real project) | 2/2 passed (earlier run) |
-| Schematic golden (real project) | 5/5 passed (earlier run) |
+| Schematic synthetic | 38/38 passed (v3.3.1, macOS) |
+| PCB synthetic | 48/48 passed (v3.3.1, macOS) |
+| PCB golden (real project) | 6/6 cases passed (v3.3.1, one local project) |
+| Schematic golden (real project) | 12/12 cases passed (v3.3.1, one local project) |
+| `progress-update` review | 10/10 passed in the source project, 8 passed and 2 skipped here (v3.4.0, Windows, Python 3.14) |
 
 These are **reported test results**. They do not show that the scripts match KiCad's own netlist, ERC or DRC everywhere. Running natively on macOS and OS-level read-only sandboxing have not been checked.
 
@@ -214,6 +263,10 @@ Hardware-Copilot/
 │       ├── pcb-inspect/
 │       │   ├── SKILL.md
 │       │   ├── scripts/query_pcb.py
+│       │   └── tests/
+│       ├── progress-update/
+│       │   ├── SKILL.md
+│       │   ├── scripts/progress_preflight.py
 │       │   └── tests/
 │       └── ...other skills...
 ├── global-rules/
