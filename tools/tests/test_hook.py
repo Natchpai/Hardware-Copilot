@@ -139,6 +139,61 @@ class Git(unittest.TestCase):
         msg = 'git commit -F - <<\'EOF\'\nfix: stop git push origin main\nEOF'
         self.assertIsNone(bash(msg))
 
+    def test_option_values_are_not_names(self):
+        for c in ("git tag --contains abc123", "git tag --points-at HEAD",
+                  "git pull --rebase=false", "git pull --no-rebase", "git pull -r --no-rebase"):
+            self.assertIsNone(bash(c), c)
+        for c in ("git pull -r", "git pull --rebase=interactive", "git pull --no-rebase -r"):
+            self.assertEqual("ask", bash(c), c)
+
+
+class ShellSyntax(unittest.TestCase):
+    """Protected commands inside shell keywords, groups, jobs and heredocs."""
+
+    def test_keywords_and_groups(self):
+        deny = ("if true; then git push origin main; fi",
+                "if git push origin main; then echo ok; fi",
+                "while true; do git push origin main; done",
+                "(git push origin main)",
+                "{ git push origin main; }",
+                "! git push origin main",
+                "true & git push origin main",
+                "echo $(git push origin main)",
+                "echo `git push origin main`",
+                "for f in a; do rm hw/a.kicad_wks; done")
+        for c in deny:
+            self.assertEqual("deny", bash(c), c)
+        self.assertEqual("ask", bash("for b in a b; do git branch -D $b; done"))
+        self.assertEqual("ask", decide(
+            "PowerShell", command="Get-ChildItem | ForEach-Object { Remove-Item hw/a.kicad_sch }"))
+
+    def test_wrapper_options(self):
+        for c in ("timeout 60 git push origin main", "timeout -s KILL 5m git push origin main",
+                  "env -u FOO git push origin main", "nice -n 10 git push origin main",
+                  "sudo -u bob git push origin main"):
+            self.assertEqual("deny", bash(c), c)
+        self.assertEqual("ask", bash("git branch --merged | xargs -n 1 git branch -d"))
+
+    def test_heredoc_fed_to_shell_or_interpreter(self):
+        self.assertEqual("deny", bash("bash <<EOF\ngit push origin main\nEOF"))
+        self.assertEqual("deny", bash("cd x && sh -s <<'EOF'\necho a\ngit push origin main\nEOF"))
+        self.assertEqual("deny", bash("python - <<'EOF'\nopen('hw/a.kicad_wks', 'w').write('x')\nEOF"))
+        self.assertEqual("ask", bash("python - <<'EOF'\nimport fitz\nfitz.open('ds/a.pdf')\nEOF"))
+        # the <<< here-string has no body; the next line is a command
+        self.assertEqual("deny", bash('cat <<< "abc"\ngit push origin main'))
+
+    def test_no_false_positives(self):
+        none = ("python -m pytest -q 2>&1 | tail -30",
+                "ls &> out.txt",
+                "echo ${HOME}",
+                "find . -name '*.bak' -exec ls {} ;",
+                "cp a{,.orig}",
+                "cat > notes.md <<'EOF'\nsee ds/a.pdf, then git push origin main\nEOF",
+                "git commit -F - <<'EOF'\nfix(x): edit hw/a.kicad_wks (see ds/a.pdf)\nEOF",
+                "python - <<'EOF'\nprint('git push origin main')\nEOF")
+        for c in none:
+            self.assertIsNone(bash(c), c)
+
 
 @unittest.skipUnless(shutil.which("git"), "git not on PATH")
 class CurrentBranch(unittest.TestCase):

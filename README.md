@@ -4,7 +4,41 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 
 **Hardware-Copilot helps you make engineering decisions. It does not approve designs, and it does not replace you, KiCad ERC/DRC, datasheets, simulation, or testing on real hardware.**
 
-## What's new in v4.1.0
+## What's new in v4.2.0
+
+Bug fixes found in a review of the skills against a real 13-sheet KiCad 10 project, each with a regression test (#45 to #48), and four new inspect options.
+
+- **sch-inspect 1.4.0.**
+  - `project-net` no longer calls the shared pin of a multi-unit symbol ambiguous, and lists each pin once.
+  - `pins`, `local-net` and `connected-pins` use the unit and reference of each sheet instance.
+  - `local-net` sees a pin or power symbol placed directly on a pin (new status `PIN_CONTACT_ONLY`).
+  - `connected-pins` finds parent pins joined by a label.
+  - `net "SS/TR"` matches a label saved as `SS{slash}TR`; `~{RESET}` is a name, not a bus.
+  - `component` prints every property; `summary` adds `component_count`.
+  - `--project <dir>` uses the `.kicad_pro` name; `--prefix '#'` works.
+  - Every nested list honours `--limit`, and the top-level `truncated` covers them. **New:** `--limit 0` means no limit.
+- **pcb-inspect 1.2.0.**
+  - An unrouted net is no longer `MISSING` in `tracks`, `vias` or `zones` on a KiCad 10 board.
+  - `net` finds a net that has only tracks, vias or zones.
+  - Zones inside footprints are counted.
+  - `footprint` gives `side`, and `nearby --layer` rejects unknown layers.
+  - **New:** `pads` gives `rotation_deg` and `drill_mm`; `pad-distance --group` measures a split exposed pad; `summary` gives `generator_version` and layer user names.
+- **progress-update.**
+  - Preflight reads bold or title-case statuses, backticked IDs and the checklist template's `| Revision |` row.
+  - It reports a revision entered twice, and no longer counts "Closed-loop ..." as closed.
+  - It leaves `.claude/` out of the em dash count and uses `MFR.P/N` for the LCSC check.
+- **Skills.**
+  - sch-review and progress-update trace ICs with `local-net --limit 0`.
+  - hw-docs can record a phase in a README created without one.
+  - PDF and NotebookLM wording matches `pdf.md` in four skills.
+- **Both scripts:** argument errors are JSON on stderr.
+- **`tools/check_skills.py`:** rejects an empty folded description, and checks `kicad-*` names against `~/.claude/skills` when present.
+
+To upgrade a project: `python tools/sync_project.py <project root> --ref v4.2.0`, check the plan, then add `--apply`. No `settings.json` change.
+
+## Changes in v4.1.0
+
+**v4.1.1:** the guard now sees protected commands inside shell syntax. In v4.1.0, `if ...; then git push origin main; fi`, a `for ... do` loop, `( )`, `{ }`, `!`, a background `&`, `$(...)`, `timeout`, `env -u X`, and a heredoc fed to `bash` or `python` all ran with no prompt. `git tag --contains X` and `git pull --rebase=false` no longer ask. To upgrade, sync the hook with `tools/sync_project.py`.
 
 The guard in `.claude/hooks/` now covers PDF reads and Git commands as well as KiCad file edits. Each project sets its levels in `protect.json`.
 
