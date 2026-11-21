@@ -1669,7 +1669,9 @@ def discover(root: Path, max_files: int):
 
 def _version_key(path):
     """(10, 0) for .../KiCad/10.0/bin/kicad-cli.exe; non-numeric folders sort first."""
-    folder = Path(path).parent.parent.name
+    # Split on both separators: Path() on macOS/Linux keeps a Windows path whole.
+    bits = re.split(r'[\\/]', str(path))
+    folder = bits[-3] if len(bits) >= 3 else ''
     parts = folder.split('.')
     return tuple(int(x) for x in parts) if all(x.isdigit() for x in parts) else (-1,)
 
