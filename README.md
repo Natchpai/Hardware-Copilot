@@ -6,6 +6,8 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 
 ## What's new in v4.0.0
 
+**v4.0.1:** the `progress-update` preflight ignores `.kicad_pro` files under `.claude/`. In v4.0.0, the `sch-inspect` test fixture made a synced project show two KiCad projects, so the preflight stopped unless you passed `--project`.
+
 v4.0.0 removes and merges skills (see **Upgrading from v3**). It also adds checks so that skills, rules and project copies stay in step.
 
 - **One table reader for the spec and checklist** (`progress-update/scripts/register.py`).
