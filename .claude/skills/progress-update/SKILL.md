@@ -13,9 +13,13 @@ session. Outputs are Markdown edits only. The human keeps every design
 decision, the phase, and every git action.
 
 `<skills dir>` below is the folder that holds this skill. Sibling skills
-(`sch-inspect`, `pcb-inspect`, `hardware-checklist`, `hw-git-readme`,
-`hw-git-changelog`) are used when installed there; when one is missing, do
-that part by hand and say so in the report.
+(`sch-inspect`, `pcb-inspect`, `hardware-checklist`, `hw-docs`) are used
+when installed there; when one is missing, do that part by hand and say so in
+the report.
+
+**One history.** The spec change-note table is the design history. The
+checklist, README and CHANGELOG point to spec IDs and revisions; they do not
+repeat the decision or open-item text.
 
 ## Rules
 - KiCad files and project libraries are read-only. Report that you read the
@@ -221,10 +225,13 @@ fitting row or table and mention it in the report.
 3. **Design records:** edit only the ones the change touches (power budget for
    regulators and rails, selection records for part choices, pin allocation
    for MCU pins). Change rows; keep their labels.
-4. **README:** follow `hw-git-readme` update mode. Sync the spec revision,
+4. **README:** follow `hw-docs` readme update mode. Sync the spec revision,
    features, specifications table, open-items summary and documentation links.
-5. **CHANGELOG:** follow `hw-git-changelog`. Add entries under
-   `[Unreleased]` and state the verification status.
+5. **CHANGELOG:** follow `hw-docs` changelog mode. Add **one pointer line per
+   spec revision** under `[Unreleased]`, for example
+   `- Specification rev 0.81 (2026-11-21): P2-016, P2-021, P4-011; see the change-note.`
+   (the IDs the revision added or changed). Schematic, PCB, library and
+   website commits get their own short lines. Do not copy change-note text.
 
 **Review answers (step 5):** apply only what the human chose, in the same
 order:
@@ -235,11 +242,13 @@ order:
 - Change a task or gate status: set the status and put the evidence record in
   the last cell. `DONE` needs both.
 - Fix a stale summary line or revision number.
-- Note each change in the open change-note row (open-revision rule), and
-  carry closed items into the README open-items list and the CHANGELOG.
+- Note each change in the open change-note row (open-revision rule), drop
+  closed items from the README open-items list, and name them in the
+  revision's CHANGELOG pointer line.
 
-Done when every decision and open item added to the spec also appears in the
-checklist, the README and the CHANGELOG (for each doc that exists).
+Done when every decision and open item added to the spec is named by its
+checklist task, the README summary (when it is a top item) and the
+CHANGELOG pointer line (for each doc that exists).
 
 **`light`:** do items 1 and 2 only, using the open-revision rule in Modes:
 the revision and date change only when a new revision starts; otherwise add
@@ -253,9 +262,9 @@ the README spec revision to the open revision. Leave the spec and checklist
 as they are, except for a broken cross-reference. If there is no open
 revision, say that nothing needs syncing and stop. `sync` skips steps 4 and
 5, so list any `review:*` rows in the report for the next full or `light`
-run instead of acting on them. Done when every DEC and
-OPEN row in that diff also appears in the README and the CHANGELOG, and every
-design record that owns an affected value is updated.
+run instead of acting on them. Done when the open revision has its CHANGELOG
+pointer line, the README summary names the top open items, and every design
+record that owns an affected value is updated.
 
 ### 7. Check
 Run preflight again with `--findings-only` and the same `--since`. It reads
