@@ -73,6 +73,20 @@ jobs:
           python .claude/skills/pcb-inspect/tests/run_tests.py
           --pattern test_query_pcb.py --label synthetic
 
+  progress-update:
+    name: progress-update review tests (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Run progress-update review tests
+        run: python .claude/skills/progress-update/tests/test_review_items.py
+
   pcb-golden:
     name: PCB golden tests (opt-in)
     runs-on: ubuntu-latest
