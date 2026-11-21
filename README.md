@@ -6,6 +6,8 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 
 ## What's new in v4.1.0
 
+**v4.1.1:** the guard now sees protected commands inside shell syntax. In v4.1.0, `if ...; then git push origin main; fi`, a `for ... do` loop, `( )`, `{ }`, `!`, a background `&`, `$(...)`, `timeout`, `env -u X`, and a heredoc fed to `bash` or `python` all ran with no prompt. `git tag --contains X` and `git pull --rebase=false` no longer ask. To upgrade, sync the hook with `tools/sync_project.py`.
+
 The guard in `.claude/hooks/` now covers PDF reads and Git commands as well as KiCad file edits. Each project sets its levels in `protect.json`.
 
 - **Git guard.** `protect_kicad_v2.py` reads git and gh commands with flags in any order, and follows `cd`, `git -C`, env prefixes and `bash -c`. The `git` block of `protect.json` names the checks:
