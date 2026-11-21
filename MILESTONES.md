@@ -60,21 +60,91 @@ Goal: one home for each fact and fewer skills. The skill count goes from 20 to 1
 
 ## M7: one source for each rule
 
-Status: planned. `shared/evidence-baseline.md` and `tools/check_skills.py`,
-`tools/check_permissions.py`, and the `project-workflow.md` rule. The
-CLAUDE.md template Git section becomes a pointer, and its language conflict is
-fixed.
+Status: in progress.
+Scope: `shared/`, `tools/`, every `SKILL.md`, `.claude/rules/`, `CLAUDE.md`, CI.
+Goal: each rule has one source, and CI catches drift.
 
-## M8: kicad-cli netlist in sch-inspect
+- [ ] **1. Evidence block.** `shared/evidence-baseline.md` is copied word
+  for word into the 14 hardware skills, so each still works alone. It was
+  built from the `sch-review` wording, which matches `pdf.md`, with the KiCad
+  read-only bullet added back. Duplicate bullets are trimmed in
+  `progress-update` and `hw-docs`.
+- [ ] **2. `tools/check_skills.py`.** It checks frontmatter `name` and
+  `description`, that each block matches the shared one, and that the README
+  skill table matches `.claude/skills`. `--fix` rewrites the block.
+- [ ] **3. `tools/check_permissions.py [root]`.** It checks that
+  `protect.json` deny and ask globs match the `Edit(...)` rules in
+  `settings.json`, that no rule weakens the hook, that the PDF denies from
+  `pdf.md` exist in both folder spellings, and that the hook entry is present.
+  On AeroOptix it finds the 2 missing PDF deny lines.
+- [ ] **4. `.claude/rules/project-workflow.md`.** The spec owns the IDs, plus
+  gates and tasks, the light, sync and PR cycle, an optional team-messages
+  file, and open checks.
+- [ ] **5. CLAUDE.md template.** Project and Layout are placeholders. Rules
+  and Git are pointers. The language rule is a single rule now: English
+  unless the user asks.
+- [ ] **6. CI.** A `repo-checks` job runs both checks and
+  `tools/tests/test_checks.py` (7 tests).
 
-Status: planned. `netlist` and `netlist-compare` commands. They run only when
-the user asks. The export goes to a temp folder, with a real KiCad 10.0.8
-fixture.
+## M8: kicad-cli netlist in sch-inspect (sch-inspect 1.3.0)
+
+Status: in progress.
+Scope: `.claude/skills/sch-inspect/`.
+Goal: check the `project-net` graph against KiCad's own netlist.
+
+- [ ] **1. `netlist <net|ref>`.** KiCad netlist nodes of one net (full
+  name or last path part), or every net on a reference.
+- [ ] **2. `netlist-compare`.** It compares every multi-pin KiCad net with
+  the project graph as two partitions of component pins. `split` means KiCad
+  joins pins that sch-inspect keeps apart or misses. `merged` means the
+  opposite.
+- [ ] **3. Safe use.**
+  - It runs only when the user asks.
+  - It finds `kicad-cli` in this order: `--kicad-cli`, `KICAD_CLI`, `PATH`,
+    then the install folders.
+  - kicad-cli runs on a temp copy of the sheets and the `.kicad_pro`,
+    because it writes a `.kicad_prl` next to a project that has none.
+    The copy is removed afterwards.
+  - `--netlist FILE` reads an export the user made.
+  - Errors use the JSON contract (exit 2).
+- [ ] **4. Fixture.** `tests/fixtures/netlist_small` is a root sheet and a
+  child sheet joined by the bus `D[0..1]`, plus the global `COM`. It comes
+  with its real KiCad 10.0.8 XML export (the source path and date are made
+  neutral).
+- [ ] **5. Tests.** 7 new tests: lookup, compare, split and merged, errors,
+  binary discovery, the temp folder, and a live export that is skipped
+  without KiCad. 56/56 pass on Windows with KiCad 10.0.8.
+- [ ] **6. Real data.** On AeroOptix-Horizon (saved files, 2026-11-21),
+  176 multi-pin nets and 838 pins were compared, with 0 differences.
 
 ## M9: sync script
 
-Status: planned. `tools/sync_project.py`: dry run by default, a lock file,
-and `settings.json` left untouched.
+Status: in progress.
+Scope: `tools/`, README, CI.
+Goal: replace the hand copy of `.claude/` into projects.
+
+- [ ] **1. `tools/sync_project.py`.**
+  - It reads skills, rules and hooks with `git show <ref>` from the newest
+    version tag by default, so a dirty tree is never copied.
+  - Files are written with LF.
+  - It does a dry run unless `--apply` is given.
+- [ ] **2. Lock file `.claude/hardware-copilot.lock.json`** (ref, commit,
+  version, excludes, sha256 per file).
+  - A file is updated or removed only when it is unchanged since the last
+    sync.
+  - Edited files are kept unless named with `--overwrite`.
+  - Files the lock does not know are never touched.
+- [ ] **3. Never written:** `settings.json`, `settings.local.json`,
+  `memory/` and `__pycache__`. It prints the permission lines that differ
+  between upstream and the project.
+- [ ] **4. `--baseline <tag>`** for the first sync of a hand-copied project.
+  Files equal to that release count as synced from it.
+- [ ] **5. Tests.** `tools/tests/test_sync_project.py` has 6 tests with
+  temporary git repos and runs in CI.
+- [ ] **6. Real data.** A dry run on AeroOptix-Horizon (`--baseline v3.4.0`,
+  `--exclude skills/git-workflow`) gives add 10, update 17, remove 8,
+  same 24, and nothing kept. It reports the 2 missing PDF deny lines in
+  `settings.json`.
 
 ## M4: sch-inspect and pcb-inspect bug fixes (symbol lookup, body style, via type)
 

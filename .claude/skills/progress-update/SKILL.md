@@ -21,13 +21,27 @@ the report.
 checklist, README and CHANGELOG point to spec IDs and revisions; they do not
 repeat the decision or open-item text.
 
+## Evidence baseline
+
+- Label each significant claim `VERIFIED` (named evidence: CAD data, a
+  calculation or an official source), `ASSUMED` (assumption stated),
+  `ESTIMATED` (method and margin stated) or `NOT_VERIFIED` (evidence missing
+  or check not run).
+- Datasheet, schematic and PCB PDFs are not read, by any tool. Project report
+  PDFs may be read.
+- Datasheet values come from the user, official manufacturer web pages, or
+  NotebookLM answers with cited text. Query an existing notebook without
+  asking. Adding a source or creating a notebook uploads a file and needs the
+  user's approval. With no source, the value is `NOT_VERIFIED`.
+- KiCad design and library files are read-only. Propose changes; do not apply
+  them.
+- If the project has `.claude/rules/engineering.md` and `pdf.md`, follow them;
+  they are the full policy.
+
 ## Rules
-- KiCad files and project libraries are read-only. Report that you read the
-  **saved** files; the editor may hold unsaved changes.
-- Evidence and findings follow `.claude/rules/engineering.md` when the project
-  has it. Otherwise label each statement `VERIFIED`, `ASSUMED`, `ESTIMATED` or
-  `NOT_VERIFIED`, and write one line per finding:
-  `SEVERITY | ref / net | label | statement | source`.
+- Report that you read the **saved** KiCad files; the editor may hold unsaved
+  changes.
+- Write one line per finding: `SEVERITY | ref / net | label | statement | source`.
 - Tag every part you report as one of:
   - **DECISION**: the human chose it in this session. Quote their words. Only
     a DECISION gets a decision-record row.
@@ -37,8 +51,6 @@ repeat the decision or open-item text.
   instead of resolving it.
 - Leave out every `ignore` item (a reference, value or library) from findings
   and docs.
-- Datasheet values come only from user-supplied text, official web pages or
-  cited NotebookLM answers. PDFs stay closed.
 - Write plain English: short sentences, exact names (refs, nets, part
   numbers), no em dash.
 - The review (step 4) only proposes. Never close an open item, change a task

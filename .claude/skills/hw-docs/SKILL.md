@@ -19,6 +19,23 @@ and `hardware-checklist`; this skill points to them and does not copy them.
 
 Pick the mode from the argument or the request. If it is unclear, ask.
 
+## Evidence baseline
+
+- Label each significant claim `VERIFIED` (named evidence: CAD data, a
+  calculation or an official source), `ASSUMED` (assumption stated),
+  `ESTIMATED` (method and margin stated) or `NOT_VERIFIED` (evidence missing
+  or check not run).
+- Datasheet, schematic and PCB PDFs are not read, by any tool. Project report
+  PDFs may be read.
+- Datasheet values come from the user, official manufacturer web pages, or
+  NotebookLM answers with cited text. Query an existing notebook without
+  asking. Adding a source or creating a notebook uploads a file and needs the
+  user's approval. With no source, the value is `NOT_VERIFIED`.
+- KiCad design and library files are read-only. Propose changes; do not apply
+  them.
+- If the project has `.claude/rules/engineering.md` and `pdf.md`, follow them;
+  they are the full policy.
+
 ## Rules for every mode
 - Write a file only when the user asks for it. Read the existing file first,
   keep valid content, and make the smallest edit that does the job.
@@ -27,10 +44,9 @@ Pick the mode from the argument or the request. If it is unclear, ask.
   not proof that a check was run.
 - Never invent a title, specification, test result, phase, approval or
   release state. Leave out what is unknown rather than filling it in.
-- Do not read PDFs. Do not derive design facts from raw `git diff` of KiCad
-  files (UUID and coordinate noise); confirm a reference, value or footprint
-  with `sch-inspect` or `pcb-inspect` if installed, else mark it
-  `NOT_VERIFIED`. KiCad files and libraries stay read-only.
+- Do not derive design facts from raw `git diff` of KiCad files (UUID and
+  coordinate noise); confirm a reference, value or footprint with
+  `sch-inspect` or `pcb-inspect` if installed, else mark it `NOT_VERIFIED`.
 - A phase is never inferred from files, ERC, DRC, Git state or a release.
   `RELEASE` never authorizes a commit, tag, push, PR or GitHub release.
 - Writing a doc is a content edit. Staging, committing, tagging and releasing

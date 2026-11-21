@@ -125,9 +125,9 @@ Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A
    | Copy | Why |
    | --- | --- |
    | `.claude/skills/<name>/` | The skills you want, one folder each |
-   | `.claude/rules/` | Full engineering and Git rules (skills follow them when present) |
+   | `.claude/rules/` | Full engineering, workflow and Git rules (skills follow them when present); `project-workflow.md` is the standard spec, checklist and doc cycle |
    | `.claude/hooks/` (both files) and the `hooks` block of `.claude/settings.json` | File protection guard |
-   | `CLAUDE.md` | General project instructions; merge it with your own |
+   | `CLAUDE.md` | Project template: fill in the Project and Layout sections; the rest points to the rules |
    | `global-rules/git-workflow.md` to `~/.claude/rules/git-workflow.md` | Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install once per user, not per project. It sits outside `.claude/rules/` so it does not load twice |
    | Global `kicad-*` skills from [kicad-workspace `skills-src/`](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) | Library skills in [group 5](#5-libraries). Install once per user to `~/.claude/skills/` using that folder's README |
 
@@ -136,6 +136,25 @@ Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A
 4. Keep schematic and PCB files under your control. Review every design change Claude proposes.
 
 Nothing installs or updates itself, and nothing is written back to your design on its own. Inspect and review skills never change KiCad design or library files. Protected files change only through an edit you approve, for example with the global library sync skills. The guard asks before every schematic and PCB edit. Every Git write needs your approval.
+
+### Update a project
+
+`tools/sync_project.py` copies `.claude/skills/`, `.claude/rules/` and `.claude/hooks/` from a release tag of this clone into a project. It does a dry run unless you pass `--apply`:
+
+```text
+python tools/sync_project.py <project root> --ref v4.0.0              # show the plan
+python tools/sync_project.py <project root> --ref v4.0.0 --apply      # write it
+```
+
+- It keeps `.claude/hardware-copilot.lock.json` in the project with a hash of each file it wrote.
+- A file you edited in the project is kept and reported, unless you name it with `--overwrite <path>`.
+- Your own skills are never touched.
+- Files the release dropped are removed only if you did not edit them.
+- `settings.json`, `settings.local.json` and `memory/` are never written. For `settings.json` it prints the permission lines that differ, for you to merge.
+- `--exclude skills/<name>` skips a path from then on.
+- On the first sync of a project you copied by hand, add `--baseline <old tag>`. Files equal to that release then update cleanly.
+
+`tools/check_permissions.py <project root>` checks that the project's `settings.json` still agrees with `protect.json`.
 
 ### Example requests
 
