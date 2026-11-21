@@ -16,16 +16,22 @@ sys.dont_write_bytecode = True
 import check_permissions as cp  # noqa: E402
 import check_skills as cs  # noqa: E402
 
-PROTECT = {"deny": ["**/*.kicad_wks"], "ask": ["**/*.kicad_sch"], "allow": ["**/library/**"]}
-HOOK = {"PreToolUse": [{"matcher": "Edit|Write|MultiEdit|Bash|PowerShell",
+HOOK_SRC = TOOLS.parent / ".claude" / "hooks" / "protect_kicad_v2.py"
+PROTECT = {"deny": ["**/*.kicad_wks"], "ask": ["**/*.kicad_sch"], "allow": ["**/library/**"],
+           "pdf": {"deny": ["**/documents/schematic*/**", "**/documents/manufacturing/**"],
+                   "ask": [], "allow": ["**/documents/reports/**"]},
+           "git": {"protected_branches": ["main"], "deny": ["push-protected"], "ask": ["tag"]}}
+HOOK = {"PreToolUse": [{"matcher": "Edit|Write|MultiEdit|Read|Bash|PowerShell",
                         "hooks": [{"type": "command", "command": "python protect_kicad_v2.py"}]}]}
 
 
-def project(tmp: Path, allow=(), ask=("Edit(**/*.kicad_sch)",), deny=("Edit(**/*.kicad_wks)",), hooks=HOOK):
+def project(tmp: Path, allow=(), ask=("Edit(**/*.kicad_sch)",), deny=("Edit(**/*.kicad_wks)",),
+            hooks=HOOK, protect=PROTECT, mode="default"):
     (tmp / ".claude" / "hooks").mkdir(parents=True)
-    perms = {"allow": list(allow), "ask": list(ask), "deny": list(deny) + cp.REQUIRED_DENY}
+    perms = {"defaultMode": mode, "allow": list(allow), "ask": list(ask), "deny": list(deny)}
     (tmp / ".claude" / "settings.json").write_text(json.dumps({"permissions": perms, "hooks": hooks}))
-    (tmp / ".claude" / "hooks" / "protect.json").write_text(json.dumps(PROTECT))
+    (tmp / ".claude" / "hooks" / "protect.json").write_text(json.dumps(protect))
+    (tmp / ".claude" / "hooks" / "protect_kicad_v2.py").write_bytes(HOOK_SRC.read_bytes())
     return tmp
 
 
@@ -50,6 +56,30 @@ class Permissions(unittest.TestCase):
         self.assertTrue(any("no PreToolUse hook" in e for e in self.run_check(hooks={})))
         bad = {"PreToolUse": [{"matcher": "Edit", "hooks": [{"command": "python protect_kicad_v2.py"}]}]}
         self.assertTrue(any("matcher lacks" in e for e in self.run_check(hooks=bad)))
+
+    def test_bypass_mode(self):
+        self.assertTrue(any("bypassPermissions" in e for e in self.run_check(mode="bypassPermissions")))
+
+    def test_schema(self):
+        bad = json.loads(json.dumps(PROTECT))
+        bad["git"]["ask"] = ["tag", "push-protected", "no-such-check"]
+        bad["extra"] = 1
+        errs = self.run_check(protect=bad)
+        self.assertIn("protect.json git ask has unknown check 'no-such-check'", errs)
+        self.assertIn("protect.json git check 'push-protected' is in both deny and ask", errs)
+        self.assertIn("protect.json has an unknown key 'extra'", errs)
+        nopdf = {k: v for k, v in PROTECT.items() if k != "pdf"}
+        self.assertTrue(any("no 'pdf' block" in e for e in self.run_check(protect=nopdf)))
+
+    def test_pdf_must_deny_both_spellings(self):
+        weak = json.loads(json.dumps(PROTECT))
+        weak["pdf"]["deny"] = ["**/documents/Schematics/**", "**/documents/manufacturing/**"]
+        errs = self.run_check(protect=weak)
+        self.assertTrue(any("hw/documents/schematic/board.pdf" in e for e in errs), errs)
+        self.assertFalse(any("Schematics/board.pdf" in e for e in errs), errs)
+
+    def test_repo_settings_pass(self):
+        self.assertEqual([], cp.check(TOOLS.parent))
 
 
 class Skills(unittest.TestCase):

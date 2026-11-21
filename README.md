@@ -4,7 +4,30 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 
 **Hardware-Copilot helps you make engineering decisions. It does not approve designs, and it does not replace you, KiCad ERC/DRC, datasheets, simulation, or testing on real hardware.**
 
-## What's new in v4.0.0
+## What's new in v4.1.0
+
+The guard in `.claude/hooks/` now covers PDF reads and Git commands as well as KiCad file edits. Each project sets its levels in `protect.json`.
+
+- **Git guard.** `protect_kicad_v2.py` reads git and gh commands with flags in any order, and follows `cd`, `git -C`, env prefixes and `bash -c`. The `git` block of `protect.json` names the checks:
+  - deny: a push to `main` or `master` (also `HEAD:main`, `+main`, `--all`, and a bare `git push` while on `main`), `--force`, `-f` or a `+refspec`, `reset --hard`, `clean -f`, `gh pr merge`;
+  - ask: `--force-with-lease`, `push --delete` or `:branch`, pushing tags, `branch -d`, `-D` or `-m`, `tag`, `gh release`, `rebase`, `commit --amend`.
+  - Why: in v4.0, `git push origin --delete <branch>` ran with no prompt, because `settings.json` allows `git push *` and its deny rules match only by prefix.
+- **PDF rule per project.** The `pdf` block has deny, ask and allow globs, case-insensitive, checked for the Read tool and for shell commands that name a `.pdf`. Defaults: schematic and manufacturing PDFs are denied, reports and the scratchpad are allowed, and every other PDF asks.
+- **Datasheet fallback.** A datasheet PDF moves from "never" to "ask". NotebookLM stays the default. Claude reads a datasheet PDF only after you approve that file in chat, reads only the pages it needs, cites file, revision, page and table, and never uploads it.
+- **Rule order** in the guard is now deny > ask > allow, like Claude Code. A denied or asked glob wins over an allowed folder: a `.kicad_sch` under `scratchpad/` now asks, and a `.wrl` under `library/` is denied.
+- **`settings.json` is shorter.** The `Edit(...)` allows that the blanket `Edit` already covers, and the Git and PDF prefix rules, are gone; the guard owns them. `gh pr merge` stays denied as a second line.
+- **One `workflow.md`** replaces `hardware-workflow.md` and `project-workflow.md`.
+- `tools/check_permissions.py` checks the `protect.json` shape, the git check names, the PDF deny in both folder spellings, and the hook matcher (now with `Read`). `tools/tests/test_hook.py` covers the guard.
+
+### Upgrading from v4.0
+
+1. `python tools/sync_project.py <project root> --ref v4.1.0`, check the plan, then add `--apply`. It replaces the hook and an unedited `protect.json`, and removes the two old workflow rules.
+2. Merge `settings.json` by hand from the printed diff: add `Read` to the hook matcher and drop the lines the guard now owns.
+3. If you edited `protect.json`, add the `pdf` and `git` blocks from the release copy.
+4. Run `python tools/check_permissions.py <project root>`.
+5. In the project `CLAUDE.md`, point to `workflow.md` instead of the two old rules.
+
+## Changes in v4.0.0
 
 **v4.0.1:** the `progress-update` preflight ignores `.kicad_pro` files under `.claude/`. In v4.0.0, the `sch-inspect` test fixture made a synced project show two KiCad projects, so the preflight stopped unless you passed `--project`.
 
@@ -21,7 +44,7 @@ v4.0.0 removes and merges skills (see **Upgrading from v3**). It also adds check
 - **One source for each rule.**
   - `shared/evidence-baseline.md` is copied word for word into every hardware skill.
   - `tools/check_skills.py` and `tools/check_permissions.py` catch drift, in CI and on any project.
-  - New rule `.claude/rules/project-workflow.md` holds the spec, checklist and doc cycle, team messages and open checks.
+  - New rule `.claude/rules/project-workflow.md` holds the spec, checklist and doc cycle, team messages and open checks (merged into `workflow.md` in v4.1.0).
   - The `CLAUDE.md` template has Project and Layout placeholders.
 - **`sch-inspect` 1.3.0:**
   - `netlist` and `netlist-compare` check the `project-net` graph against KiCad's own netlist.
@@ -152,13 +175,13 @@ Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A
    | Copy | Why |
    | --- | --- |
    | `.claude/skills/<name>/` | The skills you want, one folder each |
-   | `.claude/rules/` | Full engineering, workflow and Git rules (skills follow them when present); `project-workflow.md` is the standard spec, checklist and doc cycle |
-   | `.claude/hooks/` (both files) and the `hooks` block of `.claude/settings.json` | File protection guard |
+   | `.claude/rules/` | Full engineering, workflow and Git rules (skills follow them when present); `workflow.md` holds the phases and the standard spec, checklist and doc cycle |
+   | `.claude/hooks/` (both files) and the `hooks` block of `.claude/settings.json` | Guard for KiCad file edits, PDF reads and Git commands |
    | `CLAUDE.md` | Project template: fill in the Project and Layout sections; the rest points to the rules |
    | `global-rules/git-workflow.md` to `~/.claude/rules/git-workflow.md` | Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install once per user, not per project. It sits outside `.claude/rules/` so it does not load twice |
    | Global `kicad-*` skills from [kicad-workspace `skills-src/`](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) | Library skills in [group 5](#5-libraries). Install once per user to `~/.claude/skills/` using that folder's README |
 
-2. Check `.claude/settings.json` (permissions) and `.claude/hooks/protect.json` (protection rules). Edit `protect.json` to change which files are blocked, asked about or allowed; no code change is needed. The guard runs on top of `settings.json`: if `protect.json` asks for a path, you still get a prompt even when `settings.json` allows it.
+2. Check `.claude/settings.json` (permissions) and `.claude/hooks/protect.json` (protection rules). Edit `protect.json` to change which files are blocked, asked about or allowed, which PDFs Claude may read, and which Git commands are blocked or asked about; no code change is needed. The guard runs on top of `settings.json`: if `protect.json` asks for a path, you still get a prompt even when `settings.json` allows it.
 3. Open the project in Claude Code and ask an engineering question in normal language. You can also call a skill by name.
 4. Keep schematic and PCB files under your control. Review every design change Claude proposes.
 
@@ -169,8 +192,8 @@ Nothing installs or updates itself, and nothing is written back to your design o
 `tools/sync_project.py` copies `.claude/skills/`, `.claude/rules/` and `.claude/hooks/` from a release tag of this clone into a project. It does a dry run unless you pass `--apply`:
 
 ```text
-python tools/sync_project.py <project root> --ref v4.0.0              # show the plan
-python tools/sync_project.py <project root> --ref v4.0.0 --apply      # write it
+python tools/sync_project.py <project root> --ref v4.1.0              # show the plan
+python tools/sync_project.py <project root> --ref v4.1.0 --apply      # write it
 ```
 
 - It keeps `.claude/hardware-copilot.lock.json` in the project with a hash of each file it wrote.
@@ -270,7 +293,7 @@ These are **reported test results**. They do not show that the scripts match KiC
 ## Engineering limits
 
 - Check part specs, lifecycle, price and stock against current sources you can name. Keep facts and assumptions apart.
-- **Claude never reads datasheet, schematic or PCB PDFs directly.** It may read the project's own report PDFs and build report PDFs when you ask. Datasheet values come from the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) by default (the datasheet sits in a NotebookLM notebook; Claude asks it questions and cites the source), or from you or official web pages. Claude asks before uploading a PDF, and asks you what to do if NotebookLM has a problem. Without a source, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/pdf.md`.
+- **Claude never reads schematic or PCB PDFs directly**, and reads a datasheet PDF only after you approve that file. It may read the project's own report PDFs and build report PDFs when you ask. Datasheet values come from the optional `notebooklm` skill from [notebooklm-py](https://github.com/teng-lin/notebooklm-py) by default (the datasheet sits in a NotebookLM notebook; Claude asks it questions and cites the source), or from you or official web pages. Claude asks before uploading a PDF, and asks you what to do if NotebookLM has a problem. A direct read of a datasheet cites file, revision, page and table. Without a source, datasheet claims stay `NOT_VERIFIED`. See `.claude/rules/pdf.md`.
 - Use the smallest query or skill that answers the question. Do not send whole designs or large netlists to the model by default.
 - Every conclusion is one of: **confirmed finding**, **possible risk** or **`NOT_VERIFIED`**.
 - PCB: zone fill state, full copper connectivity, clearance, return paths, SI/PI and thermal behavior are outside what the inspect script checks.
@@ -295,8 +318,8 @@ Hardware-Copilot/
 │   ├── settings.json
 │   ├── rules/
 │   ├── hooks/
-│   │   ├── protect_kicad_v2.py   # PreToolUse guard for native KiCad files
-│   │   └── protect.json          # deny / ask / allow rules for the guard
+│   │   ├── protect_kicad_v2.py   # PreToolUse guard: KiCad edits, PDF reads, Git commands
+│   │   └── protect.json          # deny / ask / allow rules, pdf and git blocks
 │   └── skills/
 │       ├── sch-inspect/
 │       │   ├── SKILL.md
