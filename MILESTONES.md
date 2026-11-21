@@ -11,94 +11,94 @@ tests, copied rules that drift, and `.claude/` copied into projects by hand.
 
 ## M5: shared register parser and exact checks
 
-Status: in progress.
+Status: done in v4.0.0 (PR #31).
 Scope: `.claude/skills/progress-update/`, the checklist template, CI.
 Goal: read the spec and checklist ID tables one way, by header name, and
 turn the structure checks into lookups.
 
-- [ ] **1. `scripts/register.py`.** It reads tables by header name, then by
+- [x] **1. `scripts/register.py`.** It reads tables by header name, then by
   position. DEC, OPEN, REF, task, gate and change-note rows; several tables of
   one kind are merged; fenced code is skipped; `\|` is kept.
   `register.py lint` reports `duplicate_id`, `bad_status`, `closed_no_date`,
   `rev_order`, REF `review:rev_drift` and `long_task`.
-- [ ] **2. Preflight uses it.** `review_items` and `check_docs` no longer
+- [x] **2. Preflight uses it.** `review_items` and `check_docs` no longer
   match rows by cell count. Lint rows are added to `findings`.
   `--dec-prefix` is now passed through.
-- [ ] **3. Item-qualified cites.** A DEC that cites `OPEN-031 item 5` matches
+- [x] **3. Item-qualified cites.** A DEC that cites `OPEN-031 item 5` matches
   only rows that name item 5. This fixes the P2-023 false hit.
-- [ ] **4. Template heading.** The checklist template now uses
+- [x] **4. Template heading.** The checklist template now uses
   `## Current next action`, the heading that preflight and the
   AeroOptix website read.
-- [ ] **5. Tests.** `tests/test_register.py` has 8 tests and runs in CI.
+- [x] **5. Tests.** `tests/test_register.py` has 8 tests and runs in CI.
   `test_review_items.py` passes unchanged, with its AeroOptix regression
   cases included.
 
 ## M6: one history, short task rows, fewer skills
 
-Status: in progress.
+Status: done in v4.0.0 (PR #32).
 Scope: `.claude/skills/` (doc and sourcing skills, progress-update,
 hardware-checklist), README, CLAUDE.md.
 Goal: one home for each fact and fewer skills. The skill count goes from 20 to 15.
 
-- [ ] **1. One history.** The spec change-note table is the design history.
+- [x] **1. One history.** The spec change-note table is the design history.
   The `progress-update` sync step writes one CHANGELOG pointer line per spec
   revision (rev, date, IDs), not a second copy.
-- [ ] **2. `hw-docs`.** It replaces `hw-git-readme`, `hw-git-changelog` and
+- [x] **2. `hw-docs`.** It replaces `hw-git-readme`, `hw-git-changelog` and
   `hw-phase-record`, with readme, changelog and phase modes and both templates
   under `assets/`. Changelog release mode builds the version section from the
   pointer lines and `git log`.
-- [ ] **3. Removed `hw-git-session-log`.** It was untested and unused.
-- [ ] **4. Sourcing merges.** `stock-select` gets a `table` mode, taken from
+- [x] **3. Removed `hw-git-session-log`.** It was untested and unused.
+- [x] **4. Sourcing merges.** `stock-select` gets a `table` mode, taken from
   `price-compare-table`. `component-select` gets a `table` mode, taken from
   `part-spec-table`. Both old skills are removed.
-- [ ] **5. Task-row rule** (`hardware-checklist` rule 10). Each task cell
+- [x] **5. Task-row rule** (`hardware-checklist` rule 10). Each task cell
   holds the statement, the current state and `Left:`. History goes to the spec
   change-note. Aim for 600 characters or less, which matches
   `long_task` in preflight.
-- [ ] **6. Docs.** README skill tables and test commands, and the CLAUDE.md
+- [x] **6. Docs.** README skill tables and test commands, and the CLAUDE.md
   docs line.
 
 ## M7: one source for each rule
 
-Status: in progress.
+Status: done in v4.0.0 (PR #33, into dev with #36).
 Scope: `shared/`, `tools/`, every `SKILL.md`, `.claude/rules/`, `CLAUDE.md`, CI.
 Goal: each rule has one source, and CI catches drift.
 
-- [ ] **1. Evidence block.** `shared/evidence-baseline.md` is copied word
+- [x] **1. Evidence block.** `shared/evidence-baseline.md` is copied word
   for word into the 14 hardware skills, so each still works alone. It was
   built from the `sch-review` wording, which matches `pdf.md`, with the KiCad
   read-only bullet added back. Duplicate bullets are trimmed in
   `progress-update` and `hw-docs`.
-- [ ] **2. `tools/check_skills.py`.** It checks frontmatter `name` and
+- [x] **2. `tools/check_skills.py`.** It checks frontmatter `name` and
   `description`, that each block matches the shared one, and that the README
   skill table matches `.claude/skills`. `--fix` rewrites the block.
-- [ ] **3. `tools/check_permissions.py [root]`.** It checks that
+- [x] **3. `tools/check_permissions.py [root]`.** It checks that
   `protect.json` deny and ask globs match the `Edit(...)` rules in
   `settings.json`, that no rule weakens the hook, that the PDF denies from
   `pdf.md` exist in both folder spellings, and that the hook entry is present.
   On AeroOptix it finds the 2 missing PDF deny lines.
-- [ ] **4. `.claude/rules/project-workflow.md`.** The spec owns the IDs, plus
+- [x] **4. `.claude/rules/project-workflow.md`.** The spec owns the IDs, plus
   gates and tasks, the light, sync and PR cycle, an optional team-messages
   file, and open checks.
-- [ ] **5. CLAUDE.md template.** Project and Layout are placeholders. Rules
+- [x] **5. CLAUDE.md template.** Project and Layout are placeholders. Rules
   and Git are pointers. The language rule is a single rule now: English
   unless the user asks.
-- [ ] **6. CI.** A `repo-checks` job runs both checks and
+- [x] **6. CI.** A `repo-checks` job runs both checks and
   `tools/tests/test_checks.py` (7 tests).
 
 ## M8: kicad-cli netlist in sch-inspect (sch-inspect 1.3.0)
 
-Status: in progress.
+Status: done in v4.0.0 (PR #34, into dev with #36).
 Scope: `.claude/skills/sch-inspect/`.
 Goal: check the `project-net` graph against KiCad's own netlist.
 
-- [ ] **1. `netlist <net|ref>`.** KiCad netlist nodes of one net (full
+- [x] **1. `netlist <net|ref>`.** KiCad netlist nodes of one net (full
   name or last path part), or every net on a reference.
-- [ ] **2. `netlist-compare`.** It compares every multi-pin KiCad net with
+- [x] **2. `netlist-compare`.** It compares every multi-pin KiCad net with
   the project graph as two partitions of component pins. `split` means KiCad
   joins pins that sch-inspect keeps apart or misses. `merged` means the
   opposite.
-- [ ] **3. Safe use.**
+- [x] **3. Safe use.**
   - It runs only when the user asks.
   - It finds `kicad-cli` in this order: `--kicad-cli`, `KICAD_CLI`, `PATH`,
     then the install folders.
@@ -107,41 +107,41 @@ Goal: check the `project-net` graph against KiCad's own netlist.
     The copy is removed afterwards.
   - `--netlist FILE` reads an export the user made.
   - Errors use the JSON contract (exit 2).
-- [ ] **4. Fixture.** `tests/fixtures/netlist_small` is a root sheet and a
+- [x] **4. Fixture.** `tests/fixtures/netlist_small` is a root sheet and a
   child sheet joined by the bus `D[0..1]`, plus the global `COM`. It comes
   with its real KiCad 10.0.8 XML export (the source path and date are made
   neutral).
-- [ ] **5. Tests.** 7 new tests: lookup, compare, split and merged, errors,
+- [x] **5. Tests.** 7 new tests: lookup, compare, split and merged, errors,
   binary discovery, the temp folder, and a live export that is skipped
   without KiCad. 56/56 pass on Windows with KiCad 10.0.8.
-- [ ] **6. Real data.** On AeroOptix-Horizon (saved files, 2026-11-21),
+- [x] **6. Real data.** On AeroOptix-Horizon (saved files, 2026-11-21),
   176 multi-pin nets and 838 pins were compared, with 0 differences.
 
 ## M9: sync script
 
-Status: in progress.
+Status: done in v4.0.0 (PR #35, into dev with #36).
 Scope: `tools/`, README, CI.
 Goal: replace the hand copy of `.claude/` into projects.
 
-- [ ] **1. `tools/sync_project.py`.**
+- [x] **1. `tools/sync_project.py`.**
   - It reads skills, rules and hooks with `git show <ref>` from the newest
     version tag by default, so a dirty tree is never copied.
   - Files are written with LF.
   - It does a dry run unless `--apply` is given.
-- [ ] **2. Lock file `.claude/hardware-copilot.lock.json`** (ref, commit,
+- [x] **2. Lock file `.claude/hardware-copilot.lock.json`** (ref, commit,
   version, excludes, sha256 per file).
   - A file is updated or removed only when it is unchanged since the last
     sync.
   - Edited files are kept unless named with `--overwrite`.
   - Files the lock does not know are never touched.
-- [ ] **3. Never written:** `settings.json`, `settings.local.json`,
+- [x] **3. Never written:** `settings.json`, `settings.local.json`,
   `memory/` and `__pycache__`. It prints the permission lines that differ
   between upstream and the project.
-- [ ] **4. `--baseline <tag>`** for the first sync of a hand-copied project.
+- [x] **4. `--baseline <tag>`** for the first sync of a hand-copied project.
   Files equal to that release count as synced from it.
-- [ ] **5. Tests.** `tools/tests/test_sync_project.py` has 6 tests with
+- [x] **5. Tests.** `tools/tests/test_sync_project.py` has 6 tests with
   temporary git repos and runs in CI.
-- [ ] **6. Real data.** A dry run on AeroOptix-Horizon (`--baseline v3.4.0`,
+- [x] **6. Real data.** A dry run on AeroOptix-Horizon (`--baseline v3.4.0`,
   `--exclude skills/git-workflow`) gives add 10, update 17, remove 8,
   same 24, and nothing kept. It reports the 2 missing PDF deny lines in
   `settings.json`.
