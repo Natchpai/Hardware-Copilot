@@ -3,6 +3,61 @@
 Planned work for the skills in this repo. One section per milestone. Tick a
 task when its change is merged, and move finished milestones to the bottom.
 
+M5 to M9 make up v4.0.0. Source: a review of v3.4.0 in use on
+AeroOptix-Horizon on 2026-11-21. Problems found there: a false
+`review:newer_dec` hit, a REF revision drift that no check caught, the same
+fact written in five documents, long task rows, 20 skills of which 3 have
+tests, copied rules that drift, and `.claude/` copied into projects by hand.
+
+## M5: shared register parser and exact checks
+
+Status: in progress.
+Scope: `.claude/skills/progress-update/`, the checklist template, CI.
+Goal: read the spec and checklist ID tables one way, by header name, and
+turn the structure checks into lookups.
+
+- [ ] **1. `scripts/register.py`.** It reads tables by header name, then by
+  position. DEC, OPEN, REF, task, gate and change-note rows; several tables of
+  one kind are merged; fenced code is skipped; `\|` is kept.
+  `register.py lint` reports `duplicate_id`, `bad_status`, `closed_no_date`,
+  `rev_order`, REF `review:rev_drift` and `long_task`.
+- [ ] **2. Preflight uses it.** `review_items` and `check_docs` no longer
+  match rows by cell count. Lint rows are added to `findings`.
+  `--dec-prefix` is now passed through.
+- [ ] **3. Item-qualified cites.** A DEC that cites `OPEN-031 item 5` matches
+  only rows that name item 5. This fixes the P2-023 false hit.
+- [ ] **4. Template heading.** The checklist template now uses
+  `## Current next action`, the heading that preflight and the
+  AeroOptix website read.
+- [ ] **5. Tests.** `tests/test_register.py` has 8 tests and runs in CI.
+  `test_review_items.py` passes unchanged, with its AeroOptix regression
+  cases included.
+
+## M6: one history, short task rows, fewer skills
+
+Status: planned. The sync step writes one CHANGELOG pointer line per spec
+revision. `hw-docs` replaces `hw-git-readme`, `hw-git-changelog` and
+`hw-phase-record`. `hw-git-session-log` is removed. `stock-select` and
+`component-select` take over the two table skills. A task-row rule is added.
+
+## M7: one source for each rule
+
+Status: planned. `shared/evidence-baseline.md` and `tools/check_skills.py`,
+`tools/check_permissions.py`, and the `project-workflow.md` rule. The
+CLAUDE.md template Git section becomes a pointer, and its language conflict is
+fixed.
+
+## M8: kicad-cli netlist in sch-inspect
+
+Status: planned. `netlist` and `netlist-compare` commands. They run only when
+the user asks. The export goes to a temp folder, with a real KiCad 10.0.8
+fixture.
+
+## M9: sync script
+
+Status: planned. `tools/sync_project.py`: dry run by default, a lock file,
+and `settings.json` left untouched.
+
 ## M4: sch-inspect and pcb-inspect bug fixes (symbol lookup, body style, via type)
 
 Status: done in v3.3.1 (PR #27 and the M4 close-out PR), as sch-inspect
