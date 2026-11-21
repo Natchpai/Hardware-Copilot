@@ -125,9 +125,9 @@ Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A
    | Copy | Why |
    | --- | --- |
    | `.claude/skills/<name>/` | The skills you want, one folder each |
-   | `.claude/rules/` | Full engineering and Git rules (skills follow them when present) |
+   | `.claude/rules/` | Full engineering, workflow and Git rules (skills follow them when present); `project-workflow.md` is the standard spec, checklist and doc cycle |
    | `.claude/hooks/` (both files) and the `hooks` block of `.claude/settings.json` | File protection guard |
-   | `CLAUDE.md` | General project instructions; merge it with your own |
+   | `CLAUDE.md` | Project template: fill in the Project and Layout sections; the rest points to the rules |
    | `global-rules/git-workflow.md` to `~/.claude/rules/git-workflow.md` | Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install once per user, not per project. It sits outside `.claude/rules/` so it does not load twice |
    | Global `kicad-*` skills from [kicad-workspace `skills-src/`](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) | Library skills in [group 5](#5-libraries). Install once per user to `~/.claude/skills/` using that folder's README |
 

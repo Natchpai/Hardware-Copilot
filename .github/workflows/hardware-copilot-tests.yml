@@ -89,6 +89,24 @@ jobs:
       - name: Run progress-update register tests
         run: python .claude/skills/progress-update/tests/test_register.py
 
+  repo-checks:
+    name: skill and permission checks (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Check skills against shared rules and README
+        run: python tools/check_skills.py
+      - name: Check settings.json against protect.json
+        run: python tools/check_permissions.py
+      - name: Run tools tests
+        run: python tools/tests/test_checks.py
+
   pcb-golden:
     name: PCB golden tests (opt-in)
     runs-on: ubuntu-latest

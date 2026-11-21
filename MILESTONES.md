@@ -60,10 +60,31 @@ Goal: one home for each fact and fewer skills. The skill count goes from 20 to 1
 
 ## M7: one source for each rule
 
-Status: planned. `shared/evidence-baseline.md` and `tools/check_skills.py`,
-`tools/check_permissions.py`, and the `project-workflow.md` rule. The
-CLAUDE.md template Git section becomes a pointer, and its language conflict is
-fixed.
+Status: in progress.
+Scope: `shared/`, `tools/`, every `SKILL.md`, `.claude/rules/`, `CLAUDE.md`, CI.
+Goal: each rule has one source, and CI catches drift.
+
+- [ ] **1. Evidence block.** `shared/evidence-baseline.md` is copied word
+  for word into the 14 hardware skills, so each still works alone. It was
+  built from the `sch-review` wording, which matches `pdf.md`, with the KiCad
+  read-only bullet added back. Duplicate bullets are trimmed in
+  `progress-update` and `hw-docs`.
+- [ ] **2. `tools/check_skills.py`.** It checks frontmatter `name` and
+  `description`, that each block matches the shared one, and that the README
+  skill table matches `.claude/skills`. `--fix` rewrites the block.
+- [ ] **3. `tools/check_permissions.py [root]`.** It checks that
+  `protect.json` deny and ask globs match the `Edit(...)` rules in
+  `settings.json`, that no rule weakens the hook, that the PDF denies from
+  `pdf.md` exist in both folder spellings, and that the hook entry is present.
+  On AeroOptix it finds the 2 missing PDF deny lines.
+- [ ] **4. `.claude/rules/project-workflow.md`.** The spec owns the IDs, plus
+  gates and tasks, the light, sync and PR cycle, an optional team-messages
+  file, and open checks.
+- [ ] **5. CLAUDE.md template.** Project and Layout are placeholders. Rules
+  and Git are pointers. The language rule is a single rule now: English
+  unless the user asks.
+- [ ] **6. CI.** A `repo-checks` job runs both checks and
+  `tools/tests/test_checks.py` (7 tests).
 
 ## M8: kicad-cli netlist in sch-inspect
 
