@@ -47,11 +47,9 @@ Status: **Stable** = fixed scope with regression tests · **Used** = run on a re
 | --- | --- | --- |
 | `design-assist` | Requirements, circuit architecture, options and trade-offs | Tested |
 | `eng-calc` | Calculations, assumptions, margins and worst-case checks | Tested |
-| `component-select` | Finds and compares parts by how well they fit the circuit | Used |
+| `component-select` | Finds and compares parts by how well they fit the circuit; `table` mode builds a spec table, one column per part number | Used |
 | `component-check` | Checks MPN, datasheet, symbol, package, footprint and pin mapping; exact suffix and compliance may stay unverified | Tested |
-| `part-spec-table` | Markdown table of part specs, one column per part number | Used |
-| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library | Used |
-| `price-compare-table` | Markdown table of price, stock and lead time at DigiKey, Mouser, LCSC and JLCPCB | Used |
+| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library; `table` mode builds a price, stock and lead-time table for known part numbers | Used |
 
 ### 3. Schematic
 
@@ -91,10 +89,7 @@ These are global skills. They run from `~/.claude/skills/` in every project. The
 | Skill | What it does | Status |
 | --- | --- | --- |
 | `git-workflow` | Git status, commits and PRs, each with your approval | Used |
-| `hw-git-readme` | Writes or updates project Markdown from confirmed facts | Used |
-| `hw-git-changelog` | Keeps a changelog from confirmed project changes | Untested |
-| `hw-git-session-log` | Optional notes on engineering decisions; run by name only | Untested |
-| `hw-phase-record` | Records a project phase that you declare in an existing README | Untested |
+| `hw-docs` | Creates or updates the root README and CHANGELOG from confirmed facts, and records a phase you declare | Used |
 | `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions, and reviews open items, task status and summary lists for stale entries; closes nothing without your answer; run by name only | Used |
 
 An inspect skill **collects evidence**. A review skill **explains what the evidence means**. Inspect output alone does not mean a design is correct.
@@ -167,6 +162,7 @@ Run the synthetic tests from the repository root:
 python -m unittest discover -s .claude/skills/sch-inspect/tests -p 'test_query_sch.py' -v
 python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_pcb.py' -v
 python .claude/skills/progress-update/tests/test_review_items.py
+python .claude/skills/progress-update/tests/test_register.py
 ```
 
 The `progress-update` regression cases read the history of the project the review was built on; in any other repository they **SKIP**.

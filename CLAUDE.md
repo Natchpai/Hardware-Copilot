@@ -53,7 +53,7 @@ Native design files and local libraries are protected by the `.claude/hooks/prot
 
 - **Library part:** `kicad-part-start`, then `kicad-link-audit` before the part is placed. Link fixes go through `/kicad-symbol-sync` or `/kicad-footprint-sync`, with approval. The `kicad-*` skills are global (see README, Libraries); if one is not installed, say so.
 - **Design data:** `sch-inspect` and `pcb-inspect` extract evidence from the saved files; `sch-review` and `pcb-review` judge it. Query narrow targets (sheet, ref, net), and brief subagents the same way with exact paths. Unannotated refs such as `U?` return every match.
-- **Docs after design work:** the human runs `/progress-update`. `README.md` and `CHANGELOG.md` are maintained with `hw-git-readme` and `hw-git-changelog`.
+- **Docs after design work:** the human runs `/progress-update`. `README.md`, `CHANGELOG.md` and the phase line are maintained with `hw-docs`.
 - **Datasheets:** NotebookLM by default, one notebook per part (`notebooklm list --json`).
 - **Supplier data:** JLCPCB stock and price are JavaScript-rendered and Mouser often times out, so values from search snippets stay `NOT_VERIFIED`. Spot-check key values before writing them into a design record.
 

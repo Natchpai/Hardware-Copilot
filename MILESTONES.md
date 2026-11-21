@@ -35,10 +35,28 @@ turn the structure checks into lookups.
 
 ## M6: one history, short task rows, fewer skills
 
-Status: planned. The sync step writes one CHANGELOG pointer line per spec
-revision. `hw-docs` replaces `hw-git-readme`, `hw-git-changelog` and
-`hw-phase-record`. `hw-git-session-log` is removed. `stock-select` and
-`component-select` take over the two table skills. A task-row rule is added.
+Status: in progress.
+Scope: `.claude/skills/` (doc and sourcing skills, progress-update,
+hardware-checklist), README, CLAUDE.md.
+Goal: one home for each fact and fewer skills. The skill count goes from 20 to 15.
+
+- [ ] **1. One history.** The spec change-note table is the design history.
+  The `progress-update` sync step writes one CHANGELOG pointer line per spec
+  revision (rev, date, IDs), not a second copy.
+- [ ] **2. `hw-docs`.** It replaces `hw-git-readme`, `hw-git-changelog` and
+  `hw-phase-record`, with readme, changelog and phase modes and both templates
+  under `assets/`. Changelog release mode builds the version section from the
+  pointer lines and `git log`.
+- [ ] **3. Removed `hw-git-session-log`.** It was untested and unused.
+- [ ] **4. Sourcing merges.** `stock-select` gets a `table` mode, taken from
+  `price-compare-table`. `component-select` gets a `table` mode, taken from
+  `part-spec-table`. Both old skills are removed.
+- [ ] **5. Task-row rule** (`hardware-checklist` rule 10). Each task cell
+  holds the statement, the current state and `Left:`. History goes to the spec
+  change-note. Aim for 600 characters or less, which matches
+  `long_task` in preflight.
+- [ ] **6. Docs.** README skill tables and test commands, and the CLAUDE.md
+  docs line.
 
 ## M7: one source for each rule
 
