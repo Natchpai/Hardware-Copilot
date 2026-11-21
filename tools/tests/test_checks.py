@@ -86,7 +86,19 @@ class Skills(unittest.TestCase):
     def test_frontmatter(self):
         fm = cs.frontmatter("---\nname: x\ndescription: >-\n  one\n  two\n---\nbody")
         self.assertEqual(fm["name"], "x")
-        self.assertEqual(fm["description"], ">- one two")
+        self.assertEqual(fm["description"], "one two")
+        # A block marker with no text is an empty description.
+        for marker in (">-", ">", "|", "|-"):
+            self.assertEqual(cs.frontmatter(f"---\nname: x\ndescription: {marker}\n---\n")["description"], "")
+
+    def test_global_skills_named_in_readme_must_exist(self):
+        listed = {"kicad-naming", "kicad-typo"}
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "kicad-naming").mkdir()
+            (Path(d) / "kicad-naming" / "SKILL.md").write_text("x")
+            self.assertEqual(cs.missing_global(listed, Path(d)), ["kicad-typo"])
+            # Without the global folder (CI) nothing is checked.
+            self.assertIsNone(cs.missing_global(listed, Path(d) / "absent"))
 
     def test_with_baseline_insert_and_replace(self):
         block = "## Evidence baseline\n\n- rule\n"

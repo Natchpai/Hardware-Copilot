@@ -9,7 +9,9 @@ failure. Checks:
   shared/evidence-baseline.md word for word (one copy, so skills still work
   when copied alone, but they cannot drift);
 - every skill is named in the README skill tables, and every skill named
-  there exists.
+  there exists. A `kicad-*` name is a global skill: it is checked against
+  ~/.claude/skills when that folder exists, and skipped (with a note) when
+  it does not, for example in CI.
 
     python -I tools/check_skills.py [--fix]
 
@@ -29,7 +31,16 @@ BASELINE = ROOT / "shared" / "evidence-baseline.md"
 README = ROOT / "README.md"
 NO_BASELINE = {"git-workflow"}  # Git only; follows the Git rules instead
 GLOBAL_SKILLS = re.compile(r"^kicad-")  # README group 5 lists global skills kept elsewhere
+GLOBAL_DIR = Path.home() / ".claude" / "skills"
 SECTION_RE = re.compile(r"(?ms)^## Evidence baseline\n.*?(?=^## |\Z)")
+BLOCK_MARKER = re.compile(r"^[>|][+-]?$")  # YAML folded or literal block start
+
+
+def missing_global(listed: set, folder: Path) -> list | None:
+    """Global skill names with no SKILL.md in folder; None when folder is absent."""
+    if not folder.is_dir():
+        return None
+    return sorted(n for n in listed if GLOBAL_SKILLS.match(n) and not (folder / n / "SKILL.md").is_file())
 
 
 def frontmatter(text: str) -> dict:
@@ -41,7 +52,8 @@ def frontmatter(text: str) -> dict:
         km = re.match(r"^([A-Za-z_-]+):\s*(.*)$", ln)
         if km:
             key = km.group(1)
-            out[key] = km.group(2).strip()
+            value = km.group(2).strip()
+            out[key] = "" if BLOCK_MARKER.match(value) else value
         elif key and ln.startswith(" "):
             out[key] = (out[key] + " " + ln.strip()).strip()
     return out
@@ -94,6 +106,11 @@ def main() -> int:
     for name in sorted(listed - set(names)):
         if not GLOBAL_SKILLS.match(name):
             errors.append(f"{name}: in the README skill tables but not in .claude/skills")
+    missing = missing_global(listed - set(names), GLOBAL_DIR)
+    if missing is None:
+        print(f"note: {GLOBAL_DIR} not found; global kicad-* skills not checked")
+    for name in missing or []:
+        errors.append(f"{name}: in the README skill tables but not in {GLOBAL_DIR}")
     for e in errors:
         print(f"FAIL {e}")
     print(f"check_skills: {len(names)} skills, {len(errors)} failures")
