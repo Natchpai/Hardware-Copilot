@@ -4,7 +4,14 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 
 **Hardware-Copilot helps you make engineering decisions. It does not approve designs, and it does not replace you, KiCad ERC/DRC, datasheets, simulation, or testing on real hardware.**
 
-## What's new in v3.1.0
+## What's new in v3.4.0
+
+- **`progress-update` reviews open items and task status** on every normal run. The preflight compares each open spec item, each checklist task and gate status, and the summary lists (spec verdict, checklist next action, README open items) with the decision records, the record revisions and the saved schematic fields. It reports `review:*` findings such as an item whose tasks are all done, a later decision the row does not cite, part fields the text still waits for, or a summary that calls a closed item open. Claude asks you about each one; nothing is closed or changed without your answer.
+- `progress-update` has `light` and `sync` modes: `light` records decisions in the spec and checklist as they happen in DRAFT or PRELIMINARY, and `sync` catches up the design records, README and CHANGELOG before a commit. Each commit gets one spec revision.
+- `hardware-checklist` uses the specification's open-item table as the only register. The checklist keeps no second register, and each open item names the active task that closes it. Merged tasks keep their ID as an `N/A` row.
+- New tests: `.claude/skills/progress-update/tests/test_review_items.py`.
+
+## Changes in v3.1.0
 
 - **New PDF rule** in `.claude/rules/pdf.md`, the one place for PDF handling. Claude may read the project's own report PDFs and build report PDFs when you ask. It does not read schematic, PCB or datasheet PDFs directly. NotebookLM is the default datasheet source; if it has a problem, Claude asks you what to do.
 - The NotebookLM procedure moved to `.claude/rules/notebooklm.md`, which loads only for PDF and `documents/` paths.
@@ -88,7 +95,7 @@ These are global skills. They run from `~/.claude/skills/` in every project. The
 | `hw-git-changelog` | Keeps a changelog from confirmed project changes | Untested |
 | `hw-git-session-log` | Optional notes on engineering decisions; run by name only | Untested |
 | `hw-phase-record` | Records a project phase that you declare in an existing README | Untested |
-| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions; run by name only | Used |
+| `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions, and reviews open items, task status and summary lists for stale entries; closes nothing without your answer; run by name only | Used |
 
 An inspect skill **collects evidence**. A review skill **explains what the evidence means**. Inspect output alone does not mean a design is correct.
 
@@ -159,7 +166,10 @@ Run the synthetic tests from the repository root:
 ```sh
 python -m unittest discover -s .claude/skills/sch-inspect/tests -p 'test_query_sch.py' -v
 python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_pcb.py' -v
+python .claude/skills/progress-update/tests/test_review_items.py
 ```
+
+The `progress-update` regression cases read the history of the project the review was built on; in any other repository they **SKIP**.
 
 **Golden tests** use real KiCad designs kept outside Git under `hardware/`. They are opt-in. With no project set, they **SKIP** instead of claiming a pass. A project path that is set but wrong makes them **FAIL**. See each test module for its environment variable and command.
 
@@ -211,6 +221,7 @@ Synthetic tests were run again for v3.1.0 (Python 3.14.7, Windows). For v3.2.0 t
 | PCB synthetic | 48/48 passed (v3.3.1, macOS) |
 | PCB golden (real project) | 6/6 cases passed (v3.3.1, one local project) |
 | Schematic golden (real project) | 12/12 cases passed (v3.3.1, one local project) |
+| `progress-update` review | 10/10 passed in the source project, 8 passed and 2 skipped here (v3.4.0, Windows, Python 3.14) |
 
 These are **reported test results**. They do not show that the scripts match KiCad's own netlist, ERC or DRC everywhere. Running natively on macOS and OS-level read-only sandboxing have not been checked.
 
@@ -252,6 +263,10 @@ Hardware-Copilot/
 │       ├── pcb-inspect/
 │       │   ├── SKILL.md
 │       │   ├── scripts/query_pcb.py
+│       │   └── tests/
+│       ├── progress-update/
+│       │   ├── SKILL.md
+│       │   ├── scripts/progress_preflight.py
 │       │   └── tests/
 │       └── ...other skills...
 ├── global-rules/
