@@ -105,7 +105,9 @@ jobs:
       - name: Check settings.json against protect.json
         run: python tools/check_permissions.py
       - name: Run tools tests
-        run: python tools/tests/test_checks.py
+        run: |
+          python tools/tests/test_checks.py
+          python tools/tests/test_sync_project.py
 
   pcb-golden:
     name: PCB golden tests (opt-in)

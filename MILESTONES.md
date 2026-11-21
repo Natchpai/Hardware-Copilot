@@ -119,8 +119,32 @@ Goal: check the `project-net` graph against KiCad's own netlist.
 
 ## M9: sync script
 
-Status: planned. `tools/sync_project.py`: dry run by default, a lock file,
-and `settings.json` left untouched.
+Status: in progress.
+Scope: `tools/`, README, CI.
+Goal: replace the hand copy of `.claude/` into projects.
+
+- [ ] **1. `tools/sync_project.py`.**
+  - It reads skills, rules and hooks with `git show <ref>` from the newest
+    version tag by default, so a dirty tree is never copied.
+  - Files are written with LF.
+  - It does a dry run unless `--apply` is given.
+- [ ] **2. Lock file `.claude/hardware-copilot.lock.json`** (ref, commit,
+  version, excludes, sha256 per file).
+  - A file is updated or removed only when it is unchanged since the last
+    sync.
+  - Edited files are kept unless named with `--overwrite`.
+  - Files the lock does not know are never touched.
+- [ ] **3. Never written:** `settings.json`, `settings.local.json`,
+  `memory/` and `__pycache__`. It prints the permission lines that differ
+  between upstream and the project.
+- [ ] **4. `--baseline <tag>`** for the first sync of a hand-copied project.
+  Files equal to that release count as synced from it.
+- [ ] **5. Tests.** `tools/tests/test_sync_project.py` has 6 tests with
+  temporary git repos and runs in CI.
+- [ ] **6. Real data.** A dry run on AeroOptix-Horizon (`--baseline v3.4.0`,
+  `--exclude skills/git-workflow`) gives add 10, update 17, remove 8,
+  same 24, and nothing kept. It reports the 2 missing PDF deny lines in
+  `settings.json`.
 
 ## M4: sch-inspect and pcb-inspect bug fixes (symbol lookup, body style, via type)
 

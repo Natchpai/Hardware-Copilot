@@ -137,6 +137,25 @@ Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A
 
 Nothing installs or updates itself, and nothing is written back to your design on its own. Inspect and review skills never change KiCad design or library files. Protected files change only through an edit you approve, for example with the global library sync skills. The guard asks before every schematic and PCB edit. Every Git write needs your approval.
 
+### Update a project
+
+`tools/sync_project.py` copies `.claude/skills/`, `.claude/rules/` and `.claude/hooks/` from a release tag of this clone into a project. It does a dry run unless you pass `--apply`:
+
+```text
+python tools/sync_project.py <project root> --ref v4.0.0              # show the plan
+python tools/sync_project.py <project root> --ref v4.0.0 --apply      # write it
+```
+
+- It keeps `.claude/hardware-copilot.lock.json` in the project with a hash of each file it wrote.
+- A file you edited in the project is kept and reported, unless you name it with `--overwrite <path>`.
+- Your own skills are never touched.
+- Files the release dropped are removed only if you did not edit them.
+- `settings.json`, `settings.local.json` and `memory/` are never written. For `settings.json` it prints the permission lines that differ, for you to merge.
+- `--exclude skills/<name>` skips a path from then on.
+- On the first sync of a project you copied by hand, add `--baseline <old tag>`. Files equal to that release then update cleanly.
+
+`tools/check_permissions.py <project root>` checks that the project's `settings.json` still agrees with `protect.json`.
+
 ### Example requests
 
 - "Compare architecture options for a 3.3 V battery-powered design before I pick an IC."
