@@ -148,7 +148,7 @@ table changes, and new library items.
 - **Sheets:** preflight `sheets` lists each sheet's parts and labels. By
   hand: `python -I <skills dir>/progress-update/scripts/list_symbols.py <sheet.kicad_sch>`.
   Then trace each IC and connector with `sch-inspect`
-  (`query_sch.py local-net <ref> --project <root.kicad_sch>`). Unannotated
+  (`query_sch.py local-net <ref> --project <root.kicad_sch> --limit 0`). Unannotated
   refs such as `U?` work as targets; the tool returns every match.
 - **PCB:** if `.kicad_pcb` changed, run `pcb-inspect` `summary`.
 - **Library:** list new symbol, footprint and 3D model names (preflight
