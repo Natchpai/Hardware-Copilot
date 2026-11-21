@@ -4,23 +4,48 @@ Claude Code skills for hardware engineering with **KiCad 10**. They help with re
 
 **Hardware-Copilot helps you make engineering decisions. It does not approve designs, and it does not replace you, KiCad ERC/DRC, datasheets, simulation, or testing on real hardware.**
 
-## What's new in v3.4.0
+## What's new in v4.0.0
 
-- **`progress-update` reviews open items and task status** on every normal run. The preflight compares each open spec item, each checklist task and gate status, and the summary lists (spec verdict, checklist next action, README open items) with the decision records, the record revisions and the saved schematic fields. It reports `review:*` findings such as an item whose tasks are all done, a later decision the row does not cite, part fields the text still waits for, or a summary that calls a closed item open. Claude asks you about each one; nothing is closed or changed without your answer.
-- `progress-update` has `light` and `sync` modes: `light` records decisions in the spec and checklist as they happen in DRAFT or PRELIMINARY, and `sync` catches up the design records, README and CHANGELOG before a commit. Each commit gets one spec revision.
-- `hardware-checklist` uses the specification's open-item table as the only register. The checklist keeps no second register, and each open item names the active task that closes it. Merged tasks keep their ID as an `N/A` row.
-- New tests: `.claude/skills/progress-update/tests/test_review_items.py`.
+v4.0.0 removes and merges skills (see **Upgrading from v3**). It also adds checks so that skills, rules and project copies stay in step.
 
-## Changes in v3.1.0
+- **One table reader for the spec and checklist** (`progress-update/scripts/register.py`).
+  - It reads DEC, OPEN, REF, task, gate and change-note rows by header name, then by position.
+  - `register.py lint` and the preflight report `duplicate_id`, `bad_status`, `closed_no_date`, `rev_order`, `long_task` and REF revision drift.
+  - A DEC that cites `OPEN-031 item 5` now matches only rows that name that item.
+- **One history.** The spec change-note is the design history. `progress-update sync` writes one CHANGELOG pointer line per spec revision instead of a second copy.
+- **`hw-docs`** replaces `hw-git-readme`, `hw-git-changelog` and `hw-phase-record`, with readme, changelog and phase modes.
+- **`table` mode** in `stock-select` (price, stock and lead time) and in `component-select` (specs). These replace `price-compare-table` and `part-spec-table`.
+- **`hardware-checklist` rule 10:** a task row holds the statement, the current state and `Left:`. History goes to the spec change-note.
+- **One source for each rule.**
+  - `shared/evidence-baseline.md` is copied word for word into every hardware skill.
+  - `tools/check_skills.py` and `tools/check_permissions.py` catch drift, in CI and on any project.
+  - New rule `.claude/rules/project-workflow.md` holds the spec, checklist and doc cycle, team messages and open checks.
+  - The `CLAUDE.md` template has Project and Layout placeholders.
+- **`sch-inspect` 1.3.0:**
+  - `netlist` and `netlist-compare` check the `project-net` graph against KiCad's own netlist.
+  - They run `kicad-cli` only when you ask, on a temp copy of the sheets.
+  - On a real 13-sheet project: 176 nets and 838 pins, 0 differences.
+- **`tools/sync_project.py`** updates a project's skills, rules and hooks from a release tag.
+  - It does a dry run by default and keeps a lock file.
+  - It never writes `settings.json`.
 
-- **New PDF rule** in `.claude/rules/pdf.md`, the one place for PDF handling. Claude may read the project's own report PDFs and build report PDFs when you ask. It does not read schematic, PCB or datasheet PDFs directly. NotebookLM is the default datasheet source; if it has a problem, Claude asks you what to do.
-- The NotebookLM procedure moved to `.claude/rules/notebooklm.md`, which loads only for PDF and `documents/` paths.
-- `progress-update` runs a preflight script first (`scripts/progress_preflight.py`). It prints one JSON with commits, changed files, per-sheet parts, library and doc checks, so the skill reads less of the KiCad files.
-- **Permissions changed** in `.claude/settings.json` and `.claude/hooks/protect.json`:
-  - Edits to symbol, footprint, `library/`, STEP and `.kicad_pro` files run without a prompt in both files. Schematic and PCB edits still ask.
-  - `git push` and `gh pr create` run without a prompt, and `git merge` asks instead of being blocked. `CLAUDE.md` still requires your approval in chat for every Git write.
-  - PDF reads ask first. PDFs under `documents/schematic*/` and `documents/manufacturing/` are blocked.
-- `CLAUDE.md` adds Git, external-model provider, workflow and compact sections.
+### Upgrading from v3
+
+| Removed in v4.0.0 | Use instead |
+| ------------------ | --- |
+| `hw-git-readme` | `hw-docs readme` |
+| `hw-git-changelog` | `hw-docs changelog` |
+| `hw-phase-record` | `hw-docs phase` |
+| `hw-git-session-log` | none (removed) |
+| `price-compare-table` | `stock-select table` |
+| `part-spec-table` | `component-select table` |
+
+For a project that copied v3 by hand, run `python tools/sync_project.py <project root> --ref v4.0.0 --baseline <the v3 tag you copied>`. Check the plan, then add `--apply`. Files you edited are kept and listed. Merge the printed `settings.json` lines by hand.
+
+## Changes in v3.4.0
+
+- `progress-update` reviews open items, task status and summary lists (`review:*` findings) and asks before closing anything; `light` and `sync` modes; one spec revision per commit.
+- `hardware-checklist` uses the spec's open-item table as the only register.
 
 Earlier changes are in [Releases](https://github.com/Natchpai/Hardware-Copilot/releases).
 
@@ -47,11 +72,9 @@ Status: **Stable** = fixed scope with regression tests · **Used** = run on a re
 | --- | --- | --- |
 | `design-assist` | Requirements, circuit architecture, options and trade-offs | Tested |
 | `eng-calc` | Calculations, assumptions, margins and worst-case checks | Tested |
-| `component-select` | Finds and compares parts by how well they fit the circuit | Used |
+| `component-select` | Finds and compares parts by how well they fit the circuit; `table` mode builds a spec table, one column per part number | Used |
 | `component-check` | Checks MPN, datasheet, symbol, package, footprint and pin mapping; exact suffix and compliance may stay unverified | Tested |
-| `part-spec-table` | Markdown table of part specs, one column per part number | Used |
-| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library | Used |
-| `price-compare-table` | Markdown table of price, stock and lead time at DigiKey, Mouser, LCSC and JLCPCB | Used |
+| `stock-select` | Checks stock at DigiKey, Mouser, LCSC and the JLCPCB Parts Library; `table` mode builds a price, stock and lead-time table for known part numbers | Used |
 
 ### 3. Schematic
 
@@ -91,10 +114,7 @@ These are global skills. They run from `~/.claude/skills/` in every project. The
 | Skill | What it does | Status |
 | --- | --- | --- |
 | `git-workflow` | Git status, commits and PRs, each with your approval | Used |
-| `hw-git-readme` | Writes or updates project Markdown from confirmed facts | Used |
-| `hw-git-changelog` | Keeps a changelog from confirmed project changes | Untested |
-| `hw-git-session-log` | Optional notes on engineering decisions; run by name only | Untested |
-| `hw-phase-record` | Records a project phase that you declare in an existing README | Untested |
+| `hw-docs` | Creates or updates the root README and CHANGELOG from confirmed facts, and records a phase you declare | Used |
 | `progress-update` | Updates the spec, checklist, design records, README and CHANGELOG from saved CAD data, Git history and session decisions, and reviews open items, task status and summary lists for stale entries; closes nothing without your answer; run by name only | Used |
 
 An inspect skill **collects evidence**. A review skill **explains what the evidence means**. Inspect output alone does not mean a design is correct.
@@ -130,9 +150,9 @@ Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A
    | Copy | Why |
    | --- | --- |
    | `.claude/skills/<name>/` | The skills you want, one folder each |
-   | `.claude/rules/` | Full engineering and Git rules (skills follow them when present) |
+   | `.claude/rules/` | Full engineering, workflow and Git rules (skills follow them when present); `project-workflow.md` is the standard spec, checklist and doc cycle |
    | `.claude/hooks/` (both files) and the `hooks` block of `.claude/settings.json` | File protection guard |
-   | `CLAUDE.md` | General project instructions; merge it with your own |
+   | `CLAUDE.md` | Project template: fill in the Project and Layout sections; the rest points to the rules |
    | `global-rules/git-workflow.md` to `~/.claude/rules/git-workflow.md` | Git safety baseline that `.claude/rules/git-workflow.md` builds on. Install once per user, not per project. It sits outside `.claude/rules/` so it does not load twice |
    | Global `kicad-*` skills from [kicad-workspace `skills-src/`](https://github.com/Natchpai/kicad-workspace/tree/main/skills-src) | Library skills in [group 5](#5-libraries). Install once per user to `~/.claude/skills/` using that folder's README |
 
@@ -141,6 +161,25 @@ Plugin skills have a name prefix, for example `/hardware-copilot:sch-inspect`. A
 4. Keep schematic and PCB files under your control. Review every design change Claude proposes.
 
 Nothing installs or updates itself, and nothing is written back to your design on its own. Inspect and review skills never change KiCad design or library files. Protected files change only through an edit you approve, for example with the global library sync skills. The guard asks before every schematic and PCB edit. Every Git write needs your approval.
+
+### Update a project
+
+`tools/sync_project.py` copies `.claude/skills/`, `.claude/rules/` and `.claude/hooks/` from a release tag of this clone into a project. It does a dry run unless you pass `--apply`:
+
+```text
+python tools/sync_project.py <project root> --ref v4.0.0              # show the plan
+python tools/sync_project.py <project root> --ref v4.0.0 --apply      # write it
+```
+
+- It keeps `.claude/hardware-copilot.lock.json` in the project with a hash of each file it wrote.
+- A file you edited in the project is kept and reported, unless you name it with `--overwrite <path>`.
+- Your own skills are never touched.
+- Files the release dropped are removed only if you did not edit them.
+- `settings.json`, `settings.local.json` and `memory/` are never written. For `settings.json` it prints the permission lines that differ, for you to merge.
+- `--exclude skills/<name>` skips a path from then on.
+- On the first sync of a project you copied by hand, add `--baseline <old tag>`. Files equal to that release then update cleanly.
+
+`tools/check_permissions.py <project root>` checks that the project's `settings.json` still agrees with `protect.json`.
 
 ### Example requests
 
@@ -167,6 +206,7 @@ Run the synthetic tests from the repository root:
 python -m unittest discover -s .claude/skills/sch-inspect/tests -p 'test_query_sch.py' -v
 python -m unittest discover -s .claude/skills/pcb-inspect/tests -p 'test_query_pcb.py' -v
 python .claude/skills/progress-update/tests/test_review_items.py
+python .claude/skills/progress-update/tests/test_register.py
 ```
 
 The `progress-update` regression cases read the history of the project the review was built on; in any other repository they **SKIP**.
