@@ -86,11 +86,36 @@ Goal: each rule has one source, and CI catches drift.
 - [ ] **6. CI.** A `repo-checks` job runs both checks and
   `tools/tests/test_checks.py` (7 tests).
 
-## M8: kicad-cli netlist in sch-inspect
+## M8: kicad-cli netlist in sch-inspect (sch-inspect 1.3.0)
 
-Status: planned. `netlist` and `netlist-compare` commands. They run only when
-the user asks. The export goes to a temp folder, with a real KiCad 10.0.8
-fixture.
+Status: in progress.
+Scope: `.claude/skills/sch-inspect/`.
+Goal: check the `project-net` graph against KiCad's own netlist.
+
+- [ ] **1. `netlist <net|ref>`.** KiCad netlist nodes of one net (full
+  name or last path part), or every net on a reference.
+- [ ] **2. `netlist-compare`.** It compares every multi-pin KiCad net with
+  the project graph as two partitions of component pins. `split` means KiCad
+  joins pins that sch-inspect keeps apart or misses. `merged` means the
+  opposite.
+- [ ] **3. Safe use.**
+  - It runs only when the user asks.
+  - It finds `kicad-cli` in this order: `--kicad-cli`, `KICAD_CLI`, `PATH`,
+    then the install folders.
+  - kicad-cli runs on a temp copy of the sheets and the `.kicad_pro`,
+    because it writes a `.kicad_prl` next to a project that has none.
+    The copy is removed afterwards.
+  - `--netlist FILE` reads an export the user made.
+  - Errors use the JSON contract (exit 2).
+- [ ] **4. Fixture.** `tests/fixtures/netlist_small` is a root sheet and a
+  child sheet joined by the bus `D[0..1]`, plus the global `COM`. It comes
+  with its real KiCad 10.0.8 XML export (the source path and date are made
+  neutral).
+- [ ] **5. Tests.** 7 new tests: lookup, compare, split and merged, errors,
+  binary discovery, the temp folder, and a live export that is skipped
+  without KiCad. 56/56 pass on Windows with KiCad 10.0.8.
+- [ ] **6. Real data.** On AeroOptix-Horizon (saved files, 2026-11-21),
+  176 multi-pin nets and 838 pins were compared, with 0 differences.
 
 ## M9: sync script
 
