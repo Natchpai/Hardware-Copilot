@@ -107,6 +107,7 @@ jobs:
       - name: Run tools tests
         run: |
           python tools/tests/test_checks.py
+          python tools/tests/test_hook.py
           python tools/tests/test_sync_project.py
 
   pcb-golden:

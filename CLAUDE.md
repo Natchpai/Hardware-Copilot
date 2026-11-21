@@ -31,11 +31,10 @@ otherwise.
 
 - `engineering.md`: design authority, change proposals, evidence labels,
   datasheet sources.
-- `hardware-workflow.md`: phases and Markdown docs.
-- `project-workflow.md`: the spec, checklist and doc cycle, team messages,
-  open checks.
-- `pdf.md`: PDF reading and generation. `notebooklm.md`: NotebookLM
-  procedure (path-scoped).
+- `workflow.md`: phases, Markdown docs, the spec, checklist and doc cycle,
+  team messages, open checks.
+- `pdf.md`: PDF reading and generation, and the datasheet fallback.
+  `notebooklm.md`: NotebookLM procedure (path-scoped).
 - `git-workflow.md`: hardware Git notes on top of the global
   `~/.claude/rules/git-workflow.md`, which holds the approval tiers. Every
   Git mutation needs explicit, action-specific approval in chat, even where
@@ -44,10 +43,10 @@ otherwise.
 This file adds:
 
 - **Protected paths.** The `.claude/hooks/protect_kicad_v2.py` PreToolUse
-  hook (rules in `.claude/hooks/protect.json`, order allow > deny > ask) and
+  hook (rules in `.claude/hooks/protect.json`, order deny > ask > allow) and
   the permission lists in `.claude/settings.json` control edits to KiCad
-  files, `library/` and `templates/`; `tools/check_permissions.py` in
-  Hardware-Copilot checks that they agree. If the hook blocks or asks, report
+  files, `library/` and `templates/`, PDF reads and risky Git commands;
+  Hardware-Copilot `tools/check_permissions.py` checks that they agree. If the hook blocks or asks, report
   it; never edit the hook, `protect.json` or the permissions to get access,
   and do not work around a block with shell commands. A permission `allow` is
   not design authorization: a KiCad or library change still needs the
