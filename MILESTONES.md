@@ -9,9 +9,11 @@ AeroOptix-Horizon on 2026-11-21. Problems found there: a false
 fact written in five documents, long task rows, 20 skills of which 3 have
 tests, copied rules that drift, and `.claude/` copied into projects by hand.
 
+M10 makes up v4.1.0; its source is in the M10 section.
+
 ## M10: permission guard and one workflow rule
 
-Status: in progress for v4.1.0.
+Status: done in v4.1.0 (PR #41, release PR #42).
 Scope: `.claude/hooks/`, `.claude/settings.json`, `.claude/rules/`,
 `shared/evidence-baseline.md`, `tools/`, README, CI.
 Source: AeroOptix-Horizon use of v4.0.1 on 2026-11-21. `git push origin
@@ -22,7 +24,7 @@ folder, and a datasheet could never be read, even when NotebookLM could not
 answer. The hook checked allow > deny > ask; Claude Code checks deny > ask >
 allow.
 
-- [ ] **1. Git guard** in `protect_kicad_v2.py`. It parses git and gh
+- [x] **1. Git guard** in `protect_kicad_v2.py`. It parses git and gh
   commands with flags in any order, and follows `cd`, `git -C`, env prefixes,
   `xargs` and `bash -c`. A `git` block in `protect.json` lists named checks:
   - deny: `push-protected` (`main`, `master`, `HEAD:main`, `+main`, `--all`,
@@ -30,24 +32,24 @@ allow.
     `clean-force`, `gh-pr-merge`;
   - ask: `force-with-lease`, `push-delete`, `push-tags`, `branch-delete`,
     `branch-rename`, `tag`, `rebase`, `commit-amend`, `gh-release`.
-- [ ] **2. PDF rule per project.** A `pdf` block with deny, ask and allow
+- [x] **2. PDF rule per project.** A `pdf` block with deny, ask and allow
   globs, case-insensitive, for Read and for shell commands that name a
   `.pdf`. A PDF with no match asks. Defaults: schematic and manufacturing
   folders deny, reports and the scratchpad allow.
-- [ ] **3. Datasheet fallback.** A datasheet PDF moves from never to ask:
+- [x] **3. Datasheet fallback.** A datasheet PDF moves from never to ask:
   read only after approval of that file in chat, only the pages needed, cited
   by file, revision, page and table, never uploaded. `pdf.md`,
   `engineering.md`, `notebooklm.md` and `shared/evidence-baseline.md` carry
   the wording; `check_skills.py --fix` updated the 14 skill copies.
-- [ ] **4. Rule order** deny > ask > allow in every block.
-- [ ] **5. `settings.json` trimmed:** no per-extension `Edit` allows, no Git
+- [x] **4. Rule order** deny > ask > allow in every block.
+- [x] **5. `settings.json` trimmed:** no per-extension `Edit` allows, no Git
   or PDF prefix rules; `Read` and `NotebookEdit` join the hook matcher.
   `tools/check_permissions.py` checks the `protect.json` shape, git check
   names, the PDF deny in both folder spellings, `bypassPermissions` and the
   matcher.
-- [ ] **6. One `workflow.md`** from `hardware-workflow.md` and
+- [x] **6. One `workflow.md`** from `hardware-workflow.md` and
   `project-workflow.md`, with pointers updated.
-- [ ] **7. Tests.** `tools/tests/test_hook.py` (17 tests: edits, PDFs, Git,
+- [x] **7. Tests.** `tools/tests/test_hook.py` (17 tests: edits, PDFs, Git,
   current-branch lookup, the stdin/stdout contract) runs in `repo-checks` on
   3 OSes.
 
